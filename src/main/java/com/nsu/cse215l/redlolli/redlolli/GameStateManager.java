@@ -2,7 +2,6 @@ package com.nsu.cse215l.redlolli.redlolli;
 
 import com.nsu.cse215l.redlolli.redlolli.entities.*;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
-import com.nsu.cse215l.redlolli.redlolli.systems.FlashlightSystem;
 import com.nsu.cse215l.redlolli.redlolli.systems.SoundManager;
 import com.nsu.cse215l.redlolli.redlolli.ui.GameRenderer;
 
@@ -56,7 +55,6 @@ public class GameStateManager {
     boolean wasInEscapeRoom = false;
     boolean escapeRoomsCollapsed = false;
 
-    final FlashlightSystem flashlightSystem = new FlashlightSystem();
     final SoundManager soundManager = new SoundManager();
 
     // ========================= LIFECYCLE =========================
@@ -86,7 +84,6 @@ public class GameStateManager {
         lunaScreamCooldownFrames = 0;
         hasCloneItem = false;
         wasInEscapeRoom = false;
-        flashlightSystem.reset();
         escapeRoomsCollapsed = false;
     }
 
@@ -278,8 +275,6 @@ public class GameStateManager {
         if (updatePaleLuna(inEscapeRoom, exitingEscapeRoom))
             return true;
 
-        flashlightSystem.update(paleLuna == null ? 99.0
-                : distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY()));
         lolliRecentlyCollected = false;
         return false;
     }
@@ -463,8 +458,6 @@ public class GameStateManager {
                 "DEBUG (F3)",
                 "Level=" + currentLevel + " Tile=" + tileText + " InEscape=" + player.isInEscapeRoom(),
                 "Sprint=" + activeKeys.contains(KeyCode.SHIFT),
-                "Flash On=" + flashlightSystem.isOn() + " Effective=" + flashlightSystem.isEffectivelyOn(),
-                "Battery=" + (int) (flashlightSystem.getBatteryPercent() * 100) + "%",
                 "Luna=" + lunaState + " Timer=" + lunaTimer + " Nearby=" + (lunaDist <= 5.0),
                 "Fruit=" + fruitCount + " Eggs=" + eggCount + " Clone=" + hasCloneItem,
                 "GuardCD=" + guardHitCooldownFrames

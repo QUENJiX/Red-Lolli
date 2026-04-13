@@ -3,7 +3,6 @@ package com.nsu.cse215l.redlolli.redlolli.ui;
 import com.nsu.cse215l.redlolli.redlolli.entities.Item;
 import com.nsu.cse215l.redlolli.redlolli.entities.Monster;
 import com.nsu.cse215l.redlolli.redlolli.entities.Player;
-import com.nsu.cse215l.redlolli.redlolli.systems.FlashlightSystem;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -27,7 +26,6 @@ public class HUDRenderer {
      */
     public static double drawHUD(GraphicsContext gc, int level, List<Item> chests,
             String[] itemNames, Monster paleLuna, Player player,
-            FlashlightSystem flashlight,
             int fruitCount,
             int eggCount,
             boolean hasCloneItem,
@@ -40,11 +38,9 @@ public class HUDRenderer {
         drawLolliStatus(gc, chests);
         drawDivider(gc, 145);
         drawFindItem(gc, level, itemNames);
-        drawDivider(gc, 320);
-        drawBattery(gc, flashlight, pulsePhase);
-        drawDivider(gc, 440);
+        drawDivider(gc, 335);
         pulsePhase = drawPaleLunaStatus(gc, paleLuna, pulsePhase);
-        drawDivider(gc, 785);
+        drawDivider(gc, 665);
         drawSafeIndicator(gc, player);
         drawUtilityStatus(gc, level, fruitCount, eggCount, hasCloneItem, invisibilityFrames);
 
@@ -98,41 +94,12 @@ public class HUDRenderer {
         gc.fillText("FIND: " + itemNames[level - 1], 172, MID_Y);
     }
 
-    /** Renders battery level bar with color-coded urgency. */
-    private static void drawBattery(GraphicsContext gc, FlashlightSystem flashlight, double pulsePhase) {
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-
-        Color labelColor = flashlight.isCriticalBattery()
-                ? Color.rgb(230, (int) (50 + 80 * (Math.sin(pulsePhase * 2) * 0.5 + 0.5)), 50)
-                : Color.rgb(220, 220, 220);
-        gc.setFill(labelColor);
-        gc.fillText("BATTERY", 332, 18);
-
-        gc.setFill(Color.rgb(30, 30, 40));
-        gc.fillRect(332, 22, 96, 10);
-        gc.setStroke(Color.rgb(90, 90, 110));
-        gc.setLineWidth(1);
-        gc.strokeRect(332, 22, 96, 10);
-
-        double fill = Math.max(0.0, Math.min(1.0, flashlight.getBatteryPercent()));
-        Color barColor = fill >= 0.35 ? Color.rgb(90, 200, 255) : Color.ORANGE;
-        if (fill < 0.15)
-            barColor = Color.RED;
-
-        gc.setFill(barColor);
-        gc.fillRect(333, 23, 94 * fill, 8);
-
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
-        gc.setFill(Color.rgb(210, 210, 210));
-        gc.fillText((flashlight.isOn() ? "ON " : "OFF ") + Math.round(fill * 100) + "%", 348, 42);
-    }
-
     /** Renders Luna's state-specific warning bar in the HUD. */
     private static double drawPaleLunaStatus(GraphicsContext gc, Monster paleLuna, double pulsePhase) {
         if (paleLuna == null)
             return pulsePhase;
 
-        double barX = 452, barW = 126, barY = MID_Y - 18, barH = 12;
+        double barX = 345, barW = 126, barY = MID_Y - 18, barH = 12;
 
         switch (paleLuna.getState()) {
             case DORMANT -> {

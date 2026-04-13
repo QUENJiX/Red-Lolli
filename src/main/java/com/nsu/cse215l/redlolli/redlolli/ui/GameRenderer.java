@@ -5,10 +5,8 @@ import com.nsu.cse215l.redlolli.redlolli.entities.Item;
 import com.nsu.cse215l.redlolli.redlolli.entities.Monster;
 import com.nsu.cse215l.redlolli.redlolli.entities.Player;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
-import com.nsu.cse215l.redlolli.redlolli.systems.FlashlightSystem;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -22,7 +20,6 @@ public class GameRenderer {
 
     private static final double SCREEN_WIDTH = 880;
     private static final double SCREEN_HEIGHT = 730;
-    private static final double HUD_BOTTOM_Y = 50;
 
     /**
      * The primary entry point for drawing a complete game frame.
@@ -32,8 +29,6 @@ public class GameRenderer {
             LolliRevealState revealState, int level,
             List<Item> chests,
             String[] itemNames,
-            FlashlightSystem flashlight,
-            boolean blackoutActive,
             int fruitCount,
             int eggCount,
             boolean hasCloneItem,
@@ -57,13 +52,11 @@ public class GameRenderer {
             gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         }
 
-        renderDarknessMask(gc, player, flashlight, blackoutActive);
-
         if (revealState != null && revealState.active) {
             renderLolliReveal(gc, revealState);
         }
 
-        pulsePhase = HUDRenderer.drawHUD(gc, level, chests, itemNames, paleLuna, player, flashlight,
+        pulsePhase = HUDRenderer.drawHUD(gc, level, chests, itemNames, paleLuna, player,
                 fruitCount, eggCount, hasCloneItem, 0, pulsePhase);
 
         if (player.isInEscapeRoom()) {
@@ -72,53 +65,6 @@ public class GameRenderer {
         }
 
         return pulsePhase;
-    }
-
-    /** Renders the darkness mask overlay. */
-    private static void renderDarknessMask(GraphicsContext gc, Player player, FlashlightSystem flashlight,
-            boolean blackoutActive) {
-        if (blackoutActive) {
-            gc.setFill(Color.rgb(0, 0, 0, 0.82));
-            gc.fillRect(0, 50, SCREEN_WIDTH, SCREEN_HEIGHT - 50);
-            return;
-        }
-
-        final double px = player.getX() + 10;
-        final double py = player.getY() + 10;
-
-        gc.setFill(Color.rgb(0, 0, 0, flashlight.isEffectivelyOn() ? 0.62 : 0.8));
-        gc.fillRect(0, HUD_BOTTOM_Y, SCREEN_WIDTH, SCREEN_HEIGHT - HUD_BOTTOM_Y);
-
-        gc.save();
-        gc.setGlobalBlendMode(BlendMode.SCREEN);
-
-        if (flashlight.isEffectivelyOn()) {
-            double fx = player.getFacingX();
-            double fy = player.getFacingY();
-
-            double len = Math.sqrt(fx * fx + fy * fy);
-            if (len < 0.0001) {
-                fx = 0;
-                fy = -1;
-                len = 1;
-            }
-            fx /= len;
-            fy /= len;
-
-            double tipX = px + fx * 235;
-            double tipY = py + fy * 235;
-            double sideX = -fy;
-            double sideY = fx;
-            double spread = 90;
-
-            gc.setFill(Color.rgb(220, 220, 220, 0.24));
-            gc.fillPolygon(
-                    new double[] { px, tipX + sideX * spread, tipX - sideX * spread },
-                    new double[] { py, tipY + sideY * spread, tipY - sideY * spread },
-                    3);
-        }
-
-        gc.restore();
     }
 
     /**

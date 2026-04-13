@@ -6,7 +6,9 @@
       "Bash(@echo *)",
       "Bash(type *)",
       "Bash(findstr *)",
-      "Bash(mvnw *)"
+      "Bash(mvnw *)",
+      "Bash(del *)",
+      "Bash(powershell *)"
     ]
   },
   "$version": 3

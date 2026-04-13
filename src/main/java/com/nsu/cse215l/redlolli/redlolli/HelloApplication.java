@@ -149,8 +149,6 @@ public class HelloApplication extends Application {
         gameScene.setOnKeyPressed(e -> {
             activeKeys.add(e.getCode());
             pressedThisFrame.add(e.getCode());
-            if (e.getCode() == KeyCode.F)
-                gsm.flashlightSystem.toggle();
             if (e.getCode() == KeyCode.E)
                 gsm.tryUseDistraction();
             if (e.getCode() == KeyCode.C)
@@ -187,7 +185,7 @@ public class HelloApplication extends Application {
     private void render(GraphicsContext gc) {
         gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.maze, gsm.entities, gsm.paleLuna, gsm.player,
                 gsm.warningFlashTimer, gsm.lolliRevealState, gsm.currentLevel, gsm.chests, ITEM_NAMES,
-                gsm.flashlightSystem, false, gsm.fruitCount, gsm.eggCount, gsm.hasCloneItem,
+                gsm.fruitCount, gsm.eggCount, gsm.hasCloneItem,
                 gsm.pulsePhaseHUD);
         if (showDebugOverlay)
             gsm.drawDebugOverlay(gc, activeKeys);
