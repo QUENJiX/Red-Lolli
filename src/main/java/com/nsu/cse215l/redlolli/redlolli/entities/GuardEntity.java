@@ -1,112 +1,139 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
+import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 /**
- * GuardEntity represents stationary environmental hazards/blockades in the game.
- * Serving as minor antagonists or puzzle roadblocks.
- * 
- * They generally sit in hallways and instantly kill the player upon touch,
- * requiring the player to use specific mechanics (like sneaking, invisibility, 
- * or throwing meat) to bypass them.
- * 
- * Development History:
- * - Phase 2, Week 2, Day 9: Initial patrol and vision logic established.
- * - Phase 3, Week 3, Day 19: Detection balancing to ensure fair player passing.
+ * Stationary environmental hazards that kill the player on contact.
+ * Requires specific mechanics like sneaking or distraction to bypass.
  */
 public class GuardEntity extends Entity implements Collidable {
 
-    /** Denotes the visual and mechanical ruleset for this specific Guard instance. */
     public enum Type {
-        BAT,   // Used in Level 1; generally responds to player walking speed/sound
-        COBRA  // Used in Level 2; acts as a tollgate requiring "meat" to pass
+        BAT,
+        COBRA
     }
 
-    // ==============================================================
-    // STATE FIELDS
-    // ==============================================================
+    // ================= STATE =================
 
-    /** The specific species of guard this instance is. */
     private final Type type;
-    
-    /** Flag denoting if the guard's attention is currently drawn away from the player. */
-    private boolean distracted;
-    
-    /** Explicit counter for cobras to allow the player to walk over them safely X times. */
-    private int cobraEntryPasses;
 
-    // ==============================================================
-    // CONSTRUCTOR
-    // ==============================================================
+    // The escape room tile (row, col) this guard protects
+    private final int escapeRow;
+    private final int escapeCol;
 
-    /**
-     * Spawns a guard obstacle.
-     * 
-     * @param x    Absolute X coordinate.
-     * @param y    Absolute Y coordinate.
-     * @param type BAT or COBRA configuration.
-     */
-    public GuardEntity(double x, double y, Type type) {
-        super(x, y, 20.0);
+    // Distraction state
+    private boolean distracted = false;
+    private int distractionTimer = 0;
+    
+    // Level 1: Bat distraction duration
+    private static final int BAT_DISTRACTION_DURATION = 300; // 5 seconds
+    
+    // Level 2: Cobra distraction duration (TWIST: much shorter distraction window)
+    private static final int COBRA_DISTRACTION_DURATION = 150; // 2.5 seconds
+
+    public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
+        super(x, y, 28.0);
         this.type = type;
+        this.escapeRow = escapeRow;
+        this.escapeCol = escapeCol;
     }
-
-    // ==============================================================
-    // GAME LOGIC
-    // ==============================================================
 
     @Override
     public void update() {
-        // Guards are static sentinel entities; their logic is entirely responsive
-        // driven by the main game loop checking distances and inputs.
+        if (distracted) {
+            distractionTimer--;
+            if (distractionTimer <= 0) {
+                distracted = false;
+            }
+        }
     }
 
-    // ==============================================================
-    // RENDERING
-    // ==============================================================
+    public void distract() {
+        if (!distracted) {
+            distracted = true;
+            distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION : COBRA_DISTRACTION_DURATION;
+        }
+    }
 
-    /** Draws the guard differently based on its Type, and includes status indicators. */
+    // ================= SHARED =================
+
+    public boolean isPlayerOnGuardedRoom(Rectangle2D playerHitbox) {
+        double cx = (playerHitbox.getMinX() + playerHitbox.getMaxX()) / 2;
+        double cy = (playerHitbox.getMinY() + playerHitbox.getMaxY()) / 2;
+
+        double[][] points = {
+            { cx, cy },
+            { playerHitbox.getMinX() + 2, cy },
+            { playerHitbox.getMaxX() - 2, cy },
+            { cx, playerHitbox.getMinY() + 2 },
+            { cx, playerHitbox.getMaxY() - 2 }
+        };
+
+        for (double[] p : points) {
+            int c = (int) (p[0] / Maze.TILE_SIZE);
+            int r = (int) ((p[1] - Maze.Y_OFFSET) / Maze.TILE_SIZE);
+            if (r == escapeRow && c == escapeCol) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isDistracted() {
+        return distracted;
+    }
+
+    public double distanceToPlayerInTiles(double playerX, double playerY) {
+        double dx = Math.abs(playerX - x) / Maze.TILE_SIZE;
+        double dy = Math.abs(playerY - y) / Maze.TILE_SIZE;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    public boolean isWithinDistractionRange(double playerX, double playerY) {
+        return distanceToPlayerInTiles(playerX, playerY) <= 3.0; // Both share same range
+    }
+
+    // ================= RENDERING =================
+
     @Override
     public void render(GraphicsContext gc) {
-        
-        // --- 1. Distraction Indicator ---
         if (distracted) {
-            // Draw a soft green aura to mathematically communicate 'SAFE TO PASS'
-            gc.setFill(Color.rgb(40, 120, 40, 0.22));
+            if (type == Type.BAT) {
+                gc.setFill(Color.rgb(40, 120, 40, 0.22));
+            } else {
+                gc.setFill(Color.rgb(255, 255, 200, 0.4));
+            }
             gc.fillOval(x - 5, y - 5, size + 10, size + 10);
         }
 
-        // --- 2. Sprite Drawing ---
         if (type == Type.BAT) {
-            // Bat Drawing: Body, Wings, and Red Eyes
-            gc.setFill(Color.rgb(45, 45, 55)); // Body color
-            gc.fillOval(x + 3, y + 5, 14, 10); // Core body
-            gc.fillOval(x - 6, y + 7, 12, 6);  // Left wing
-            gc.fillOval(x + 14, y + 7, 12, 6); // Right wing
-            gc.setFill(Color.rgb(220, 40, 40)); // Eye color
-            gc.fillOval(x + 7, y + 8, 2, 2);   // Left eye
-            gc.fillOval(x + 11, y + 8, 2, 2);  // Right eye
+            gc.setFill(Color.rgb(45, 45, 55));
+            gc.fillOval(x + 3, y + 5, 14, 10);
+            gc.fillOval(x - 6, y + 7, 12, 6);
+            gc.fillOval(x + 14, y + 7, 12, 6);
+            gc.setFill(Color.rgb(220, 40, 40));
+            gc.fillOval(x + 7, y + 8, 2, 2);
+            gc.fillOval(x + 11, y + 8, 2, 2);
         } else {
-            // Cobra Drawing: Slithering green S-shape with yellow eye
             gc.setStroke(Color.rgb(50, 120, 40));
             gc.setLineWidth(3);
-            gc.strokeLine(x + 3, y + 14, x + 17, y + 6);  // S-Curve top
-            gc.strokeLine(x + 3, y + 14, x + 17, y + 14); // S-Curve tail
+            gc.strokeLine(x + 3, y + 14, x + 17, y + 6);
+            gc.strokeLine(x + 3, y + 14, x + 17, y + 14);
             gc.setFill(Color.rgb(40, 140, 35));
-            gc.fillOval(x + 14, y + 6, 7, 10); // Hood / Head
+            gc.fillOval(x + 14, y + 6, 7, 10);
             gc.setFill(Color.rgb(255, 220, 80));
-            gc.fillOval(x + 18, y + 9, 2, 2);  // Single menacing yellow eye
+            gc.fillOval(x + 18, y + 9, 2, 2);
         }
     }
 
-    // ==============================================================
-    // COLLISION & UTILITIES
-    // ==============================================================
+    public void renderKnockoutRadius(GraphicsContext gc) {
+        // Obsolete function, safely ignored
+    }
 
-    /** @return Hitbox dimension required by Collidable interface. */
     @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
@@ -115,41 +142,5 @@ public class GuardEntity extends Entity implements Collidable {
     public Type getType() {
         return type;
     }
-
-    /** 
-     * Determines whether touching this guard will be instantly fatal right now.
-     * Cobras are distracted via their 'pass limit', Bats via the boolean state.
-     */
-    public boolean isDistracted() {
-        if (type == Type.COBRA) {
-            return cobraEntryPasses > 0;
-        }
-        return distracted; // Normal bats
-    }
-
-    /** Triggers the distraction state. For bats, this occurs if player throws an item. */
-    public void distract() {
-        if (type == Type.BAT) {
-            distracted = true;
-        }
-    }
-
-    /** Adds a credit allowing the player to walk through a Cobra instance safely. */
-    public void grantCobraEntryPass() {
-        if (type == Type.COBRA) {
-            cobraEntryPasses = 1;
-        }
-    }
-
-    /** 
-     * Used right before collision. If the player steps on a cobra and has a pass,
-     * it consumes the pass and prevents game over.
-     */
-    public boolean consumeCobraEntryPass() {
-        if (type == Type.COBRA && cobraEntryPasses > 0) {
-            cobraEntryPasses--;
-            return true;
-        }
-        return false;
-    }
 }
+

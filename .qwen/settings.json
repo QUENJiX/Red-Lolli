@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn *)",
+      "Bash(chcp *)",
+      "Bash(@echo *)",
+      "Bash(type *)",
+      "Bash(findstr *)",
+      "Bash(mvnw *)"
+    ]
+  },
+  "$version": 3
+}
