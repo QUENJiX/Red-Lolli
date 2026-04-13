@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 import java.net.URL;
 
@@ -94,6 +95,7 @@ public class SceneFactory {
         layout.getChildren().add(styledText("pale luna smiles wide...", "Serif", FontWeight.BOLD, 28, Color.rgb(120, 0, 0)));
 
         Text mainText = new Text(itemFoundMainText[level - 1]);
+        mainText.setTextAlignment(TextAlignment.CENTER);
         mainText.setFont(Font.font("Serif", FontWeight.BOLD, 65));
         mainText.setFill(Color.DARKRED);
 
@@ -104,6 +106,7 @@ public class SceneFactory {
         };
         Text descText = new Text(itemDescriptions[level - 1]);
         descText.setWrappingWidth(700);
+        descText.setTextAlignment(TextAlignment.CENTER);
         descText.setFont(Font.font("Serif", 19));
         descText.setFill(Color.rgb(170, 150, 145));
 
@@ -174,6 +177,7 @@ public class SceneFactory {
 
     private static Text styledText(String content, String fontFamily, FontWeight weight, int fontSize, Color color) {
         Text t = new Text(content);
+        t.setTextAlignment(TextAlignment.CENTER);
         t.setFont(Font.font(fontFamily, weight, fontSize));
         t.setFill(color);
         return t;

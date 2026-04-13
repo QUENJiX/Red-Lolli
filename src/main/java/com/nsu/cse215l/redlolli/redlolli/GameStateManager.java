@@ -6,7 +6,6 @@ import com.nsu.cse215l.redlolli.redlolli.systems.FlashlightSystem;
 import com.nsu.cse215l.redlolli.redlolli.systems.SoundManager;
 import com.nsu.cse215l.redlolli.redlolli.ui.GameRenderer;
 
-import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;

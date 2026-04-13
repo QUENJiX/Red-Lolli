@@ -5,7 +5,7 @@
  * internal domains to the JavaFX graphics/reflection engines.
  */
 module com.nsu.cse215l.redlolli.redlolli {
-    requires javafx.controls;
+    requires transitive javafx.controls;
     requires javafx.media;
     requires transitive javafx.graphics;
     requires java.desktop;
