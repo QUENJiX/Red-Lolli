@@ -21,10 +21,10 @@ public class Monster extends Entity implements Collidable {
 
     private static final double STALK_SPEED = 1.6;
     private static final double HUNT_SPEED = 3.2;
-    private static final int DORMANT_DURATION  = 900;
+    private static final int DORMANT_DURATION = 900;
     private static final int STALK_DURATION = 480;
     private static final int HUNT_DURATION = 360;
-    private static final int WAIT_DURATION  = 180;
+    private static final int WAIT_DURATION = 180;
 
     private int dormantTimer = 0;
     private int stalkTimer = 0;
@@ -39,10 +39,11 @@ public class Monster extends Entity implements Collidable {
 
     /** Main AI tick evaluated every graphical frame. */
     @Override
-    public void update() { }
+    public void update() {
+    }
 
     public void update(double playerX, double playerY, boolean playerInEscapeRoom,
-                        boolean lolliRecentlyCollected, Maze maze) {
+            boolean lolliRecentlyCollected, Maze maze) {
 
         pulsePhase += 0.1;
 
@@ -99,13 +100,16 @@ public class Monster extends Entity implements Collidable {
         dormantTimer = DORMANT_DURATION;
     }
 
-    /** Positions Luna on a walkable tile adjacent to the player's safe-room location. */
+    /**
+     * Positions Luna on a walkable tile adjacent to the player's safe-room
+     * location.
+     */
     private void positionAtDoor(double playerX, double playerY, Maze maze) {
         int playerCol = (int) (playerX / Maze.TILE_SIZE);
         int playerRow = (int) ((playerY - Maze.Y_OFFSET) / Maze.TILE_SIZE);
 
         int[][] dirs = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 },
-                         { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
+                { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
         for (int[] d : dirs) {
             int nr = playerRow + d[0];
             int nc = playerCol + d[1];
@@ -124,11 +128,12 @@ public class Monster extends Entity implements Collidable {
     private void pursuePlayer(double playerX, double playerY, Maze maze, double speed) {
         int currentC = (int) ((this.x + size / 2) / Maze.TILE_SIZE);
         int currentR = (int) ((this.y + size / 2 - Maze.Y_OFFSET) / Maze.TILE_SIZE);
-        int playerC  = (int) ((playerX + 10) / Maze.TILE_SIZE);
-        int playerR  = (int) ((playerY + 10 - Maze.Y_OFFSET) / Maze.TILE_SIZE);
+        int playerC = (int) ((playerX + 10) / Maze.TILE_SIZE);
+        int playerR = (int) ((playerY + 10 - Maze.Y_OFFSET) / Maze.TILE_SIZE);
 
         int[] nextTile = maze.getNextMove(currentR, currentC, playerR, playerC);
-        if (nextTile == null) return;
+        if (nextTile == null)
+            return;
 
         double targetX, targetY;
 
@@ -240,22 +245,44 @@ public class Monster extends Entity implements Collidable {
             return;
         }
 
-        double pulseSpeed, baseSz; Color glowCol, irisCol; boolean hasHighlight;
+        double pulseSpeed, baseSz;
+        Color glowCol, irisCol;
+        boolean hasHighlight;
         switch (state) {
-            case HUNTING -> { pulseSpeed = 3; baseSz = 5; glowCol = Color.rgb(255,0,0,0.3);
-                irisCol = Color.rgb(255,20,20); hasHighlight = true; }
-            case WAITING_AT_DOOR -> { pulseSpeed = 0.8; baseSz = 4; glowCol = Color.rgb(40,0,0,1.0);
-                irisCol = Color.rgb(220,0,0); hasHighlight = true; }
-            default /* STALKING */ -> { pulseSpeed = 1.4; baseSz = 3.6; glowCol = Color.rgb(180,0,0,0.35);
-                irisCol = Color.rgb(220,40,40,0.85); hasHighlight = false; }
+            case HUNTING -> {
+                pulseSpeed = 3;
+                baseSz = 5;
+                glowCol = Color.rgb(255, 0, 0, 0.3);
+                irisCol = Color.rgb(255, 20, 20);
+                hasHighlight = true;
+            }
+            case WAITING_AT_DOOR -> {
+                pulseSpeed = 0.8;
+                baseSz = 4;
+                glowCol = Color.rgb(40, 0, 0, 1.0);
+                irisCol = Color.rgb(220, 0, 0);
+                hasHighlight = true;
+            }
+            default /* STALKING */ -> {
+                pulseSpeed = 1.4;
+                baseSz = 3.6;
+                glowCol = Color.rgb(180, 0, 0, 0.35);
+                irisCol = Color.rgb(220, 40, 40, 0.85);
+                hasHighlight = false;
+            }
         }
 
-        double pulse = Math.sin(pulsePhase * pulseSpeed) * (state == State.HUNTING ? 1.5 : state == State.WAITING_AT_DOOR ? 0.5 : 0.8);
+        double pulse = Math.sin(pulsePhase * pulseSpeed)
+                * (state == State.HUNTING ? 1.5 : state == State.WAITING_AT_DOOR ? 0.5 : 0.8);
         double sz = baseSz + pulse;
 
         gc.setFill(glowCol);
-        gc.fillOval(lx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1), sz + (state == State.HUNTING ? 6 : 2), sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
-        gc.fillOval(rx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1), sz + (state == State.HUNTING ? 6 : 2), sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
+        gc.fillOval(lx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1),
+                sz + (state == State.HUNTING ? 6 : 2),
+                sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
+        gc.fillOval(rx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1),
+                sz + (state == State.HUNTING ? 6 : 2),
+                sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
 
         if (state == State.HUNTING) {
             gc.setFill(Color.rgb(50, 0, 0));
@@ -268,7 +295,7 @@ public class Monster extends Entity implements Collidable {
         gc.fillOval(rx, eyeY, sz, state == State.STALKING ? sz : sz - 1);
 
         if (hasHighlight) {
-            Color hlCol = state == State.HUNTING ? Color.rgb(255,200,200) : Color.rgb(255,100,100);
+            Color hlCol = state == State.HUNTING ? Color.rgb(255, 200, 200) : Color.rgb(255, 100, 100);
             double hlOff = state == State.HUNTING ? 1.5 : 1;
             gc.setFill(hlCol);
             gc.fillOval(lx + hlOff, eyeY + (state == State.HUNTING ? 1 : 0.5), 2, 1.5);
@@ -281,13 +308,35 @@ public class Monster extends Entity implements Collidable {
         return new Rectangle2D(x, y, size, size);
     }
 
-    public State getState() { return state; }
-    public boolean isHunting() { return state == State.HUNTING; }
-    public boolean isStalking() { return state == State.STALKING; }
-    public boolean isWaitingAtDoor() { return state == State.WAITING_AT_DOOR; }
+    public State getState() {
+        return state;
+    }
 
-    public int getDormantTimer() { return dormantTimer; }
-    public int getStalkTimer() { return stalkTimer; }
-    public int getHuntTimer() { return huntTimer; }
-    public int getWaitTimer() { return waitTimer; }
+    public boolean isHunting() {
+        return state == State.HUNTING;
+    }
+
+    public boolean isStalking() {
+        return state == State.STALKING;
+    }
+
+    public boolean isWaitingAtDoor() {
+        return state == State.WAITING_AT_DOOR;
+    }
+
+    public int getDormantTimer() {
+        return dormantTimer;
+    }
+
+    public int getStalkTimer() {
+        return stalkTimer;
+    }
+
+    public int getHuntTimer() {
+        return huntTimer;
+    }
+
+    public int getWaitTimer() {
+        return waitTimer;
+    }
 }

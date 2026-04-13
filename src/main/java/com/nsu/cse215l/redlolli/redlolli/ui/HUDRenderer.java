@@ -116,7 +116,8 @@ public class HUDRenderer {
 
         double fill = Math.max(0.0, Math.min(1.0, flashlight.getBatteryPercent()));
         Color barColor = fill >= 0.35 ? Color.rgb(90, 200, 255) : Color.ORANGE;
-        if (fill < 0.15) barColor = Color.RED;
+        if (fill < 0.15)
+            barColor = Color.RED;
 
         gc.setFill(barColor);
         gc.fillRect(333, 23, 94 * fill, 8);
@@ -128,7 +129,8 @@ public class HUDRenderer {
 
     /** Renders Luna's state-specific warning bar in the HUD. */
     private static double drawPaleLunaStatus(GraphicsContext gc, Monster paleLuna, double pulsePhase) {
-        if (paleLuna == null) return pulsePhase;
+        if (paleLuna == null)
+            return pulsePhase;
 
         double barX = 452, barW = 126, barY = MID_Y - 18, barH = 12;
 
@@ -136,28 +138,34 @@ public class HUDRenderer {
             case DORMANT -> {
                 int sLeft = paleLuna.getDormantTimer() / 60;
                 Color tc;
-                if (sLeft > 10) tc = Color.LIMEGREEN;
-                else if (sLeft > 6) tc = Color.YELLOW;
-                else if (sLeft > 3) tc = Color.ORANGE;
-                else { double f = Math.sin(pulsePhase)*0.5+0.5; tc = Color.rgb(255,(int)(50*f),(int)(50*f)); }
-                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, tc, Color.rgb(40,40,45), Color.rgb(80,80,90),
+                if (sLeft > 10)
+                    tc = Color.LIMEGREEN;
+                else if (sLeft > 6)
+                    tc = Color.YELLOW;
+                else if (sLeft > 3)
+                    tc = Color.ORANGE;
+                else {
+                    double f = Math.sin(pulsePhase) * 0.5 + 0.5;
+                    tc = Color.rgb(255, (int) (50 * f), (int) (50 * f));
+                }
+                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, tc, Color.rgb(40, 40, 45), Color.rgb(80, 80, 90),
                         paleLuna.getDormantTimer(), 900, tc, "She sleeps " + sLeft + "s", pulsePhase, 0.2);
             }
             case STALKING -> {
-                double flash = Math.sin(pulsePhase * 1.7)*0.5+0.5;
-                Color bg = Color.rgb(120,20,20, 0.25+flash*0.25);
-                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, bg, bg, Color.rgb(140,40,40),
-                        paleLuna.getStalkTimer(), 480, Color.rgb(210,80,80), "She watches",
+                double flash = Math.sin(pulsePhase * 1.7) * 0.5 + 0.5;
+                Color bg = Color.rgb(120, 20, 20, 0.25 + flash * 0.25);
+                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, bg, bg, Color.rgb(140, 40, 40),
+                        paleLuna.getStalkTimer(), 480, Color.rgb(210, 80, 80), "She watches",
                         pulsePhase, 0.24);
                 gc.setFill(Color.rgb(230, 120, 120)); // override label color
                 gc.fillText("She watches", barX, MID_Y + 6);
             }
             case HUNTING -> {
-                double cf = Math.sin(pulsePhase * 2)*0.5+0.5;
-                Color bg = Color.rgb(255,(int)(30*cf),(int)(30*cf));
+                double cf = Math.sin(pulsePhase * 2) * 0.5 + 0.5;
+                Color bg = Color.rgb(255, (int) (30 * cf), (int) (30 * cf));
                 int sLeft = paleLuna.getHuntTimer() / 60;
-                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, bg, bg, Color.rgb(120,0,0),
-                        paleLuna.getHuntTimer(), 360, Color.rgb(200,0,0), "RUN " + sLeft + "s",
+                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, bg, bg, Color.rgb(120, 0, 0),
+                        paleLuna.getHuntTimer(), 360, Color.rgb(200, 0, 0), "RUN " + sLeft + "s",
                         pulsePhase, 0.3);
                 gc.setFill(Color.RED);
                 gc.fillText("RUN " + sLeft + "s", barX, MID_Y + 6);
@@ -177,7 +185,8 @@ public class HUDRenderer {
             Color fillCol, String label, double pulsePhase, double pulseInc) {
         gc.setFill(bgFill);
         gc.fillRect(barX, barY, barW, barH);
-        gc.setStroke(strokeCol); gc.setLineWidth(1);
+        gc.setStroke(strokeCol);
+        gc.setLineWidth(1);
         gc.strokeRect(barX, barY, barW, barH);
         double fill = (double) timer / maxTimer;
         gc.setFill(fillCol);

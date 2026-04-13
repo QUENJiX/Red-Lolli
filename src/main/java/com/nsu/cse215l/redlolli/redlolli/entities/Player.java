@@ -154,15 +154,37 @@ public class Player extends Entity implements Collidable {
         return new Rectangle2D(x, y, size, size);
     }
 
-    public void setBeingChased(boolean chased) { this.isBeingChased = chased; }
-    public boolean isInEscapeRoom() { return isInEscapeRoom; }
-    public void setInEscapeRoom(boolean inEscapeRoom) { this.isInEscapeRoom = inEscapeRoom; }
+    public void setBeingChased(boolean chased) {
+        this.isBeingChased = chased;
+    }
 
-    public boolean isExhausted() { return exhaustedFrames > 0; }
-    public boolean canSprint() { return staminaFrames > 0 && exhaustedFrames == 0; }
-    public double getStaminaPercent() { return (double) staminaFrames / MAX_STAMINA_FRAMES; }
-    public double getFacingX() { return facingX; }
-    public double getFacingY() { return facingY; }
+    public boolean isInEscapeRoom() {
+        return isInEscapeRoom;
+    }
+
+    public void setInEscapeRoom(boolean inEscapeRoom) {
+        this.isInEscapeRoom = inEscapeRoom;
+    }
+
+    public boolean isExhausted() {
+        return exhaustedFrames > 0;
+    }
+
+    public boolean canSprint() {
+        return staminaFrames > 0 && exhaustedFrames == 0;
+    }
+
+    public double getStaminaPercent() {
+        return (double) staminaFrames / MAX_STAMINA_FRAMES;
+    }
+
+    public double getFacingX() {
+        return facingX;
+    }
+
+    public double getFacingY() {
+        return facingY;
+    }
 
     private double getMovementSpeed(boolean sprinting) {
         if (isExhausted()) {

@@ -16,7 +16,8 @@ import java.util.Queue;
 
 /**
  * Loads, stores, and renders the maze grid from CSV files.
- * Provides collision detection, escape room queries, BFS pathfinding, and line-of-sight checks.
+ * Provides collision detection, escape room queries, BFS pathfinding, and
+ * line-of-sight checks.
  */
 public class Maze {
 
@@ -44,12 +45,12 @@ public class Maze {
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) {
                 System.err.println("Map file not found: " + path + ". Loading fallback map.");
-                mapGrid = new int[][]{
-                        {1, 1, 1, 1, 1, 1},
-                        {1, 0, 0, 0, 2, 1},
-                        {1, 0, 1, 1, 0, 1},
-                        {1, 0, 0, 0, 0, 1},
-                        {1, 1, 1, 1, 1, 1}
+                mapGrid = new int[][] {
+                        { 1, 1, 1, 1, 1, 1 },
+                        { 1, 0, 0, 0, 2, 1 },
+                        { 1, 0, 1, 1, 0, 1 },
+                        { 1, 0, 0, 0, 0, 1 },
+                        { 1, 1, 1, 1, 1, 1 }
                 };
                 return;
             }
@@ -82,12 +83,13 @@ public class Maze {
 
         } catch (Exception e) {
             e.printStackTrace();
-            mapGrid = new int[][]{{1, 1, 1}, {1, 0, 1}, {1, 1, 1}};
+            mapGrid = new int[][] { { 1, 1, 1 }, { 1, 0, 1 }, { 1, 1, 1 } };
         }
     }
 
     public void renderMaze(GraphicsContext gc) {
-        if (mapGrid == null) return;
+        if (mapGrid == null)
+            return;
 
         int maxRow = mapGrid.length - 1;
         int maxCol = mapGrid[0].length - 1;
@@ -116,35 +118,41 @@ public class Maze {
     }
 
     // Theme color palettes indexed by (levelTheme - 1)
-    private static final Color[] BORDER_FILL = { Color.rgb(16,28,16), Color.rgb(20,18,18), Color.rgb(22,20,24) };
-    private static final Color[] INNER_FILL  = { Color.rgb(32,60,34), Color.rgb(55,40,48), Color.rgb(48,46,52) };
+    private static final Color[] BORDER_FILL = { Color.rgb(16, 28, 16), Color.rgb(20, 18, 18), Color.rgb(22, 20, 24) };
+    private static final Color[] INNER_FILL = { Color.rgb(32, 60, 34), Color.rgb(55, 40, 48), Color.rgb(48, 46, 52) };
     private static final Color[][] FLOOR_FILL = {
-        { Color.rgb(16,24,18), Color.rgb(18,28,20) },
-        { Color.rgb(18,18,22), Color.rgb(22,22,28) },
-        { Color.rgb(22,22,24), Color.rgb(28,28,32) }
+            { Color.rgb(16, 24, 18), Color.rgb(18, 28, 20) },
+            { Color.rgb(18, 18, 22), Color.rgb(22, 22, 28) },
+            { Color.rgb(22, 22, 24), Color.rgb(28, 28, 32) }
     };
 
-    private Color themeColor(Color[] palette) { return palette[Math.min(levelTheme - 1, 2)]; }
+    private Color themeColor(Color[] palette) {
+        return palette[Math.min(levelTheme - 1, 2)];
+    }
 
     private void renderBorderWall(GraphicsContext gc, double x, double y) {
         gc.setFill(themeColor(BORDER_FILL));
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(30, 25, 32)); gc.setLineWidth(0.5);
+        gc.setStroke(Color.rgb(30, 25, 32));
+        gc.setLineWidth(0.5);
         gc.strokeLine(x, y + TILE_SIZE * 0.33, x + TILE_SIZE, y + TILE_SIZE * 0.33);
         gc.strokeLine(x, y + TILE_SIZE * 0.66, x + TILE_SIZE, y + TILE_SIZE * 0.66);
-        gc.setStroke(Color.rgb(10, 8, 12)); gc.setLineWidth(1);
+        gc.setStroke(Color.rgb(10, 8, 12));
+        gc.setLineWidth(1);
         gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
     }
 
     private void renderInnerWall(GraphicsContext gc, double x, double y) {
         gc.setFill(themeColor(INNER_FILL));
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(38, 28, 35)); gc.setLineWidth(0.7);
+        gc.setStroke(Color.rgb(38, 28, 35));
+        gc.setLineWidth(0.7);
         gc.strokeLine(x, y + TILE_SIZE * 0.5, x + TILE_SIZE, y + TILE_SIZE * 0.5);
         gc.strokeLine(x + TILE_SIZE * 0.5, y, x + TILE_SIZE * 0.5, y + TILE_SIZE * 0.5);
         gc.strokeLine(x + TILE_SIZE * 0.25, y + TILE_SIZE * 0.5, x + TILE_SIZE * 0.25, y + TILE_SIZE);
         gc.strokeLine(x + TILE_SIZE * 0.75, y + TILE_SIZE * 0.5, x + TILE_SIZE * 0.75, y + TILE_SIZE);
-        gc.setStroke(Color.rgb(70, 52, 62)); gc.setLineWidth(1);
+        gc.setStroke(Color.rgb(70, 52, 62));
+        gc.setLineWidth(1);
         gc.strokeLine(x + 1, y + 1, x + TILE_SIZE - 1, y + 1);
         gc.strokeLine(x + 1, y + 1, x + 1, y + TILE_SIZE - 1);
         gc.setStroke(Color.rgb(30, 20, 28));
@@ -156,7 +164,8 @@ public class Maze {
         boolean dark = levelTheme == 3;
         gc.setFill(dark ? Color.rgb(26, 26, 26) : Color.rgb(12, 30, 12));
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(dark ? Color.rgb(80, 20, 20) : Color.rgb(0, 80, 0)); gc.setLineWidth(1);
+        gc.setStroke(dark ? Color.rgb(80, 20, 20) : Color.rgb(0, 80, 0));
+        gc.setLineWidth(1);
         gc.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
         gc.setFill(dark ? Color.rgb(140, 40, 40, 0.6) : Color.rgb(0, 100, 0, 0.6));
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 14));
@@ -167,13 +176,16 @@ public class Maze {
         int ti = Math.min(levelTheme - 1, 2);
         gc.setFill(FLOOR_FILL[ti][(row + col) % 2 == 0 ? 0 : 1]);
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(30, 30, 36)); gc.setLineWidth(0.3);
+        gc.setStroke(Color.rgb(30, 30, 36));
+        gc.setLineWidth(0.3);
         gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
         if (levelTheme == 1) {
             gc.setFill(Color.rgb(26, 44, 28, 0.45));
-            gc.fillOval(x + 8, y + 10, 4, 3); gc.fillOval(x + 26, y + 24, 5, 4);
+            gc.fillOval(x + 8, y + 10, 4, 3);
+            gc.fillOval(x + 26, y + 24, 5, 4);
         } else {
-            gc.setStroke(Color.rgb(12, 12, 16, 0.45)); gc.setLineWidth(0.6);
+            gc.setStroke(Color.rgb(12, 12, 16, 0.45));
+            gc.setLineWidth(0.6);
             gc.strokeLine(x + 6, y + 10, x + 20, y + 16);
             gc.strokeLine(x + 24, y + 28, x + 34, y + 34);
         }
@@ -181,11 +193,12 @@ public class Maze {
 
     /** Returns true if the projected hitbox overlaps any wall tile. */
     public boolean isWallCollision(Rectangle2D nextHitbox) {
-        if (mapGrid == null) return false;
+        if (mapGrid == null)
+            return false;
 
-        int leftCol   = (int) (nextHitbox.getMinX() / TILE_SIZE);
-        int rightCol  = (int) (nextHitbox.getMaxX() / TILE_SIZE);
-        int topRow    = (int) ((nextHitbox.getMinY() - Y_OFFSET) / TILE_SIZE);
+        int leftCol = (int) (nextHitbox.getMinX() / TILE_SIZE);
+        int rightCol = (int) (nextHitbox.getMaxX() / TILE_SIZE);
+        int topRow = (int) ((nextHitbox.getMinY() - Y_OFFSET) / TILE_SIZE);
         int bottomRow = (int) ((nextHitbox.getMaxY() - Y_OFFSET) / TILE_SIZE);
 
         if (leftCol < 0 || rightCol >= mapGrid[0].length || topRow < 0 || bottomRow >= mapGrid.length) {
@@ -194,25 +207,30 @@ public class Maze {
 
         for (int r = topRow; r <= bottomRow; r++) {
             for (int c = leftCol; c <= rightCol; c++) {
-                if (mapGrid[r][c] == 1) return true;
+                if (mapGrid[r][c] == 1)
+                    return true;
             }
         }
         return false;
     }
 
-    /** Returns true if any part of the hitbox overlaps an escape-room tile (multi-point check). */
+    /**
+     * Returns true if any part of the hitbox overlaps an escape-room tile
+     * (multi-point check).
+     */
     public boolean isEscapeRoom(Rectangle2D hitbox) {
-        if (mapGrid == null) return false;
+        if (mapGrid == null)
+            return false;
 
         double cx = (hitbox.getMinX() + hitbox.getMaxX()) / 2;
         double cy = (hitbox.getMinY() + hitbox.getMaxY()) / 2;
 
         double[][] points = {
-            { cx, cy },
-            { hitbox.getMinX() + 2, cy },
-            { hitbox.getMaxX() - 2, cy },
-            { cx, hitbox.getMinY() + 2 },
-            { cx, hitbox.getMaxY() - 2 }
+                { cx, cy },
+                { hitbox.getMinX() + 2, cy },
+                { hitbox.getMaxX() - 2, cy },
+                { cx, hitbox.getMinY() + 2 },
+                { cx, hitbox.getMaxY() - 2 }
         };
 
         for (double[] p : points) {
@@ -226,9 +244,13 @@ public class Maze {
         return false;
     }
 
-    /** Returns the nearest safe-room doorway tile adjacent to this safe room, or null. */
+    /**
+     * Returns the nearest safe-room doorway tile adjacent to this safe room, or
+     * null.
+     */
     public int[] findSafeRoomDoor(Rectangle2D hitbox) {
-        if (mapGrid == null) return null;
+        if (mapGrid == null)
+            return null;
 
         double cx = (hitbox.getMinX() + hitbox.getMaxX()) / 2;
         double cy = (hitbox.getMinY() + hitbox.getMaxY()) / 2;
@@ -250,6 +272,7 @@ public class Maze {
     private static class Node {
         int r, c;
         Node parent;
+
         Node(int r, int c, Node parent) {
             this.r = r;
             this.c = c;
@@ -257,9 +280,13 @@ public class Maze {
         }
     }
 
-    /** Returns the immediate next step of the shortest BFS path from start to target, or null. */
+    /**
+     * Returns the immediate next step of the shortest BFS path from start to
+     * target, or null.
+     */
     public int[] getNextMove(int startR, int startC, int targetR, int targetC) {
-        if (startR == targetR && startC == targetC) return new int[]{startR, startC};
+        if (startR == targetR && startC == targetC)
+            return new int[] { startR, startC };
 
         int rows = mapGrid.length;
         int cols = mapGrid[0].length;
@@ -269,8 +296,8 @@ public class Maze {
         queue.add(new Node(startR, startC, null));
         visited[startR][startC] = true;
 
-        int[] dr = {-1, 1, 0, 0};
-        int[] dc = {0, 0, -1, 1};
+        int[] dr = { -1, 1, 0, 0 };
+        int[] dc = { 0, 0, -1, 1 };
         Node targetNode = null;
 
         while (!queue.isEmpty()) {
@@ -294,19 +321,23 @@ public class Maze {
             }
         }
 
-        if (targetNode == null) return null;
+        if (targetNode == null)
+            return null;
 
         Node step = targetNode;
         while (step.parent != null && step.parent.parent != null) {
             step = step.parent;
         }
 
-        return new int[]{step.r, step.c};
+        return new int[] { step.r, step.c };
     }
 
-    /** Returns true if a straight-line ray from (x1,y1) to (x2,y2) crosses no walls. */
+    /**
+     * Returns true if a straight-line ray from (x1,y1) to (x2,y2) crosses no walls.
+     */
     public boolean hasLineOfSight(double x1, double y1, double x2, double y2) {
-        if (mapGrid == null) return false;
+        if (mapGrid == null)
+            return false;
 
         double distX = Math.abs(x2 - x1);
         double distY = Math.abs(y2 - y1);
@@ -324,14 +355,17 @@ public class Maze {
             int row = (int) Math.floor((cy - Y_OFFSET) / TILE_SIZE);
 
             if (row >= 0 && row < mapGrid.length && col >= 0 && col < mapGrid[0].length) {
-                if (mapGrid[row][col] == 1 || mapGrid[row][col] == 10) return false;
+                if (mapGrid[row][col] == 1 || mapGrid[row][col] == 10)
+                    return false;
             }
         }
 
         return true;
     }
 
-    /** Returns a list of [row, col] arrays for every tile matching the given type. */
+    /**
+     * Returns a list of [row, col] arrays for every tile matching the given type.
+     */
     public List<int[]> getTilesOfType(int type) {
         List<int[]> positions = new ArrayList<>();
         if (mapGrid == null) {
@@ -341,14 +375,17 @@ public class Maze {
         for (int r = 0; r < mapGrid.length; r++) {
             for (int c = 0; c < mapGrid[r].length; c++) {
                 if (mapGrid[r][c] == type) {
-                    positions.add(new int[]{r, c});
+                    positions.add(new int[] { r, c });
                 }
             }
         }
         return positions;
     }
 
-    /** Returns the tile type at the given world pixel coordinates, or -1 if out of bounds. */
+    /**
+     * Returns the tile type at the given world pixel coordinates, or -1 if out of
+     * bounds.
+     */
     public int getTileAt(double worldX, double worldY) {
         int col = (int) (worldX / TILE_SIZE);
         int row = (int) ((worldY - Y_OFFSET) / TILE_SIZE);
@@ -360,7 +397,10 @@ public class Maze {
         return mapGrid[row][col];
     }
 
-    /** Returns [row, col] grid indices for the given world pixel coordinates, or null if out of bounds. */
+    /**
+     * Returns [row, col] grid indices for the given world pixel coordinates, or
+     * null if out of bounds.
+     */
     public int[] getTilePositionAt(double worldX, double worldY) {
         int col = (int) (worldX / TILE_SIZE);
         int row = (int) ((worldY - Y_OFFSET) / TILE_SIZE);
@@ -369,7 +409,7 @@ public class Maze {
             return null;
         }
 
-        return new int[]{row, col};
+        return new int[] { row, col };
     }
 
     /** Converts all escape room tiles (type 6) to floor tiles (type 0). */
@@ -387,7 +427,15 @@ public class Maze {
         }
     }
 
-    public int[][] getMapGrid()           { return mapGrid; }
-    public int getPlayerSpawnRow()        { return playerSpawnRow; }
-    public int getPlayerSpawnCol()        { return playerSpawnCol; }
+    public int[][] getMapGrid() {
+        return mapGrid;
+    }
+
+    public int getPlayerSpawnRow() {
+        return playerSpawnRow;
+    }
+
+    public int getPlayerSpawnCol() {
+        return playerSpawnCol;
+    }
 }

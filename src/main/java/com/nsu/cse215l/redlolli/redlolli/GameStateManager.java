@@ -18,7 +18,8 @@ import java.util.Set;
 
 /**
  * Manages all game state and logic extracted from HelloApplication.
- * Handles entity spawning, per-frame updates, collision checks, and debug overlay.
+ * Handles entity spawning, per-frame updates, collision checks, and debug
+ * overlay.
  */
 public class GameStateManager {
 
@@ -110,9 +111,17 @@ public class GameStateManager {
         for (int row = 0; row < grid.length; row++) {
             for (int col = 0; col < grid[row].length; col++) {
                 int tile = grid[row][col];
-                if (tile == 2) { emptyChestTiles.add(new int[]{row, col}); grid[row][col] = 0; }
-                else if (tile == 3) { lolliChestTiles.add(new int[]{row, col}); grid[row][col] = 0; }
-                else if (tile == 5) { lunaRow = row; lunaCol = col; grid[row][col] = 0; }
+                if (tile == 2) {
+                    emptyChestTiles.add(new int[] { row, col });
+                    grid[row][col] = 0;
+                } else if (tile == 3) {
+                    lolliChestTiles.add(new int[] { row, col });
+                    grid[row][col] = 0;
+                } else if (tile == 5) {
+                    lunaRow = row;
+                    lunaCol = col;
+                    grid[row][col] = 0;
+                }
             }
         }
 
@@ -122,11 +131,14 @@ public class GameStateManager {
                 type = Item.ContentType.CLONE_DECOY;
             }
             Item chest = new Item(pos[1] * Maze.TILE_SIZE + 12, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET + 12, type);
-            chests.add(chest); entities.add(chest);
+            chests.add(chest);
+            entities.add(chest);
         }
         for (int[] pos : lolliChestTiles) {
-            Item chest = new Item(pos[1] * Maze.TILE_SIZE + 12, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET + 12, Item.ContentType.LOLLI);
-            chests.add(chest); entities.add(chest);
+            Item chest = new Item(pos[1] * Maze.TILE_SIZE + 12, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET + 12,
+                    Item.ContentType.LOLLI);
+            chests.add(chest);
+            entities.add(chest);
         }
 
         if (lunaRow >= 0) {
@@ -146,14 +158,16 @@ public class GameStateManager {
                 int[] p = escapeRooms.get(i);
                 double[] pos = findGuardPosition(p[0], p[1]);
                 GuardEntity bat = new GuardEntity(pos[0], pos[1], GuardEntity.Type.BAT, p[0], p[1]);
-                guards.add(bat); entities.add(bat);
+                guards.add(bat);
+                entities.add(bat);
             }
         } else if (currentLevel == 2) {
             for (int i = 0, count = Math.min(3, escapeRooms.size()); i < count; i++) {
                 int[] p = escapeRooms.get(i);
                 double[] pos = findGuardPosition(p[0], p[1]);
                 GuardEntity cobra = new GuardEntity(pos[0], pos[1], GuardEntity.Type.COBRA, p[0], p[1]);
-                guards.add(cobra); entities.add(cobra);
+                guards.add(cobra);
+                entities.add(cobra);
             }
         } else if (currentLevel == 3) {
             serialKiller = new SerialKillerEntity(18 * Maze.TILE_SIZE + 6, 15 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
@@ -163,22 +177,24 @@ public class GameStateManager {
 
     private double[] findGuardPosition(int row, int col) {
         int[][] g = maze.getMapGrid();
-        int[][] dirs = {{0,-1},{0,1},{-1,0},{1,0}};
+        int[][] dirs = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } };
         for (int[] d : dirs) {
             int nr = row + d[0], nc = col + d[1];
-            if (nr < 0 || nr >= g.length || nc < 0 || nc >= g[0].length) continue;
+            if (nr < 0 || nr >= g.length || nc < 0 || nc >= g[0].length)
+                continue;
             if (g[nr][nc] != 1 && g[nr][nc] != 10) {
-                return new double[]{ nc * Maze.TILE_SIZE + 10, nr * Maze.TILE_SIZE + Maze.Y_OFFSET + 10 };
+                return new double[] { nc * Maze.TILE_SIZE + 10, nr * Maze.TILE_SIZE + Maze.Y_OFFSET + 10 };
             }
         }
-        return new double[]{ col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10 };
+        return new double[] { col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10 };
     }
 
     // ========================= FRAME UPDATE =========================
 
     /** Returns true if the player died this frame. */
     boolean update(Set<KeyCode> activeKeys) {
-        if (showingItemFound) return false;
+        if (showingItemFound)
+            return false;
 
         if (lolliRevealState != null && lolliRevealState.active) {
             lolliRevealState.timer--;
@@ -190,35 +206,53 @@ public class GameStateManager {
             return false;
         }
 
-        if (exitGraceFrames > 0) exitGraceFrames--;
-        if (guardHitCooldownFrames > 0) guardHitCooldownFrames--;
-        if (lunaScreamCooldownFrames > 0) lunaScreamCooldownFrames--;
+        if (exitGraceFrames > 0)
+            exitGraceFrames--;
+        if (guardHitCooldownFrames > 0)
+            guardHitCooldownFrames--;
+        if (lunaScreamCooldownFrames > 0)
+            lunaScreamCooldownFrames--;
 
-        if (serialKiller != null) serialKiller.update();
-        for (GuardEntity guard : guards) guard.update();
+        if (serialKiller != null)
+            serialKiller.update();
+        for (GuardEntity guard : guards)
+            guard.update();
         player.update();
 
         // Stand-still penalty
         boolean movingInput = activeKeys.contains(KeyCode.W) || activeKeys.contains(KeyCode.A)
                 || activeKeys.contains(KeyCode.S) || activeKeys.contains(KeyCode.D);
-        if (movingInput) { standStillFrames = 0; }
-        else { standStillFrames++; if (standStillFrames == 1800) teleportLunaNearPlayer(); }
+        if (movingInput) {
+            standStillFrames = 0;
+        } else {
+            standStillFrames++;
+            if (standStillFrames == 1800)
+                teleportLunaNearPlayer();
+        }
 
         // Movement
         boolean sprinting = activeKeys.contains(KeyCode.SHIFT) && player.canSprint();
         double beforeX = player.getX(), beforeY = player.getY();
-        if (activeKeys.contains(KeyCode.W)) player.move(0, -1, maze, sprinting);
-        if (activeKeys.contains(KeyCode.S)) player.move(0,  1, maze, sprinting);
-        if (activeKeys.contains(KeyCode.A)) player.move(-1, 0, maze, sprinting);
-        if (activeKeys.contains(KeyCode.D)) player.move(1,  0, maze, sprinting);
+        if (activeKeys.contains(KeyCode.W))
+            player.move(0, -1, maze, sprinting);
+        if (activeKeys.contains(KeyCode.S))
+            player.move(0, 1, maze, sprinting);
+        if (activeKeys.contains(KeyCode.A))
+            player.move(-1, 0, maze, sprinting);
+        if (activeKeys.contains(KeyCode.D))
+            player.move(1, 0, maze, sprinting);
 
         boolean moved = Math.abs(player.getX() - beforeX) > 0.01 || Math.abs(player.getY() - beforeY) > 0.01;
         if (moved) {
             if (footstepCooldownFrames <= 0) {
                 soundManager.playOneShot(SoundManager.FOOTSTEP, 0.25);
                 footstepCooldownFrames = sprinting ? 9 : 15;
-            } else { footstepCooldownFrames--; }
-        } else { footstepCooldownFrames = Math.max(0, footstepCooldownFrames - 1); }
+            } else {
+                footstepCooldownFrames--;
+            }
+        } else {
+            footstepCooldownFrames = Math.max(0, footstepCooldownFrames - 1);
+        }
 
         // Escape room state
         boolean inEscapeRoom = maze.isEscapeRoom(player.getHitbox());
@@ -237,9 +271,12 @@ public class GameStateManager {
 
         // Collision & threat checks
         checkChestCollisions();
-        if (checkGuardThreats(enteringEscapeRoom)) return true;
-        if (updateSerialKiller()) return true;
-        if (updatePaleLuna(inEscapeRoom, exitingEscapeRoom)) return true;
+        if (checkGuardThreats(enteringEscapeRoom))
+            return true;
+        if (updateSerialKiller())
+            return true;
+        if (updatePaleLuna(inEscapeRoom, exitingEscapeRoom))
+            return true;
 
         flashlightSystem.update(paleLuna == null ? 99.0
                 : distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY()));
@@ -247,7 +284,10 @@ public class GameStateManager {
         return false;
     }
 
-    /** Returns true if the lolli reveal just finished this frame (needs item-found screen). */
+    /**
+     * Returns true if the lolli reveal just finished this frame (needs item-found
+     * screen).
+     */
     boolean isLolliRevealJustFinished() {
         return lolliRevealState != null && !lolliRevealState.active;
     }
@@ -256,7 +296,8 @@ public class GameStateManager {
 
     private void checkChestCollisions() {
         for (Item chest : chests) {
-            if (chest.isCollected() || !player.getHitbox().intersects(chest.getHitbox())) continue;
+            if (chest.isCollected() || !player.getHitbox().intersects(chest.getHitbox()))
+                continue;
             chest.collect();
             soundManager.playOneShot(SoundManager.CHEST_OPEN, 0.65);
             if (chest.getContentType() == Item.ContentType.LOLLI) {
@@ -265,13 +306,15 @@ public class GameStateManager {
                 lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 120);
                 return;
             }
-            if (chest.getContentType() == Item.ContentType.CLONE_DECOY) hasCloneItem = true;
+            if (chest.getContentType() == Item.ContentType.CLONE_DECOY)
+                hasCloneItem = true;
         }
     }
 
     /** Returns true if player died. */
     private boolean checkGuardThreats(boolean enteringEscapeRoom) {
-        if (guardHitCooldownFrames > 0 || !enteringEscapeRoom) return false;
+        if (guardHitCooldownFrames > 0 || !enteringEscapeRoom)
+            return false;
         for (GuardEntity guard : guards) {
             if (!guard.isDistracted() && guard.isPlayerOnGuardedRoom(player.getHitbox())) {
                 activeDeathMessage = guard.getType() == GuardEntity.Type.BAT
@@ -285,12 +328,14 @@ public class GameStateManager {
 
     /** Returns true if player died. */
     private boolean updateSerialKiller() {
-        if (serialKiller == null) return false;
+        if (serialKiller == null)
+            return false;
         if (!serialKiller.isActive()) {
             if (distInTiles(player.getX(), player.getY(), serialKiller.getX(), serialKiller.getY()) < 8.0)
                 serialKiller.setActive(true);
         }
-        if (!serialKiller.isActive()) return false;
+        if (!serialKiller.isActive())
+            return false;
 
         double targetX = cloneDecoy != null ? cloneDecoy.getX() : player.getX();
         double targetY = cloneDecoy != null ? cloneDecoy.getY() : player.getY();
@@ -311,7 +356,8 @@ public class GameStateManager {
 
     /** Returns true if player died. */
     private boolean updatePaleLuna(boolean inEscapeRoom, boolean exitingEscapeRoom) {
-        if (paleLuna == null) return false;
+        if (paleLuna == null)
+            return false;
 
         Monster.State prevState = paleLuna.getState();
         paleLuna.update(player.getX(), player.getY(), inEscapeRoom, lolliRecentlyCollected, maze);
@@ -324,7 +370,8 @@ public class GameStateManager {
             warningFlashTimer = 30;
             soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
         }
-        if (warningFlashTimer > 0) warningFlashTimer--;
+        if (warningFlashTimer > 0)
+            warningFlashTimer--;
         player.setBeingChased(paleLuna.isHunting());
 
         double lunaDistTiles = distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY());
@@ -354,19 +401,32 @@ public class GameStateManager {
         GuardEntity nearest = null;
         double best = Double.MAX_VALUE;
         for (GuardEntity guard : guards) {
-            if (guard.isDistracted()) continue;
+            if (guard.isDistracted())
+                continue;
             double d = distInTiles(player.getX(), player.getY(), guard.getX(), guard.getY());
             if (d < best && guard.isWithinDistractionRange(player.getX(), player.getY())) {
-                best = d; nearest = guard;
+                best = d;
+                nearest = guard;
             }
         }
-        if (nearest == null) return;
-        if (nearest.getType() == GuardEntity.Type.BAT) { if (fruitCount > 0) { fruitCount--; nearest.distract(); } }
-        else { if (eggCount > 0) { eggCount--; nearest.distract(); } }
+        if (nearest == null)
+            return;
+        if (nearest.getType() == GuardEntity.Type.BAT) {
+            if (fruitCount > 0) {
+                fruitCount--;
+                nearest.distract();
+            }
+        } else {
+            if (eggCount > 0) {
+                eggCount--;
+                nearest.distract();
+            }
+        }
     }
 
     void tryPlaceClone() {
-        if (!hasCloneItem || currentLevel != 3 || cloneDecoy != null) return;
+        if (!hasCloneItem || currentLevel != 3 || cloneDecoy != null)
+            return;
         cloneDecoy = new CardboardClone(player.getX() + 5, player.getY() + 5);
         entities.add(cloneDecoy);
         hasCloneItem = false;
@@ -381,7 +441,8 @@ public class GameStateManager {
 
         gc.setFill(Color.rgb(0, 0, 0, 0.62));
         gc.fillRect(8, 58, 360, 182);
-        gc.setStroke(Color.rgb(180, 40, 40, 0.8)); gc.setLineWidth(1.1);
+        gc.setStroke(Color.rgb(180, 40, 40, 0.8));
+        gc.setLineWidth(1.1);
         gc.strokeRect(8, 58, 360, 182);
 
         gc.setFill(Color.rgb(220, 220, 220));
@@ -409,13 +470,17 @@ public class GameStateManager {
                 "GuardCD=" + guardHitCooldownFrames
         };
         double y = 76;
-        for (String line : lines) { gc.fillText(line, 16, y); y += 18; }
+        for (String line : lines) {
+            gc.fillText(line, 16, y);
+            y += 18;
+        }
     }
 
     // ========================= UTILITIES =========================
 
     private void teleportLunaNearPlayer() {
-        if (paleLuna == null) return;
+        if (paleLuna == null)
+            return;
         paleLuna.setPosition(player.getX() + 36, player.getY());
     }
 

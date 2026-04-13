@@ -2,7 +2,10 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import javafx.scene.canvas.GraphicsContext;
 
-/** Abstract base class for all interactive game objects, enforcing a standard update/render cycle. */
+/**
+ * Abstract base class for all interactive game objects, enforcing a standard
+ * update/render cycle.
+ */
 public abstract class Entity {
 
     protected double x;
@@ -19,9 +22,13 @@ public abstract class Entity {
 
     public abstract void render(GraphicsContext gc);
 
-    public double getX() { return x; }
+    public double getX() {
+        return x;
+    }
 
-    public double getY() { return y; }
+    public double getY() {
+        return y;
+    }
 
     public void setPosition(double x, double y) {
         this.x = x;

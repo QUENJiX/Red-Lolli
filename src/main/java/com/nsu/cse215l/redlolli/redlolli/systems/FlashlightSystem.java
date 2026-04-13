@@ -1,7 +1,8 @@
 package com.nsu.cse215l.redlolli.redlolli.systems;
 
 /**
- * Manages the player's primary vision mechanic including battery drain and horror effects.
+ * Manages the player's primary vision mechanic including battery drain and
+ * horror effects.
  */
 public class FlashlightSystem {
 

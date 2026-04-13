@@ -28,10 +28,10 @@ public class GuardEntity extends Entity implements Collidable {
     // Distraction state
     private boolean distracted = false;
     private int distractionTimer = 0;
-    
+
     // Level 1: Bat distraction duration
     private static final int BAT_DISTRACTION_DURATION = 300; // 5 seconds
-    
+
     // Level 2: Cobra distraction duration (TWIST: much shorter distraction window)
     private static final int COBRA_DISTRACTION_DURATION = 150; // 2.5 seconds
 
@@ -66,11 +66,11 @@ public class GuardEntity extends Entity implements Collidable {
         double cy = (playerHitbox.getMinY() + playerHitbox.getMaxY()) / 2;
 
         double[][] points = {
-            { cx, cy },
-            { playerHitbox.getMinX() + 2, cy },
-            { playerHitbox.getMaxX() - 2, cy },
-            { cx, playerHitbox.getMinY() + 2 },
-            { cx, playerHitbox.getMaxY() - 2 }
+                { cx, cy },
+                { playerHitbox.getMinX() + 2, cy },
+                { playerHitbox.getMaxX() - 2, cy },
+                { cx, playerHitbox.getMinY() + 2 },
+                { cx, playerHitbox.getMaxY() - 2 }
         };
 
         for (double[] p : points) {
@@ -139,4 +139,3 @@ public class GuardEntity extends Entity implements Collidable {
         return type;
     }
 }
-

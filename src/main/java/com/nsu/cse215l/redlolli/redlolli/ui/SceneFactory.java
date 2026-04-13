@@ -14,7 +14,8 @@ import javafx.scene.text.TextAlignment;
 import java.net.URL;
 
 /**
- * Factory for building the game's static UI scenes (death, victory, item-found, level transition).
+ * Factory for building the game's static UI scenes (death, victory, item-found,
+ * level transition).
  * Provides shared button styling and resource loading utilities.
  */
 public class SceneFactory {
@@ -44,10 +45,12 @@ public class SceneFactory {
         }
 
         if (activeDeathMessage != null && !activeDeathMessage.isBlank()) {
-            layout.getChildren().add(styledText(activeDeathMessage, "Serif", FontWeight.BOLD, 18, Color.rgb(190, 130, 130)));
+            layout.getChildren()
+                    .add(styledText(activeDeathMessage, "Serif", FontWeight.BOLD, 18, Color.rgb(190, 130, 130)));
         }
         if (deathCount >= 5) {
-            layout.getChildren().add(styledText("You keep coming back. She likes that.", "Serif", FontWeight.BOLD, 18, Color.rgb(200, 70, 70)));
+            layout.getChildren().add(styledText("You keep coming back. She likes that.", "Serif", FontWeight.BOLD, 18,
+                    Color.rgb(200, 70, 70)));
         }
 
         Button restartBtn = createStyledButton("RESTART FROM LEVEL 1");
@@ -92,7 +95,8 @@ public class SceneFactory {
             String[] itemFoundButtonText, Runnable onContinue) {
         VBox layout = newBlackVBox(25);
 
-        layout.getChildren().add(styledText("pale luna smiles wide...", "Serif", FontWeight.BOLD, 28, Color.rgb(120, 0, 0)));
+        layout.getChildren()
+                .add(styledText("pale luna smiles wide...", "Serif", FontWeight.BOLD, 28, Color.rgb(120, 0, 0)));
 
         Text mainText = new Text(itemFoundMainText[level - 1]);
         mainText.setTextAlignment(TextAlignment.CENTER);
@@ -131,8 +135,10 @@ public class SceneFactory {
                 "BASEMENT SKETCHES FOUND IN COLD CASE",
                 "ROPE RECOVERED. HUNTER UNSEEN."
         };
-        layout.getChildren().add(styledText("NEWSPAPER CLIPPING", "Serif", FontWeight.BOLD, 36, Color.rgb(170, 170, 170)));
-        layout.getChildren().add(styledText(headlines[Math.min(currentLevel - 1, headlines.length - 1)], "Serif", FontWeight.BOLD, 24, Color.rgb(170, 60, 60)));
+        layout.getChildren()
+                .add(styledText("NEWSPAPER CLIPPING", "Serif", FontWeight.BOLD, 36, Color.rgb(170, 170, 170)));
+        layout.getChildren().add(styledText(headlines[Math.min(currentLevel - 1, headlines.length - 1)], "Serif",
+                FontWeight.BOLD, 24, Color.rgb(170, 60, 60)));
         Button next = createStyledButton("CONTINUE");
         next.setOnAction(e -> onContinue.run());
         layout.getChildren().add(next);
@@ -153,12 +159,16 @@ public class SceneFactory {
         return btn;
     }
 
-    /** Loads an image from the classpath resource path, returning null on failure. */
+    /**
+     * Loads an image from the classpath resource path, returning null on failure.
+     */
     public static Image tryLoadImage(String path) {
         try {
             URL url = SceneFactory.class.getResource(path);
-            if (url != null) return new Image(url.toExternalForm());
-        } catch (Exception ignored) {}
+            if (url != null)
+                return new Image(url.toExternalForm());
+        } catch (Exception ignored) {
+        }
         return null;
     }
 

@@ -31,7 +31,9 @@ public class Item extends Entity implements Collidable {
     public void update() {
     }
 
-    public void collect() { this.isCollected = true; }
+    public void collect() {
+        this.isCollected = true;
+    }
 
     @Override
     public void render(GraphicsContext gc) {
@@ -100,7 +102,15 @@ public class Item extends Entity implements Collidable {
         return new Rectangle2D(x, y, size, size);
     }
 
-    public boolean isCollected() { return isCollected; }
-    public boolean hasLolli()    { return contentType == ContentType.LOLLI; }
-    public ContentType getContentType() { return contentType; }
+    public boolean isCollected() {
+        return isCollected;
+    }
+
+    public boolean hasLolli() {
+        return contentType == ContentType.LOLLI;
+    }
+
+    public ContentType getContentType() {
+        return contentType;
+    }
 }

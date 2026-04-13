@@ -83,13 +83,20 @@ public class SerialKillerEntity extends Entity implements Collidable {
         return new Rectangle2D(x, y, size, size);
     }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public void startDecoyAttack() {
         this.attackingDecoy = true;
         this.decoyAttackFrames = 600;
     }
 
-    public boolean isAttackingDecoy() { return attackingDecoy; }
+    public boolean isAttackingDecoy() {
+        return attackingDecoy;
+    }
 }

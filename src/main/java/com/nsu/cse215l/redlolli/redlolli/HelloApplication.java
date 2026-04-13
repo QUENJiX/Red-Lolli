@@ -27,8 +27,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Main game application coordinator for the horror transformation of Escape Pale Luna.
- * Delegates game logic to GameStateManager and UI screen building to SceneFactory.
+ * Main game application coordinator for the horror transformation of Escape
+ * Pale Luna.
+ * Delegates game logic to GameStateManager and UI screen building to
+ * SceneFactory.
  */
 public class HelloApplication extends Application {
 
@@ -63,7 +65,9 @@ public class HelloApplication extends Application {
         mainWindow.show();
     }
 
-    public static void main(String[] args) { launch(); }
+    public static void main(String[] args) {
+        launch();
+    }
 
     // ========================= MENUS & CUTSCENES =========================
 
@@ -106,7 +110,8 @@ public class HelloApplication extends Application {
             String imgPath = "/assets/images/intro_" + (i + 1) + ".jpeg";
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(i * 1.7 + 0.5), e -> {
                 Image img = SceneFactory.tryLoadImage(imgPath);
-                if (img != null) cutsceneImage.setImage(img);
+                if (img != null)
+                    cutsceneImage.setImage(img);
             }));
         }
         timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(11.5), e -> {
@@ -144,21 +149,32 @@ public class HelloApplication extends Application {
         gameScene.setOnKeyPressed(e -> {
             activeKeys.add(e.getCode());
             pressedThisFrame.add(e.getCode());
-            if (e.getCode() == KeyCode.F) gsm.flashlightSystem.toggle();
-            if (e.getCode() == KeyCode.E) gsm.tryUseDistraction();
-            if (e.getCode() == KeyCode.C) gsm.tryPlaceClone();
-            if (e.getCode() == KeyCode.F3) showDebugOverlay = !showDebugOverlay;
+            if (e.getCode() == KeyCode.F)
+                gsm.flashlightSystem.toggle();
+            if (e.getCode() == KeyCode.E)
+                gsm.tryUseDistraction();
+            if (e.getCode() == KeyCode.C)
+                gsm.tryPlaceClone();
+            if (e.getCode() == KeyCode.F3)
+                showDebugOverlay = !showDebugOverlay;
         });
         gameScene.setOnKeyReleased(e -> activeKeys.remove(e.getCode()));
 
-        if (gameLoop != null) gameLoop.stop();
+        if (gameLoop != null)
+            gameLoop.stop();
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 if (isPlaying) {
                     boolean died = gsm.update(activeKeys);
-                    if (died) { triggerDeath(); return; }
-                    if (gsm.isLolliRevealJustFinished()) { showItemFoundScreen(); return; }
+                    if (died) {
+                        triggerDeath();
+                        return;
+                    }
+                    if (gsm.isLolliRevealJustFinished()) {
+                        showItemFoundScreen();
+                        return;
+                    }
                     render(gc);
                     pressedThisFrame.clear();
                 }
@@ -173,7 +189,8 @@ public class HelloApplication extends Application {
                 gsm.warningFlashTimer, gsm.lolliRevealState, gsm.currentLevel, gsm.chests, ITEM_NAMES,
                 gsm.flashlightSystem, false, gsm.fruitCount, gsm.eggCount, gsm.hasCloneItem,
                 gsm.pulsePhaseHUD);
-        if (showDebugOverlay) gsm.drawDebugOverlay(gc, activeKeys);
+        if (showDebugOverlay)
+            gsm.drawDebugOverlay(gc, activeKeys);
     }
 
     // ========================= SCREEN TRANSITIONS =========================
@@ -189,16 +206,21 @@ public class HelloApplication extends Application {
 
     private void showItemFoundScreen() {
         isPlaying = false;
-        if (gameLoop != null) gameLoop.stop();
+        if (gameLoop != null)
+            gameLoop.stop();
         gsm.showingItemFound = true;
         mainWindow.setScene(SceneFactory.createItemFoundScene(
                 gsm.currentLevel, ITEM_FOUND_MAIN_TEXT, ITEM_FOUND_BUTTON_TEXT,
-                () -> { gsm.showingItemFound = false; advanceLevel(); }));
+                () -> {
+                    gsm.showingItemFound = false;
+                    advanceLevel();
+                }));
     }
 
     private void triggerDeath() {
         isPlaying = false;
-        if (gameLoop != null) gameLoop.stop();
+        if (gameLoop != null)
+            gameLoop.stop();
         deathCount++;
         gsm.soundManager.playOneShot(SoundManager.GAME_OVER, 0.85);
         mainWindow.setScene(SceneFactory.createDeathScene(
@@ -209,7 +231,8 @@ public class HelloApplication extends Application {
 
     private void triggerVictoryCutscene() {
         isPlaying = false;
-        if (gameLoop != null) gameLoop.stop();
+        if (gameLoop != null)
+            gameLoop.stop();
 
         javafx.scene.layout.StackPane layout = new javafx.scene.layout.StackPane();
         layout.setStyle("-fx-background-color: black;");
@@ -228,7 +251,8 @@ public class HelloApplication extends Application {
             String imgPath = "/assets/images/victory_" + (i + 1) + ".png";
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(1.4 * i + 0.7), e -> {
                 Image img = SceneFactory.tryLoadImage(imgPath);
-                if (img != null) cutsceneImage.setImage(img);
+                if (img != null)
+                    cutsceneImage.setImage(img);
             }));
         }
         timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(8.5), e -> {
