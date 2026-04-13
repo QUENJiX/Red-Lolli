@@ -12,14 +12,12 @@ import java.net.URL;
 public class SoundManager {
 
     public static final String HEARTBEAT_FAST = "/assets/audio/heartbeat_fast.wav";
-    public static final String WHISPER_1 = "/assets/audio/whisper_1.wav";
     public static final String STINGER_1 = "/assets/audio/stinger_1.wav";
     public static final String GAME_START = "/assets/audio/game_start.wav";
     public static final String GAME_OVER = "/assets/audio/game_over.wav";
     public static final String CHEST_OPEN = "/assets/audio/chest_open.wav";
     public static final String FOOTSTEP = "/assets/audio/footstep.wav";
     public static final String LUNA_SCREAM_NEARBY = "/assets/audio/luna_scream_nearby.wav";
-    public static final String VHS_BOOT = "/assets/audio/vhs_boot.wav";
 
     private MediaPlayer currentMusic;
 

@@ -133,99 +133,59 @@ public class HUDRenderer {
         double barX = 452, barW = 126, barY = MID_Y - 18, barH = 12;
 
         switch (paleLuna.getState()) {
-            case DORMANT -> pulsePhase = drawDormantStatus(gc, paleLuna, barX, barY, barW, barH, pulsePhase);
-            case STALKING -> pulsePhase = drawStalkingStatus(gc, paleLuna, barX, barY, barW, barH, pulsePhase);
-            case HUNTING -> pulsePhase = drawHuntingStatus(gc, paleLuna, barX, barY, barW, barH, pulsePhase);
-            case WAITING_AT_DOOR -> drawWaitingStatus(gc, paleLuna, barX);
+            case DORMANT -> {
+                int sLeft = paleLuna.getDormantTimer() / 60;
+                Color tc;
+                if (sLeft > 10) tc = Color.LIMEGREEN;
+                else if (sLeft > 6) tc = Color.YELLOW;
+                else if (sLeft > 3) tc = Color.ORANGE;
+                else { double f = Math.sin(pulsePhase)*0.5+0.5; tc = Color.rgb(255,(int)(50*f),(int)(50*f)); }
+                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, tc, Color.rgb(40,40,45), Color.rgb(80,80,90),
+                        paleLuna.getDormantTimer(), 900, tc, "She sleeps " + sLeft + "s", pulsePhase, 0.2);
+            }
+            case STALKING -> {
+                double flash = Math.sin(pulsePhase * 1.7)*0.5+0.5;
+                Color bg = Color.rgb(120,20,20, 0.25+flash*0.25);
+                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, bg, bg, Color.rgb(140,40,40),
+                        paleLuna.getStalkTimer(), 480, Color.rgb(210,80,80), "She watches",
+                        pulsePhase, 0.24);
+                gc.setFill(Color.rgb(230, 120, 120)); // override label color
+                gc.fillText("She watches", barX, MID_Y + 6);
+            }
+            case HUNTING -> {
+                double cf = Math.sin(pulsePhase * 2)*0.5+0.5;
+                Color bg = Color.rgb(255,(int)(30*cf),(int)(30*cf));
+                int sLeft = paleLuna.getHuntTimer() / 60;
+                pulsePhase = drawTimerBar(gc, barX, barY, barW, barH, bg, bg, Color.rgb(120,0,0),
+                        paleLuna.getHuntTimer(), 360, Color.rgb(200,0,0), "RUN " + sLeft + "s",
+                        pulsePhase, 0.3);
+                gc.setFill(Color.RED);
+                gc.fillText("RUN " + sLeft + "s", barX, MID_Y + 6);
+            }
+            case WAITING_AT_DOOR -> {
+                gc.setFill(Color.ORANGE);
+                gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+                gc.fillText("At the door " + paleLuna.getWaitTimer() / 60 + "s", barX, MID_Y);
+            }
         }
         return pulsePhase;
     }
 
-    /** Dormant countdown timer: green → yellow → orange → throbbing red. */
-    private static double drawDormantStatus(GraphicsContext gc, Monster paleLuna,
-            double barX, double barY, double barW, double barH, double pulsePhase) {
-        int secondsLeft = paleLuna.getDormantTimer() / 60;
-        Color timerColor;
-
-        if (secondsLeft > 10) {
-            timerColor = Color.LIMEGREEN;
-        } else if (secondsLeft > 6) {
-            timerColor = Color.YELLOW;
-        } else if (secondsLeft > 3) {
-            timerColor = Color.ORANGE;
-        } else {
-            double flash = Math.sin(pulsePhase) * 0.5 + 0.5;
-            timerColor = Color.rgb(255, (int) (50 * flash), (int) (50 * flash));
-        }
-        pulsePhase += 0.2;
-
-        gc.setFill(Color.rgb(40, 40, 45));
+    /** Shared timer-bar drawing utility for dormant/stalking/hunting states. */
+    private static double drawTimerBar(GraphicsContext gc, double barX, double barY, double barW, double barH,
+            Color bgFill, Color bgRect, Color strokeCol, int timer, int maxTimer,
+            Color fillCol, String label, double pulsePhase, double pulseInc) {
+        gc.setFill(bgFill);
         gc.fillRect(barX, barY, barW, barH);
-        gc.setStroke(Color.rgb(80, 80, 90));
-        gc.setLineWidth(1);
+        gc.setStroke(strokeCol); gc.setLineWidth(1);
         gc.strokeRect(barX, barY, barW, barH);
-
-        double fillRatio = (double) paleLuna.getDormantTimer() / 900.0;
-        gc.setFill(timerColor);
-        gc.fillRect(barX + 1, barY + 1, (barW - 2) * fillRatio, barH - 2);
-
-        gc.setFill(timerColor);
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 13));
-        gc.fillText("She sleeps " + secondsLeft + "s", barX, MID_Y + 6);
-        return pulsePhase;
-    }
-
-    /** Stalking warning: medium-pulse red backdrop. */
-    private static double drawStalkingStatus(GraphicsContext gc, Monster paleLuna,
-            double barX, double barY, double barW, double barH, double pulsePhase) {
-        double flash = Math.sin(pulsePhase * 1.7) * 0.5 + 0.5;
-        pulsePhase += 0.24;
-
-        gc.setFill(Color.rgb(120, 20, 20, 0.25 + flash * 0.25));
-        gc.fillRect(barX, barY, barW, barH);
-        gc.setStroke(Color.rgb(140, 40, 40));
-        gc.strokeRect(barX, barY, barW, barH);
-
-        double fill = (double) paleLuna.getStalkTimer() / 480.0;
-        gc.setFill(Color.rgb(210, 80, 80));
+        double fill = (double) timer / maxTimer;
+        gc.setFill(fillCol);
         gc.fillRect(barX + 1, barY + 1, (barW - 2) * fill, barH - 2);
-
-        gc.setFill(Color.rgb(230, 120, 120));
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        gc.fillText("She watches", barX, MID_Y + 6);
-
-        return pulsePhase;
-    }
-
-    /** Hunt timer: aggressive strobing red with "RUN" label. */
-    private static double drawHuntingStatus(GraphicsContext gc, Monster paleLuna,
-            double barX, double barY, double barW, double barH, double pulsePhase) {
-        double chaseFlash = Math.sin(pulsePhase * 2) * 0.5 + 0.5;
-        pulsePhase += 0.3;
-
-        gc.setFill(Color.rgb(255, (int) (30 * chaseFlash), (int) (30 * chaseFlash)));
-        gc.fillRect(barX, barY, barW, barH);
-        gc.setStroke(Color.rgb(120, 0, 0));
-        gc.setLineWidth(1);
-        gc.strokeRect(barX, barY, barW, barH);
-
-        double chaseFill = (double) paleLuna.getHuntTimer() / 360.0;
-        gc.setFill(Color.rgb(200, 0, 0));
-        gc.fillRect(barX + 1, barY + 1, (barW - 2) * chaseFill, barH - 2);
-
-        int chaseSecsLeft = paleLuna.getHuntTimer() / 60;
-        gc.setFill(Color.RED);
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        gc.fillText("RUN " + chaseSecsLeft + "s", barX, MID_Y + 6);
-        return pulsePhase;
-    }
-
-    /** Waiting-at-door static indicator. */
-    private static void drawWaitingStatus(GraphicsContext gc, Monster paleLuna, double barX) {
-        gc.setFill(Color.ORANGE);
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        int waitSecs = paleLuna.getWaitTimer() / 60;
-        gc.fillText("At the door " + waitSecs + "s", barX, MID_Y);
+        gc.setFill(fillCol);
+        gc.fillText(label, barX, MID_Y + 6);
+        return pulsePhase + pulseInc;
     }
 
     /** Green [SAFE] text when player is in the escape room. */

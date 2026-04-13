@@ -115,89 +115,65 @@ public class Maze {
         }
     }
 
-    private void renderBorderWall(GraphicsContext gc, double x, double y) {
-        if (levelTheme == 1) {
-            gc.setFill(Color.rgb(16, 28, 16));
-        } else if (levelTheme == 2) {
-            gc.setFill(Color.rgb(20, 18, 18));
-        } else {
-            gc.setFill(Color.rgb(22, 20, 24));
-        }
-        gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+    // Theme color palettes indexed by (levelTheme - 1)
+    private static final Color[] BORDER_FILL = { Color.rgb(16,28,16), Color.rgb(20,18,18), Color.rgb(22,20,24) };
+    private static final Color[] INNER_FILL  = { Color.rgb(32,60,34), Color.rgb(55,40,48), Color.rgb(48,46,52) };
+    private static final Color[][] FLOOR_FILL = {
+        { Color.rgb(16,24,18), Color.rgb(18,28,20) },
+        { Color.rgb(18,18,22), Color.rgb(22,22,28) },
+        { Color.rgb(22,22,24), Color.rgb(28,28,32) }
+    };
 
-        gc.setStroke(Color.rgb(30, 25, 32));
-        gc.setLineWidth(0.5);
+    private Color themeColor(Color[] palette) { return palette[Math.min(levelTheme - 1, 2)]; }
+
+    private void renderBorderWall(GraphicsContext gc, double x, double y) {
+        gc.setFill(themeColor(BORDER_FILL));
+        gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        gc.setStroke(Color.rgb(30, 25, 32)); gc.setLineWidth(0.5);
         gc.strokeLine(x, y + TILE_SIZE * 0.33, x + TILE_SIZE, y + TILE_SIZE * 0.33);
         gc.strokeLine(x, y + TILE_SIZE * 0.66, x + TILE_SIZE, y + TILE_SIZE * 0.66);
-
-        gc.setStroke(Color.rgb(10, 8, 12));
-        gc.setLineWidth(1);
+        gc.setStroke(Color.rgb(10, 8, 12)); gc.setLineWidth(1);
         gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
     }
 
     private void renderInnerWall(GraphicsContext gc, double x, double y) {
-        if (levelTheme == 1) {
-            gc.setFill(Color.rgb(32, 60, 34));
-        } else if (levelTheme == 2) {
-            gc.setFill(Color.rgb(55, 40, 48));
-        } else {
-            gc.setFill(Color.rgb(48, 46, 52));
-        }
+        gc.setFill(themeColor(INNER_FILL));
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-
-        gc.setStroke(Color.rgb(38, 28, 35));
-        gc.setLineWidth(0.7);
+        gc.setStroke(Color.rgb(38, 28, 35)); gc.setLineWidth(0.7);
         gc.strokeLine(x, y + TILE_SIZE * 0.5, x + TILE_SIZE, y + TILE_SIZE * 0.5);
         gc.strokeLine(x + TILE_SIZE * 0.5, y, x + TILE_SIZE * 0.5, y + TILE_SIZE * 0.5);
         gc.strokeLine(x + TILE_SIZE * 0.25, y + TILE_SIZE * 0.5, x + TILE_SIZE * 0.25, y + TILE_SIZE);
         gc.strokeLine(x + TILE_SIZE * 0.75, y + TILE_SIZE * 0.5, x + TILE_SIZE * 0.75, y + TILE_SIZE);
-
-        gc.setStroke(Color.rgb(70, 52, 62));
-        gc.setLineWidth(1);
+        gc.setStroke(Color.rgb(70, 52, 62)); gc.setLineWidth(1);
         gc.strokeLine(x + 1, y + 1, x + TILE_SIZE - 1, y + 1);
         gc.strokeLine(x + 1, y + 1, x + 1, y + TILE_SIZE - 1);
-
         gc.setStroke(Color.rgb(30, 20, 28));
         gc.strokeLine(x + TILE_SIZE - 1, y + 1, x + TILE_SIZE - 1, y + TILE_SIZE - 1);
         gc.strokeLine(x + 1, y + TILE_SIZE - 1, x + TILE_SIZE - 1, y + TILE_SIZE - 1);
     }
 
     private void renderEscapeRoom(GraphicsContext gc, double x, double y) {
-        gc.setFill(levelTheme == 3 ? Color.rgb(26, 26, 26) : Color.rgb(12, 30, 12));
+        boolean dark = levelTheme == 3;
+        gc.setFill(dark ? Color.rgb(26, 26, 26) : Color.rgb(12, 30, 12));
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-
-        gc.setStroke(levelTheme == 3 ? Color.rgb(80, 20, 20) : Color.rgb(0, 80, 0));
-        gc.setLineWidth(1);
+        gc.setStroke(dark ? Color.rgb(80, 20, 20) : Color.rgb(0, 80, 0)); gc.setLineWidth(1);
         gc.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-
-        gc.setFill(levelTheme == 3 ? Color.rgb(140, 40, 40, 0.6) : Color.rgb(0, 100, 0, 0.6));
+        gc.setFill(dark ? Color.rgb(140, 40, 40, 0.6) : Color.rgb(0, 100, 0, 0.6));
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         gc.fillText("S", x + 14, y + 27);
     }
 
     private void renderFloor(GraphicsContext gc, double x, double y, int row, int col) {
-        boolean checker = (row + col) % 2 == 0;
-
-        if (levelTheme == 1) {
-            gc.setFill(checker ? Color.rgb(16, 24, 18) : Color.rgb(18, 28, 20));
-        } else if (levelTheme == 2) {
-            gc.setFill(checker ? Color.rgb(18, 18, 22) : Color.rgb(22, 22, 28));
-        } else {
-            gc.setFill(checker ? Color.rgb(22, 22, 24) : Color.rgb(28, 28, 32));
-        }
-
+        int ti = Math.min(levelTheme - 1, 2);
+        gc.setFill(FLOOR_FILL[ti][(row + col) % 2 == 0 ? 0 : 1]);
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(30, 30, 36));
-        gc.setLineWidth(0.3);
+        gc.setStroke(Color.rgb(30, 30, 36)); gc.setLineWidth(0.3);
         gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
-
         if (levelTheme == 1) {
             gc.setFill(Color.rgb(26, 44, 28, 0.45));
-            gc.fillOval(x + 8, y + 10, 4, 3);
-            gc.fillOval(x + 26, y + 24, 5, 4);
+            gc.fillOval(x + 8, y + 10, 4, 3); gc.fillOval(x + 26, y + 24, 5, 4);
         } else {
-            gc.setStroke(Color.rgb(12, 12, 16, 0.45));
-            gc.setLineWidth(0.6);
+            gc.setStroke(Color.rgb(12, 12, 16, 0.45)); gc.setLineWidth(0.6);
             gc.strokeLine(x + 6, y + 10, x + 20, y + 16);
             gc.strokeLine(x + 24, y + 28, x + 34, y + 34);
         }

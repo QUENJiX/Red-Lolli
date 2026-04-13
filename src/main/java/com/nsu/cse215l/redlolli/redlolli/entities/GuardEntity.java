@@ -130,10 +130,6 @@ public class GuardEntity extends Entity implements Collidable {
         }
     }
 
-    public void renderKnockoutRadius(GraphicsContext gc) {
-        // Obsolete function, safely ignored
-    }
-
     @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);

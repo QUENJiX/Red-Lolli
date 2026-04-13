@@ -151,13 +151,6 @@ public class GameRenderer {
 
         gc.setFill(Color.rgb(0, 0, 0, 0.3 * progress));
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        gc.setFill(Color.rgb(255, 215, 0, 0.12 * pulse));
-        gc.fillOval(cx - glowRadius * 0.7, cy - glowRadius * 0.7, glowRadius * 1.4, glowRadius * 1.4);
-        drawRedLolli(gc, cx, cy, lolliSize);
-        gc.setFill(Color.rgb(255, 50, 50, textAlpha));
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        gc.fillText("RED LOLLI FOUND!", cx - 70, cy - glowRadius - 10);
     }
 
     private static void drawRedLolli(GraphicsContext gc, double cx, double cy, double size) {

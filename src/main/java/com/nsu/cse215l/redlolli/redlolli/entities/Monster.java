@@ -62,7 +62,7 @@ public class Monster extends Entity implements Collidable {
                     break;
                 }
 
-                stalkPlayer(playerX, playerY, maze);
+                pursuePlayer(playerX, playerY, maze, STALK_SPEED);
 
                 stalkTimer--;
                 if (stalkTimer <= 0) {
@@ -119,10 +119,6 @@ public class Monster extends Entity implements Collidable {
         }
         this.x = playerX + 40;
         this.y = playerY;
-    }
-
-    private void stalkPlayer(double playerX, double playerY, Maze maze) {
-        pursuePlayer(playerX, playerY, maze, STALK_SPEED);
     }
 
     private void pursuePlayer(double playerX, double playerY, Maze maze, double speed) {
@@ -235,70 +231,49 @@ public class Monster extends Entity implements Collidable {
         double headX = x + 2, headY = y + 1;
         double headW = size - 4, headH = size - 2;
         double eyeY = headY + headH * 0.35;
-        double leftEyeX = headX + headW * 0.22;
-        double rightEyeX = headX + headW * 0.58;
+        double lx = headX + headW * 0.22, rx = headX + headW * 0.58;
 
-        switch (state) {
-            case DORMANT -> drawIdleEyes(gc, leftEyeX, rightEyeX, eyeY);
-            case HUNTING -> drawChasingEyes(gc, leftEyeX, rightEyeX, eyeY);
-            case STALKING -> drawStalkingEyes(gc, leftEyeX, rightEyeX, eyeY);
-            case WAITING_AT_DOOR -> drawWaitingEyes(gc, leftEyeX, rightEyeX, eyeY);
+        if (state == State.DORMANT) {
+            gc.setFill(Color.rgb(150, 0, 0, 0.5));
+            gc.fillOval(lx, eyeY + 1, 4, 2);
+            gc.fillOval(rx, eyeY + 1, 4, 2);
+            return;
         }
-    }
 
-    private void drawIdleEyes(GraphicsContext gc, double leftX, double rightX, double eyeY) {
-        gc.setFill(Color.rgb(150, 0, 0, 0.5));
-        gc.fillOval(leftX, eyeY + 1, 4, 2);
-        gc.fillOval(rightX, eyeY + 1, 4, 2);
-    }
+        double pulseSpeed, baseSz; Color glowCol, irisCol; boolean hasHighlight;
+        switch (state) {
+            case HUNTING -> { pulseSpeed = 3; baseSz = 5; glowCol = Color.rgb(255,0,0,0.3);
+                irisCol = Color.rgb(255,20,20); hasHighlight = true; }
+            case WAITING_AT_DOOR -> { pulseSpeed = 0.8; baseSz = 4; glowCol = Color.rgb(40,0,0,1.0);
+                irisCol = Color.rgb(220,0,0); hasHighlight = true; }
+            default /* STALKING */ -> { pulseSpeed = 1.4; baseSz = 3.6; glowCol = Color.rgb(180,0,0,0.35);
+                irisCol = Color.rgb(220,40,40,0.85); hasHighlight = false; }
+        }
 
-    private void drawChasingEyes(GraphicsContext gc, double leftX, double rightX, double eyeY) {
-        double fastPulse = Math.sin(pulsePhase * 3) * 1.5;
-        double eyeSize = 5 + fastPulse;
+        double pulse = Math.sin(pulsePhase * pulseSpeed) * (state == State.HUNTING ? 1.5 : state == State.WAITING_AT_DOOR ? 0.5 : 0.8);
+        double sz = baseSz + pulse;
 
-        gc.setFill(Color.rgb(255, 0, 0, 0.3));
-        gc.fillOval(leftX - 3, eyeY - 3, eyeSize + 6, eyeSize + 5);
-        gc.fillOval(rightX - 3, eyeY - 3, eyeSize + 6, eyeSize + 5);
+        gc.setFill(glowCol);
+        gc.fillOval(lx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1), sz + (state == State.HUNTING ? 6 : 2), sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
+        gc.fillOval(rx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1), sz + (state == State.HUNTING ? 6 : 2), sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
 
-        gc.setFill(Color.rgb(50, 0, 0));
-        gc.fillOval(leftX - 1, eyeY - 1, eyeSize + 2, eyeSize);
-        gc.fillOval(rightX - 1, eyeY - 1, eyeSize + 2, eyeSize);
+        if (state == State.HUNTING) {
+            gc.setFill(Color.rgb(50, 0, 0));
+            gc.fillOval(lx - 1, eyeY - 1, sz + 2, sz);
+            gc.fillOval(rx - 1, eyeY - 1, sz + 2, sz);
+        }
 
-        gc.setFill(Color.rgb(255, 20, 20));
-        gc.fillOval(leftX, eyeY, eyeSize, eyeSize - 1);
-        gc.fillOval(rightX, eyeY, eyeSize, eyeSize - 1);
+        gc.setFill(irisCol);
+        gc.fillOval(lx, eyeY, sz, state == State.STALKING ? sz : sz - 1);
+        gc.fillOval(rx, eyeY, sz, state == State.STALKING ? sz : sz - 1);
 
-        gc.setFill(Color.rgb(255, 200, 200));
-        gc.fillOval(leftX + 1.5, eyeY + 1, 2, 1.5);
-        gc.fillOval(rightX + 1.5, eyeY + 1, 2, 1.5);
-    }
-
-    private void drawWaitingEyes(GraphicsContext gc, double leftX, double rightX, double eyeY) {
-        double pulse = Math.sin(pulsePhase * 0.8) * 0.5;
-        double eyeSize = 4 + pulse;
-
-        gc.setFill(Color.rgb(40, 0, 0));
-        gc.fillOval(leftX - 1, eyeY - 1, eyeSize + 2, eyeSize + 1);
-        gc.fillOval(rightX - 1, eyeY - 1, eyeSize + 2, eyeSize + 1);
-
-        gc.setFill(Color.rgb(220, 0, 0));
-        gc.fillOval(leftX, eyeY, eyeSize, eyeSize - 1);
-        gc.fillOval(rightX, eyeY, eyeSize, eyeSize - 1);
-
-        gc.setFill(Color.rgb(255, 100, 100));
-        gc.fillOval(leftX + 1, eyeY + 0.5, 2, 1.5);
-        gc.fillOval(rightX + 1, eyeY + 0.5, 2, 1.5);
-    }
-
-    private void drawStalkingEyes(GraphicsContext gc, double leftX, double rightX, double eyeY) {
-        double pulse = Math.sin(pulsePhase * 1.4) * 0.8;
-        double eyeSize = 3.6 + pulse;
-        gc.setFill(Color.rgb(180, 0, 0, 0.35));
-        gc.fillOval(leftX - 1, eyeY - 1, eyeSize + 2, eyeSize + 2);
-        gc.fillOval(rightX - 1, eyeY - 1, eyeSize + 2, eyeSize + 2);
-        gc.setFill(Color.rgb(220, 40, 40, 0.85));
-        gc.fillOval(leftX, eyeY, eyeSize, eyeSize);
-        gc.fillOval(rightX, eyeY, eyeSize, eyeSize);
+        if (hasHighlight) {
+            Color hlCol = state == State.HUNTING ? Color.rgb(255,200,200) : Color.rgb(255,100,100);
+            double hlOff = state == State.HUNTING ? 1.5 : 1;
+            gc.setFill(hlCol);
+            gc.fillOval(lx + hlOff, eyeY + (state == State.HUNTING ? 1 : 0.5), 2, 1.5);
+            gc.fillOval(rx + hlOff, eyeY + (state == State.HUNTING ? 1 : 0.5), 2, 1.5);
+        }
     }
 
     @Override

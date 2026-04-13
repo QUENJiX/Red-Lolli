@@ -22,10 +22,6 @@ public class Item extends Entity implements Collidable {
     private boolean isCollected = false;
     private final ContentType contentType;
 
-    public Item(double x, double y, boolean hasLolli) {
-        this(x, y, hasLolli ? ContentType.LOLLI : ContentType.EMPTY);
-    }
-
     public Item(double x, double y, ContentType contentType) {
         super(x, y, 16.0);
         this.contentType = contentType;
