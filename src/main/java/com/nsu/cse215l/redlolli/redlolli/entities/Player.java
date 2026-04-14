@@ -17,8 +17,8 @@ public class Player extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
-    private static Image playerCalmImg;
-    private static Image playerTerrifiedImg;
+    private static Image idleFrontImg, idleBackImg, idleLeftImg, idleRightImg;
+    private static Image[] walkLeftImgs, walkRightImgs, walkBackImgs, walkFrontImgs;
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -34,16 +34,31 @@ public class Player extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        playerCalmImg = loadSprite("player_calm.png", 40, 40);
-        playerTerrifiedImg = loadSprite("player_terrified.png", 40, 40);
+        idleFrontImg = loadSprite("idle_front.png", 28, 28);
+        idleBackImg = loadSprite("idle_back.png", 28, 28);
+        idleLeftImg = loadSprite("idle_left.png", 28, 28);
+        idleRightImg = loadSprite("idle_right.png", 28, 28);
+        
+        walkBackImgs = new Image[4];
+        for (int i=1; i<=4; i++) walkBackImgs[i-1] = loadSprite("walk_back_" + i + ".png", 28, 28);
+        
+        walkFrontImgs = new Image[2];
+        for (int i=1; i<=2; i++) walkFrontImgs[i-1] = loadSprite("walk_front_" + i + ".png", 28, 28);
+        
+        walkLeftImgs = new Image[3];
+        for (int i=1; i<=3; i++) walkLeftImgs[i-1] = loadSprite("walk_left_" + i + ".png", 28, 28);
+        
+        walkRightImgs = new Image[3];
+        for (int i=1; i<=3; i++) walkRightImgs[i-1] = loadSprite("walk_right_" + i + ".png", 28, 28);
+
         imagesInitialized = true;
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
     public static void resetImages() { imagesInitialized = false; }
 
-    // Visual render size (sprite drawn 40x40 centered on the hitbox)
-    private static final double RENDER_SIZE = 40.0;
+    // Visual render size
+    private static final double RENDER_SIZE = 28.0;
 
     // ================= LOGIC =================
 
@@ -55,12 +70,11 @@ public class Player extends Entity implements Collidable {
     /** Cooldown penalty when stamina hits 0. */
     private static final int EXHAUSTED_FRAMES = 120;
 
-    private boolean isBeingChased = false;
     private boolean isInEscapeRoom = false;
     private int staminaFrames = MAX_STAMINA_FRAMES;
     private int exhaustedFrames = 0;
-    private double facingX = 0;
-    private double facingY = -1;
+    private double facingX = 1; // start facing right
+    private double facingY = 0;
 
     // Sanity system
     private static final int MAX_SANITY = 100;
@@ -73,6 +87,12 @@ public class Player extends Entity implements Collidable {
     private boolean isNearLuna = false;
     private boolean sanityDead = false; // true when sanity hits 0
 
+    // Animation state
+    private int animFrame = 0;
+    private int animTimer = 0;
+    private boolean isMoving = false;
+    private boolean movedThisFrame = false;
+
     public Player(double x, double y) {
         super(x, y, 20.0);
     }
@@ -82,6 +102,20 @@ public class Player extends Entity implements Collidable {
         if (exhaustedFrames > 0) {
             exhaustedFrames--;
         }
+
+        if (movedThisFrame) {
+            animTimer++;
+            if (animTimer > 10) {
+                animFrame++;
+                animTimer = 0;
+            }
+        } else {
+            animFrame = 0;
+            animTimer = 0;
+        }
+        
+        isMoving = movedThisFrame;
+        movedThisFrame = false; // Reset for the next frame
 
         // Sanity drain/recovery logic
         if (sanity <= 0) {
@@ -129,6 +163,7 @@ public class Player extends Entity implements Collidable {
             if (dx != 0 || dy != 0) {
                 facingX = dx;
                 facingY = dy;
+                movedThisFrame = true;
             }
         }
 
@@ -145,7 +180,44 @@ public class Player extends Entity implements Collidable {
 
     @Override
     public void render(GraphicsContext gc) {
-        Image img = isBeingChased ? playerTerrifiedImg : playerCalmImg;
+        String dir = "front";
+        if (Math.abs(facingX) > Math.abs(facingY)) {
+            dir = facingX > 0 ? "right" : "left";
+        } else if (facingY != 0) {
+            dir = facingY > 0 ? "front" : "back";
+        }
+
+        Image img = idleFrontImg;
+        if (!isMoving) {
+            switch (dir) {
+                case "left": img = idleLeftImg; break;
+                case "right": img = idleRightImg; break;
+                case "back": img = idleBackImg; break;
+                default: img = idleFrontImg; break;
+            }
+        } else {
+            switch (dir) {
+                case "left":
+                    if (walkLeftImgs != null && walkLeftImgs.length > 0)
+                        img = walkLeftImgs[animFrame % walkLeftImgs.length];
+                    break;
+                case "right":
+                    if (walkRightImgs != null && walkRightImgs.length > 0)
+                        img = walkRightImgs[animFrame % walkRightImgs.length];
+                    break;
+                case "back":
+                    if (walkBackImgs != null && walkBackImgs.length > 0)
+                        img = walkBackImgs[animFrame % walkBackImgs.length];
+                    break;
+                case "front":
+                    if (walkFrontImgs != null && walkFrontImgs.length > 0)
+                        img = walkFrontImgs[animFrame % walkFrontImgs.length];
+                    else 
+                        img = idleFrontImg;
+                    break;
+            }
+        }
+
         // Draw sprite centered on hitbox (hitbox is 20x20, sprite renders at 40x40)
         double offset = (RENDER_SIZE - size) / 2;
         if (img != null) {
@@ -162,7 +234,7 @@ public class Player extends Entity implements Collidable {
     }
 
     public void setBeingChased(boolean chased) {
-        this.isBeingChased = chased;
+        // Can be used to change animations/effects when being chased
     }
 
     public boolean isInEscapeRoom() {

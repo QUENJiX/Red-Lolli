@@ -83,8 +83,15 @@ public class PlaceholderGenerator {
         // 5. PLAYER (20x20)
         // ============================================================
         System.out.println("\n--- Player ---");
-        makeSprite("player_calm.png", 20, 20, new Color(200, 200, 255), "P-C");
-        makeSprite("player_terrified.png", 20, 20, new Color(255, 100, 100), "P-T");
+        makeSprite("idle_front.png", 28, 28, new Color(200, 200, 255), "I-F");
+        makeSprite("idle_back.png", 28, 28, new Color(200, 200, 255), "I-B");
+        makeSprite("idle_left.png", 28, 28, new Color(200, 200, 255), "I-L");
+        makeSprite("idle_right.png", 28, 28, new Color(200, 200, 255), "I-R");
+        
+        for (int i=1; i<=4; i++) makeSprite("walk_back_" + i + ".png", 28, 28, new Color(180, 180, 255), "W-B" + i);
+        for (int i=1; i<=2; i++) makeSprite("walk_front_" + i + ".png", 28, 28, new Color(180, 180, 255), "W-F" + i);
+        for (int i=1; i<=3; i++) makeSprite("walk_left_" + i + ".png", 28, 28, new Color(180, 180, 255), "W-L" + i);
+        for (int i=1; i<=3; i++) makeSprite("walk_right_" + i + ".png", 28, 28, new Color(180, 180, 255), "W-R" + i);
 
         // ============================================================
         // 6. MONSTER (25x25, Aura 35x35)
