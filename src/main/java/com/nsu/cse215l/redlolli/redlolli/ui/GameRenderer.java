@@ -49,9 +49,13 @@ public class GameRenderer {
         return null;
     }
 
-    /** No-op placeholder for centralized preloading. This class uses primitives for reveal animation. */
+    /**
+     * No-op placeholder for centralized preloading. This class uses primitives for
+     * reveal animation.
+     */
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         lunaFlashImg = loadSprite("luna_flash.png", 235, 244);
         imagesInitialized = true;
     }
@@ -61,7 +65,7 @@ public class GameRenderer {
     /** Represents a manual image overlay that can be placed anywhere on screen. */
     public static class Overlay {
         public Image image;
-        public double x, y;          // Screen position (or use worldX/worldY for maze-relative)
+        public double x, y; // Screen position (or use worldX/worldY for maze-relative)
         public double width, height;
         public double opacity = 1.0;
         public boolean useWorldCoords = false; // If true, x/y are maze world coords, converted to screen
@@ -106,7 +110,7 @@ public class GameRenderer {
             List<Overlay> overlays) {
 
         gc.setFill(Color.BLACK);
-        
+
         // Screen shake effect
         double shakeX = 0, shakeY = 0;
         if (screenShakeFrames > 0) {
@@ -114,7 +118,7 @@ public class GameRenderer {
             shakeY = (Math.random() - 0.5) * screenShakeFrames * 0.5;
             gc.translate(shakeX, shakeY);
         }
-        
+
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         maze.renderMaze(gc);
@@ -127,7 +131,8 @@ public class GameRenderer {
         // Draw manual overlays (screen-relative or world-relative)
         if (overlays != null) {
             for (Overlay o : overlays) {
-                if (o.image == null) continue;
+                if (o.image == null)
+                    continue;
                 double drawX = o.x;
                 double drawY = o.y;
                 if (o.useWorldCoords && maze != null) {
@@ -146,14 +151,15 @@ public class GameRenderer {
         lightGC.setGlobalBlendMode(BlendMode.SRC_OVER);
         lightGC.setFill(Color.rgb(12, 12, 15, 0.96)); // 96% darkness
         lightGC.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        
+
         // 2. Additive blending for lights
         lightGC.setGlobalBlendMode(BlendMode.ADD);
-        
+
         // Player's personal light (dimmer depending on sanity)
         double playerLightRadius = 150 + (player.getSanityPercent() * 50.0);
-        drawRadialLight(lightGC, player.getX() + 10, player.getY() + 10, playerLightRadius, Color.rgb(220, 230, 255, 1.0));
-        
+        drawRadialLight(lightGC, player.getX() + 10, player.getY() + 10, playerLightRadius,
+                Color.rgb(220, 230, 255, 1.0));
+
         // Torch lights
         for (Entity e : entities) {
             if (e instanceof TorchEntity) {
@@ -161,11 +167,12 @@ public class GameRenderer {
                 if (t.isLit()) {
                     // Small flicker in radius
                     double flicker = Math.random() * 8.0 - 4.0;
-                    drawRadialLight(lightGC, t.getX() + 20, t.getY() + 20, 220 + flicker, Color.rgb(255, 170, 50, 0.85));
+                    drawRadialLight(lightGC, t.getX() + 20, t.getY() + 20, 220 + flicker,
+                            Color.rgb(255, 170, 50, 0.85));
                 }
             }
         }
-        
+
         // 3. Composite light map to main screen
         gc.setGlobalBlendMode(BlendMode.MULTIPLY);
         gc.drawImage(lightBuffer.snapshot(null, null), 0, 0);
@@ -298,9 +305,9 @@ public class GameRenderer {
 
     private static void drawRadialLight(GraphicsContext gc, double x, double y, double radius, Color color) {
         RadialGradient lightPulse = new RadialGradient(0, 0, x, y, radius, false, CycleMethod.NO_CYCLE,
-                new Stop(0.0, color),                                    // Bright core center
-                new Stop(0.4, color.deriveColor(0, 1, 1, 0.6)),  // Mid drop off
-                new Stop(1.0, Color.TRANSPARENT)                         // Edges fade entirely
+                new Stop(0.0, color), // Bright core center
+                new Stop(0.4, color.deriveColor(0, 1, 1, 0.6)), // Mid drop off
+                new Stop(1.0, Color.TRANSPARENT) // Edges fade entirely
         );
         gc.setFill(lightPulse);
         gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
