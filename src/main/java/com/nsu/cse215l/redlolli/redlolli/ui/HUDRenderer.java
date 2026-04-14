@@ -30,8 +30,8 @@ public class HUDRenderer {
     private static final double HUD_H    = 50;
     private static final double ROW1_Y   = 20;   // primary text baseline
     private static final double ROW2_Y   = 38;   // secondary / sub-label baseline
-    private static final double BAR_Y    = 26;   // top of progress bars
-    private static final double BAR_H    = 10;   // height of progress bars
+    private static final double BAR_Y    = 24;   // top of progress bars
+    private static final double BAR_H    = 14;   // height of progress bars
 
     // ── Section x-boundaries ─────────────────────────────────────────────────
     private static final double DIV_LEVEL  =  90;
@@ -204,39 +204,35 @@ public class HUDRenderer {
                          : sLeft > 3  ? Color.ORANGE
                          : Color.rgb(255, (int)(50 * (Math.sin(pulsePhase) * 0.5 + 0.5)),
                                          (int)(50 * (Math.sin(pulsePhase) * 0.5 + 0.5)));
+                drawBarLabel(gc, barX, ROW1_Y, "Pale Luna", Color.rgb(160, 160, 180));
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         Color.rgb(40, 40, 45), Color.rgb(70, 70, 80), tc,
-                        paleLuna.getDormantTimer(), 900);
-                drawBarLabel(gc, barX, ROW1_Y - 7, "Pale Luna", Color.rgb(160, 160, 180));
-                drawBarLabel(gc, barX, ROW2_Y, "Sleeps " + sLeft + "s", tc);
+                        (double)paleLuna.getDormantTimer() / 900.0, "Sleeps " + sLeft + "s");
             }
             case STALKING -> {
                 double flash = Math.sin(pulsePhase * 1.7) * 0.5 + 0.5;
                 Color barFill = Color.rgb(200, 60, 60);
+                drawBarLabel(gc, barX, ROW1_Y, "Pale Luna", Color.rgb(220, 100, 100));
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         Color.rgb(60, 15, 15, 0.5 + flash * 0.3), Color.rgb(120, 30, 30), barFill,
-                        paleLuna.getStalkTimer(), 480);
-                drawBarLabel(gc, barX, ROW1_Y - 7, "Pale Luna", Color.rgb(220, 100, 100));
-                drawBarLabel(gc, barX, ROW2_Y, "She watches...", Color.rgb(230, 120, 120));
+                        (double)paleLuna.getStalkTimer() / 480.0, "She watches...");
                 pulsePhase += 0.24;
             }
             case HUNTING -> {
                 double cf = Math.sin(pulsePhase * 2) * 0.5 + 0.5;
                 int sLeft = paleLuna.getHuntTimer() / 60;
                 Color bg = Color.rgb(255, (int)(30 * cf), (int)(30 * cf));
+                drawBarLabel(gc, barX, ROW1_Y, "⚠ HUNTING", Color.rgb(255, 80, 80));
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         bg, Color.rgb(100, 0, 0), Color.rgb(220, 40, 40),
-                        paleLuna.getHuntTimer(), 360);
-                drawBarLabel(gc, barX, ROW1_Y - 7, "⚠ HUNTING", Color.rgb(255, 80, 80));
-                drawBarLabel(gc, barX, ROW2_Y, "RUN!  " + sLeft + "s left", Color.RED);
+                        (double)paleLuna.getHuntTimer() / 360.0, "RUN!  " + sLeft + "s left");
                 pulsePhase += 0.30;
             }
             case WAITING_AT_DOOR -> {
+                drawBarLabel(gc, barX, ROW1_Y, "At the door", Color.ORANGE);
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         Color.rgb(80, 40, 0), Color.rgb(140, 80, 0), Color.ORANGE,
-                        paleLuna.getWaitTimer(), 180);
-                drawBarLabel(gc, barX, ROW1_Y - 7, "At the door", Color.ORANGE);
-                drawBarLabel(gc, barX, ROW2_Y, paleLuna.getWaitTimer() / 60 + "s...", Color.rgb(255, 180, 60));
+                        (double)paleLuna.getWaitTimer() / 180.0, paleLuna.getWaitTimer() / 60 + "s...");
             }
         }
         return pulsePhase + 0.20;
@@ -268,14 +264,10 @@ public class HUDRenderer {
             fill = Color.rgb(255, (int)(50 * f), (int)(50 * f));
         }
 
-        drawBarLabel(gc, barX, ROW1_Y - 7, "MIND", Color.rgb(150, 150, 180));
-        drawBar(gc, barX, BAR_Y, bw, BAR_H, Color.rgb(40, 40, 45), Color.rgb(70, 70, 80), fill,
-                sanity, 100);
-
+        drawBarLabel(gc, barX, ROW1_Y, "MIND", Color.rgb(150, 150, 180));
         String label = sanity > 50 ? (sanity + "%") : sanity > 25 ? "Slipping" : "Breaking";
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 10));
-        gc.setFill(Color.rgb(220, 220, 230));
-        gc.fillText(label, barX + 2, BAR_Y + BAR_H - 1);
+        drawBar(gc, barX, BAR_Y, bw, BAR_H, Color.rgb(40, 40, 45), Color.rgb(70, 70, 80), fill,
+                (double)sanity / 100.0, label);
     }
 
     /** Section 6: [SAFE] indicator on the right */
@@ -297,20 +289,31 @@ public class HUDRenderer {
 
     // ── Drawing utilities ─────────────────────────────────────────────────────
 
-    /** Draws a progress bar with background fill, border, and fill value [0..maxVal]. */
+    /** Draws a progress bar with background fill, border, and fill value [0..1]. */
     private static void drawBar(GraphicsContext gc, double x, double y, double w, double h,
-            Color bg, Color border, Color fill, int val, int maxVal) {
-        double ratio = Math.max(0, Math.min(1.0, (double) val / maxVal));
+            Color bg, Color border, Color fill, double ratio, String label) {
+        double r = Math.max(0, Math.min(1.0, ratio));
         gc.setFill(bg);
         gc.fillRect(x, y, w, h);
         gc.setStroke(border);
         gc.setLineWidth(1);
         gc.strokeRect(x, y, w, h);
         gc.setFill(fill);
-        gc.fillRect(x + 1, y + 1, (w - 2) * ratio, h - 2);
+        gc.fillRect(x + 1, y + 1, (w - 2) * r, h - 2);
+
+        if (label != null && !label.isEmpty()) {
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 10));
+            double textY = y + h - 3;
+            // Shadow
+            gc.setFill(Color.rgb(0, 0, 0, 0.7));
+            gc.fillText(label, x + 5, textY + 1);
+            // Text
+            gc.setFill(Color.WHITE);
+            gc.fillText(label, x + 4, textY);
+        }
     }
 
-    /** Draws a small label above / below a bar. */
+    /** Draws a small label. */
     private static void drawBarLabel(GraphicsContext gc, double x, double y, String text, Color color) {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 10));
         gc.setFill(color);
