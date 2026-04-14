@@ -192,8 +192,8 @@ public class GameStateManager {
                 entities.add(cobra);
             }
         } else if (currentLevel == 3) {
-            serialKiller = new SerialKillerEntity(18 * Maze.TILE_SIZE + 6, 6 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
-            entities.add(serialKiller);   
+            serialKiller = new SerialKillerEntity(17 * Maze.TILE_SIZE + 6, 5 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
+            entities.add(serialKiller);
         }
     }
 
@@ -442,15 +442,20 @@ public class GameStateManager {
 
     // ========================= ACTIONS =========================
 
-    /** Adds a manual image overlay to the current frame. Call each frame for persistent overlays. */
-    public void addOverlay(javafx.scene.image.Image image, double x, double y, double width, double height, double opacity) {
+    /**
+     * Adds a manual image overlay to the current frame. Call each frame for
+     * persistent overlays.
+     */
+    public void addOverlay(javafx.scene.image.Image image, double x, double y, double width, double height,
+            double opacity) {
         GameRenderer.Overlay o = new GameRenderer.Overlay(image, x, y, width, height);
         o.setOpacity(opacity);
         overlays.add(o);
     }
 
     /** Adds a manual overlay at world (maze) coordinates. */
-    public void addWorldOverlay(javafx.scene.image.Image image, double worldX, double worldY, double width, double height, double opacity) {
+    public void addWorldOverlay(javafx.scene.image.Image image, double worldX, double worldY, double width,
+            double height, double opacity) {
         GameRenderer.Overlay o = new GameRenderer.Overlay(image, worldX, worldY, width, height, true);
         o.setOpacity(opacity);
         overlays.add(o);
