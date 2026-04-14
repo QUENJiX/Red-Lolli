@@ -192,8 +192,8 @@ public class GameStateManager {
                 entities.add(cobra);
             }
         } else if (currentLevel == 3) {
-            serialKiller = new SerialKillerEntity(18 * Maze.TILE_SIZE + 6, 15 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
-            entities.add(serialKiller);
+            serialKiller = new SerialKillerEntity(18 * Maze.TILE_SIZE + 6, 6 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
+            entities.add(serialKiller);   
         }
     }
 

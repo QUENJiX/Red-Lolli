@@ -446,6 +446,11 @@ public class Maze {
 
         int rows = mapGrid.length;
         int cols = mapGrid[0].length;
+        
+        if (startR < 0 || startR >= rows || startC < 0 || startC >= cols) {
+            return null;
+        }
+        
         boolean[][] visited = new boolean[rows][cols];
         Queue<Node> queue = new LinkedList<>();
 
