@@ -4,7 +4,10 @@ import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+
+import java.io.InputStream;
 
 /**
  * Stationary environmental hazards that kill the player on contact.
@@ -15,6 +18,34 @@ public class GuardEntity extends Entity implements Collidable {
     public enum Type {
         BAT,
         COBRA
+    }
+
+    // ================= IMAGE ASSETS =================
+
+    private static Image batImg;
+    private static Image batDistractedImg;
+    private static Image cobraImg;
+    private static Image cobraDistractedImg;
+    private static boolean imagesInitialized = false;
+
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = GuardEntity.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void initImages() {
+        if (imagesInitialized) return;
+        batImg = loadSprite("guard_bat.png", 28, 28);
+        batDistractedImg = loadSprite("guard_bat_distracted.png", 28, 28);
+        cobraImg = loadSprite("guard_cobra.png", 28, 28);
+        cobraDistractedImg = loadSprite("guard_cobra_distracted.png", 28, 28);
+        imagesInitialized = true;
     }
 
     // ================= STATE =================
@@ -101,32 +132,18 @@ public class GuardEntity extends Entity implements Collidable {
 
     @Override
     public void render(GraphicsContext gc) {
-        if (distracted) {
-            if (type == Type.BAT) {
-                gc.setFill(Color.rgb(40, 120, 40, 0.22));
-            } else {
-                gc.setFill(Color.rgb(255, 255, 200, 0.4));
-            }
-            gc.fillOval(x - 5, y - 5, size + 10, size + 10);
+        Image img;
+        if (type == Type.BAT) {
+            img = distracted ? batDistractedImg : batImg;
+        } else {
+            img = distracted ? cobraDistractedImg : cobraImg;
         }
 
-        if (type == Type.BAT) {
-            gc.setFill(Color.rgb(45, 45, 55));
-            gc.fillOval(x + 3, y + 5, 14, 10);
-            gc.fillOval(x - 6, y + 7, 12, 6);
-            gc.fillOval(x + 14, y + 7, 12, 6);
-            gc.setFill(Color.rgb(220, 40, 40));
-            gc.fillOval(x + 7, y + 8, 2, 2);
-            gc.fillOval(x + 11, y + 8, 2, 2);
+        if (img != null) {
+            gc.drawImage(img, x, y, size, size);
         } else {
-            gc.setStroke(Color.rgb(50, 120, 40));
-            gc.setLineWidth(3);
-            gc.strokeLine(x + 3, y + 14, x + 17, y + 6);
-            gc.strokeLine(x + 3, y + 14, x + 17, y + 14);
-            gc.setFill(Color.rgb(40, 140, 35));
-            gc.fillOval(x + 14, y + 6, 7, 10);
-            gc.setFill(Color.rgb(255, 220, 80));
-            gc.fillOval(x + 18, y + 9, 2, 2);
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, size, size);
         }
     }
 

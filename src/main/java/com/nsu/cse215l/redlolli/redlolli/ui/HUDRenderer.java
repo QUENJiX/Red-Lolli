@@ -5,10 +5,12 @@ import com.nsu.cse215l.redlolli.redlolli.entities.Monster;
 import com.nsu.cse215l.redlolli.redlolli.entities.Player;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -21,6 +23,33 @@ public class HUDRenderer {
     private static final double HUD_WIDTH = 880;
     private static final double MID_Y = 31;
 
+    // ================= IMAGE ASSETS =================
+
+    private static Image lolliIconImg;
+    private static Image[] paleLunaIconImg = new Image[4];
+    private static boolean imagesInitialized = false;
+
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = HUDRenderer.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void initImages() {
+        if (imagesInitialized) return;
+        lolliIconImg = loadSprite("lolli_icon.png", 8, 16);
+        paleLunaIconImg[0] = loadSprite("pale_luna_dormant_icon.png", 16, 16);
+        paleLunaIconImg[1] = loadSprite("pale_luna_stalking_icon.png", 16, 16);
+        paleLunaIconImg[2] = loadSprite("pale_luna_hunting_icon.png", 16, 16);
+        paleLunaIconImg[3] = loadSprite("pale_luna_waiting_icon.png", 16, 16);
+        imagesInitialized = true;
+    }
+
     /**
      * Draws the full HUD bar at the top of the game screen.
      */
@@ -29,7 +58,6 @@ public class HUDRenderer {
             int fruitCount,
             int eggCount,
             boolean hasCloneItem,
-            int invisibilityFrames,
             double pulsePhase) {
 
         drawBackground(gc);
@@ -42,7 +70,7 @@ public class HUDRenderer {
         pulsePhase = drawPaleLunaStatus(gc, paleLuna, pulsePhase);
         drawDivider(gc, 665);
         drawSafeIndicator(gc, player);
-        drawUtilityStatus(gc, level, fruitCount, eggCount, hasCloneItem, invisibilityFrames);
+        drawUtilityStatus(gc, level, fruitCount, eggCount, hasCloneItem);
 
         return pulsePhase;
     }
@@ -76,11 +104,12 @@ public class HUDRenderer {
     private static void drawLolliStatus(GraphicsContext gc, List<Item> chests) {
         boolean foundLolli = chests.stream().anyMatch(c -> c.isCollected() && c.hasLolli());
 
-        gc.setFill(Color.DARKRED);
-        gc.fillOval(112, MID_Y - 9, 8, 8);
-        gc.setStroke(Color.rgb(180, 150, 100));
-        gc.setLineWidth(1.5);
-        gc.strokeLine(116, MID_Y - 1, 116, MID_Y + 5);
+        if (lolliIconImg != null) {
+            gc.drawImage(lolliIconImg, 112, MID_Y - 9, 8, 16);
+        } else {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(112, MID_Y - 9, 8, 16);
+        }
 
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 13));
         gc.setFill(foundLolli ? Color.LIMEGREEN : Color.rgb(200, 200, 200));
@@ -100,6 +129,12 @@ public class HUDRenderer {
             return pulsePhase;
 
         double barX = 345, barW = 126, barY = MID_Y - 18, barH = 12;
+
+        // Draw state-specific Luna icon
+        int stateIndex = paleLuna.getState().ordinal();
+        if (stateIndex >= 0 && stateIndex < paleLunaIconImg.length && paleLunaIconImg[stateIndex] != null) {
+            gc.drawImage(paleLunaIconImg[stateIndex], barX - 20, MID_Y - 11, 16, 16);
+        }
 
         switch (paleLuna.getState()) {
             case DORMANT -> {
@@ -175,7 +210,7 @@ public class HUDRenderer {
 
     /** Level-specific item counters. */
     private static void drawUtilityStatus(GraphicsContext gc, int level, int fruitCount, int eggCount,
-            boolean hasCloneItem, int invisibilityFrames) {
+            boolean hasCloneItem) {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
         gc.setFill(Color.rgb(200, 190, 170));
 

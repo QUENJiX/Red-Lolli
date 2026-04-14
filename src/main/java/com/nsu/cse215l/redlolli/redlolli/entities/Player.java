@@ -4,14 +4,42 @@ import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcType;
+
+import java.io.InputStream;
 
 /**
  * User-controlled character with movement, stamina, and contextual rendering.
- * Aura and facial expression change based on chase/escape state.
+ * Facial expression changes based on chase/escape state.
  */
 public class Player extends Entity implements Collidable {
+
+    // ================= IMAGE ASSETS =================
+
+    private static Image playerCalmImg;
+    private static Image playerTerrifiedImg;
+    private static boolean imagesInitialized = false;
+
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = Player.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void initImages() {
+        if (imagesInitialized) return;
+        playerCalmImg = loadSprite("player_calm.png", 20, 20);
+        playerTerrifiedImg = loadSprite("player_terrified.png", 20, 20);
+        imagesInitialized = true;
+    }
+
+    // ================= LOGIC =================
 
     private static final double BASE_SPEED = 2.0;
     /** Speed multiplier when sprinting. */
@@ -69,84 +97,16 @@ public class Player extends Entity implements Collidable {
         }
     }
 
-    /** Render the player with layered aura, body, and contextual face. */
     @Override
     public void render(GraphicsContext gc) {
-        drawAura(gc);
-        drawBody(gc);
-        if (isBeingChased) {
-            drawTerrifiedFace(gc);
+        Image img = isBeingChased ? playerTerrifiedImg : playerCalmImg;
+
+        if (img != null) {
+            gc.drawImage(img, x, y, size, size);
         } else {
-            drawCalmFace(gc);
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, size, size);
         }
-    }
-
-    private void drawAura(GraphicsContext gc) {
-        if (isInEscapeRoom) {
-            gc.setFill(Color.rgb(0, 180, 0, 0.15));
-        } else if (isBeingChased) {
-            gc.setFill(Color.rgb(255, 0, 0, 0.12));
-        } else {
-            gc.setFill(Color.rgb(200, 200, 255, 0.1));
-        }
-        gc.fillOval(x - 4, y - 4, size + 8, size + 8);
-    }
-
-    private void drawBody(GraphicsContext gc) {
-        gc.setStroke(isBeingChased ? Color.RED : Color.rgb(100, 80, 120));
-        gc.setLineWidth(2);
-        gc.strokeOval(x, y, size, size);
-
-        gc.setFill(Color.rgb(240, 235, 230));
-        gc.fillOval(x, y, size, size);
-        gc.setFill(Color.rgb(255, 250, 245));
-        gc.fillOval(x + 2, y + 1, size - 4, size - 3);
-
-        gc.setFill(Color.rgb(255, 150, 150, 0.35));
-        gc.fillOval(x + 1, y + 10, 5, 3);
-        gc.fillOval(x + 14, y + 10, 5, 3);
-    }
-
-    private void drawCalmFace(GraphicsContext gc) {
-        gc.setFill(Color.WHITE);
-        gc.fillOval(x + 4, y + 4, 5, 7);
-        gc.fillOval(x + 11, y + 4, 5, 7);
-
-        gc.setFill(Color.rgb(30, 30, 60));
-        gc.fillOval(x + 5, y + 5, 3.5, 5);
-        gc.fillOval(x + 12, y + 5, 3.5, 5);
-
-        gc.setFill(Color.BLACK);
-        gc.fillOval(x + 5.5, y + 6, 2, 3);
-        gc.fillOval(x + 12.5, y + 6, 2, 3);
-
-        gc.setFill(Color.WHITE);
-        gc.fillOval(x + 5.5, y + 5.5, 1.5, 1.5);
-        gc.fillOval(x + 12.5, y + 5.5, 1.5, 1.5);
-
-        gc.setStroke(Color.rgb(120, 80, 80));
-        gc.setLineWidth(1);
-        gc.strokeArc(x + 6, y + 12, 8, 4, 180, 180, ArcType.OPEN);
-    }
-
-    private void drawTerrifiedFace(GraphicsContext gc) {
-        double trembleX = (Math.random() * 2) - 1;
-        double trembleY = (Math.random() * 2) - 1;
-
-        gc.setFill(Color.WHITE);
-        gc.fillOval(x + 3 + trembleX, y + 3 + trembleY, 6, 8);
-        gc.fillOval(x + 11 + trembleX, y + 3 + trembleY, 6, 8);
-
-        gc.setFill(Color.BLACK);
-        gc.fillOval(x + 5 + trembleX, y + 6 + trembleY, 2.5, 2.5);
-        gc.fillOval(x + 13 + trembleX, y + 6 + trembleY, 2.5, 2.5);
-
-        gc.setFill(Color.rgb(255, 255, 255, 0.8));
-        gc.fillOval(x + 5 + trembleX, y + 5.5 + trembleY, 1, 1);
-        gc.fillOval(x + 13 + trembleX, y + 5.5 + trembleY, 1, 1);
-
-        gc.setFill(Color.rgb(60, 30, 30));
-        gc.fillOval(x + 7.5, y + 13, 5, 4);
     }
 
     @Override

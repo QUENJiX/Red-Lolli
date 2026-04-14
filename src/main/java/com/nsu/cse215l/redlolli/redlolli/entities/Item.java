@@ -3,9 +3,10 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+
+import java.io.InputStream;
 
 /**
  * Interactive maze objects modeled as chests containing various loot types.
@@ -18,6 +19,45 @@ public class Item extends Entity implements Collidable {
         LOLLI,
         CLONE_DECOY
     }
+
+    // ================= IMAGE ASSETS =================
+
+    private static Image chestClosedImg;
+    private static Image chestOpenedImg;
+    private static Image chestGlowLolli;
+    private static Image chestGlowClone;
+    private static boolean imagesInitialized = false;
+
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = Item.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void initImages() {
+        if (imagesInitialized) return;
+        chestClosedImg = loadSprite("chest_closed.png", 16, 16);
+        chestOpenedImg = loadSprite("chest_opened.png", 16, 16);
+        chestGlowLolli = loadSprite("chest_glow_lolli.png", 16, 16);
+        chestGlowClone = loadSprite("chest_glow_clone.png", 16, 16);
+        imagesInitialized = true;
+    }
+
+    private void drawImg(GraphicsContext gc, Image img, double x, double y) {
+        if (img != null) {
+            gc.drawImage(img, x, y, size, size);
+        } else {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, size, size);
+        }
+    }
+
+    // ================= LOGIC =================
 
     private boolean isCollected = false;
     private final ContentType contentType;
@@ -38,63 +78,20 @@ public class Item extends Entity implements Collidable {
     @Override
     public void render(GraphicsContext gc) {
         if (isCollected) {
-            renderOpenedChest(gc);
+            drawImg(gc, chestOpenedImg, x, y);
+            // Overlay content-specific glow
+            if (contentType == ContentType.LOLLI) {
+                gc.setGlobalAlpha(0.6);
+                drawImg(gc, chestGlowLolli, x, y);
+                gc.setGlobalAlpha(1.0);
+            } else if (contentType == ContentType.CLONE_DECOY) {
+                gc.setGlobalAlpha(0.6);
+                drawImg(gc, chestGlowClone, x, y);
+                gc.setGlobalAlpha(1.0);
+            }
         } else {
-            renderClosedChest(gc);
+            drawImg(gc, chestClosedImg, x, y);
         }
-    }
-
-    private void renderOpenedChest(GraphicsContext gc) {
-        gc.setFill(Color.rgb(80, 50, 15));
-        gc.fillRect(x, y + 6, size, size - 6);
-
-        gc.setFill(Color.rgb(30, 15, 5));
-        gc.fillRect(x + 2, y + 8, size - 4, size - 10);
-
-        gc.setFill(Color.rgb(110, 65, 20));
-        gc.fillRect(x - 1, y, size + 2, 5);
-        gc.setFill(Color.rgb(90, 55, 18));
-        gc.fillRect(x, y - 3, size, 4);
-
-        gc.setFill(Color.rgb(120, 100, 20));
-        gc.fillOval(x + size / 2 - 1.5, y + 5, 3, 3);
-
-        if (contentType == ContentType.LOLLI) {
-            gc.setFill(Color.rgb(255, 0, 0, 0.4));
-            gc.fillOval(x + 3, y + 8, size - 6, size - 12);
-        } else if (contentType == ContentType.CLONE_DECOY) {
-            gc.setFill(Color.rgb(220, 180, 130, 0.5));
-            gc.fillOval(x + 3, y + 8, size - 6, size - 12);
-        }
-    }
-
-    private void renderClosedChest(GraphicsContext gc) {
-        gc.setFill(Color.rgb(200, 170, 50, 0.15));
-        gc.fillOval(x - 3, y - 3, size + 6, size + 6);
-
-        gc.setFill(Color.rgb(130, 75, 25));
-        gc.fillRect(x, y + 5, size, size - 5);
-        gc.setFill(Color.rgb(110, 60, 18));
-        gc.fillRect(x + 2, y + 8, size - 4, 2);
-        gc.fillRect(x + 2, y + 12, size - 4, 1);
-
-        gc.setFill(Color.rgb(80, 80, 90));
-        gc.fillRect(x, y + 5, size, 2);
-        gc.fillRect(x, y + size - 2, size, 2);
-
-        gc.setFill(Color.rgb(155, 95, 35));
-        gc.fillRect(x - 1, y, size + 2, 6);
-        gc.setFill(Color.rgb(170, 110, 45));
-        gc.fillRect(x + 1, y + 1, size - 2, 3);
-
-        gc.setFill(Color.GOLD);
-        gc.fillOval(x + size / 2 - 3, y + 5, 6, 6);
-        gc.setFill(Color.rgb(80, 50, 10));
-        gc.fillOval(x + size / 2 - 1, y + 7, 2, 2);
-
-        gc.setFill(Color.rgb(255, 215, 0));
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 10));
-        gc.fillText("?", x + size / 2 - 3, y + size - 2);
     }
 
     @Override

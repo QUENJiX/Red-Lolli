@@ -4,13 +4,42 @@ import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+
+import java.io.InputStream;
 
 /**
  * Persistent antagonist in Level 3 using continuous BFS pathfinding.
  * Features unique logic to interact with CardboardClone decoys.
  */
 public class SerialKillerEntity extends Entity implements Collidable {
+
+    // ================= IMAGE ASSETS =================
+
+    private static Image killerInactiveImg;
+    private static Image killerChaseImg;
+    private static Image killerAttackImg;
+    private static boolean imagesInitialized = false;
+
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = SerialKillerEntity.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void initImages() {
+        if (imagesInitialized) return;
+        killerInactiveImg = loadSprite("killer_inactive.png", 24, 24);
+        killerChaseImg = loadSprite("killer_chase.png", 24, 24);
+        killerAttackImg = loadSprite("killer_attack.png", 24, 24);
+        imagesInitialized = true;
+    }
 
     private static final double SPEED = 1.75;
 
@@ -63,18 +92,20 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setFill(Color.rgb(15, 15, 15, active ? 0.95 : 0.35));
-        gc.fillRect(x + 5, y + 2, 14, 20);
+        Image img;
+        if (!active) {
+            img = killerInactiveImg;
+        } else if (attackingDecoy) {
+            img = killerAttackImg;
+        } else {
+            img = killerChaseImg;
+        }
 
-        gc.setFill(Color.rgb(180, 150, 120, active ? 1.0 : 0.5));
-        gc.fillOval(x + 6, y - 2, 12, 10);
-
-        gc.setFill(Color.rgb(160, 20, 20));
-        gc.fillRect(x + 18, y + 8, 5, 1.8);
-
-        if (attackingDecoy) {
-            gc.setFill(Color.rgb(170, 20, 20, 0.4));
-            gc.fillOval(x - 5, y - 5, size + 10, size + 10);
+        if (img != null) {
+            gc.drawImage(img, x, y, size, size);
+        } else {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, size, size);
         }
     }
 

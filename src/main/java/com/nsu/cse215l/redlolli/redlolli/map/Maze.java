@@ -2,9 +2,8 @@ package com.nsu.cse215l.redlolli.redlolli.map;
 
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -29,6 +28,300 @@ public class Maze {
     private int playerSpawnCol = 1;
     private int levelTheme = 1;
 
+    // ================= IMAGE ASSETS =================
+
+    // 2D arrays: [theme][variant] — themes are 0-based indices (0=level1, 1=level2,
+    // 2=level3)
+    private static Image[][] borderWallImg = new Image[3][4]; // 4 variants per theme
+    private static Image[][] innerWallImg = new Image[3][4]; // 4 variants per theme
+    private static Image[][] floorAImg = new Image[3][3]; // 3 variants per theme
+    private static Image[][] floorBImg = new Image[3][3]; // 3 variants per theme
+    private static Image[] escapeRoomImg = new Image[2]; // 0=closed door (lvl 1-2), 1=closed door (lvl 3)
+
+    // Atmospheric overlay caches
+    private static Image[] overlayBloodSplat = new Image[30];
+    private static Image[] overlayWallBlood = new Image[76]; // 19 × 4 directions
+    private static Image[] overlayFloorVines = new Image[4];
+    private static Image[] overlaySigils = new Image[10];
+    private static Image[] overlayTorches = new Image[5];
+    private static Image[] overlayWater = new Image[2];
+    private static Image[] overlayFountains = new Image[7];
+    private static Image[] overlayMoss = new Image[4];
+
+    // Additional overlays
+    private static Image[] overlayCracks = new Image[5];
+    private static Image[] overlayMold = new Image[4];
+
+    // Chest sprites for game phases
+    private static Image[] chestClosed = new Image[3]; // one per theme
+    private static Image[] chestOpen = new Image[3]; // one per theme
+
+    // Escape room open state images (rendered when player is near)
+    private static Image[] escapeRoomOpenImg = new Image[2];
+
+    // Instance state for escape room tracking
+    private boolean[] escapeRoomOpen;
+
+    private static boolean imagesInitialized = false;
+
+    /**
+     * Loads a sprite from the Dungeon Crawl Stone Soup pack (32x32 → scaled to
+     * target).
+     */
+    private static Image loadDcssTile(String dcPath, int width, int height) {
+        try {
+            InputStream is = Maze.class.getResourceAsStream(dcPath);
+            if (is != null) {
+                return new Image(is, width, height, true, false); // smooth=false for pixel art
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /** Fallback: loads custom sprite from /sprites/ folder. */
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = Maze.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /** Loads an image trying DCSS path first, falling back to custom sprite. */
+    private static Image loadTile(String dcPath, String fallbackName, int width, int height) {
+        Image img = loadDcssTile(dcPath, width, height);
+        if (img != null)
+            return img;
+        return loadSprite(fallbackName, width, height);
+    }
+
+    public static void initImages() {
+        if (imagesInitialized)
+            return;
+        String dc = "/assets/images/dungeon/";
+
+        // === THEME 1 — Forest/Natural (Level 1) ===
+        // Vines-covered walls + natural lair floors — cohesive earthy/organic set
+        borderWallImg[0][0] = loadTile(dc + "wall/wall_vines_0.png", "border_wall_1.png", 40, 40);
+        borderWallImg[0][1] = loadTile(dc + "wall/wall_vines_1.png", "border_wall_1.png", 40, 40);
+        borderWallImg[0][2] = loadTile(dc + "wall/wall_vines_2.png", "border_wall_1.png", 40, 40);
+        borderWallImg[0][3] = loadTile(dc + "wall/wall_vines_3.png", "border_wall_1.png", 40, 40);
+
+        innerWallImg[0][0] = loadTile(dc + "wall/wall_vines_4.png", "inner_wall_1.png", 40, 40);
+        innerWallImg[0][1] = loadTile(dc + "wall/wall_vines_5.png", "inner_wall_1.png", 40, 40);
+        innerWallImg[0][2] = loadTile(dc + "wall/wall_vines_6.png", "inner_wall_1.png", 40, 40);
+        innerWallImg[0][3] = loadTile(dc + "wall/brick_brown-vines_1.png", "inner_wall_1.png", 40, 40);
+
+        floorAImg[0][0] = loadTile(dc + "floor/lair_0_new.png", "floor_a_1.png", 40, 40);
+        floorAImg[0][1] = loadTile(dc + "floor/lair_1_new.png", "floor_a_1.png", 40, 40);
+        floorAImg[0][2] = loadTile(dc + "floor/lair_2_new.png", "floor_a_1.png", 40, 40);
+
+        floorBImg[0][0] = loadTile(dc + "floor/lair_3_new.png", "floor_b_1.png", 40, 40);
+        floorBImg[0][1] = loadTile(dc + "floor/lair_4.png", "floor_b_1.png", 40, 40);
+        floorBImg[0][2] = loadTile(dc + "floor/lair_5.png", "floor_b_1.png", 40, 40);
+
+        // === THEME 2 — Dungeon/Brown (Level 2) ===
+        // Brown brick walls (consistent family) + pebble floors (consistent family)
+        borderWallImg[1][0] = loadTile(dc + "wall/brick_brown_4.png", "border_wall_2.png", 40, 40);
+        borderWallImg[1][1] = loadTile(dc + "wall/brick_brown_5.png", "border_wall_2.png", 40, 40);
+        borderWallImg[1][2] = loadTile(dc + "wall/brick_brown_6.png", "border_wall_2.png", 40, 40);
+        borderWallImg[1][3] = loadTile(dc + "wall/brick_brown_7.png", "border_wall_2.png", 40, 40);
+
+        innerWallImg[1][0] = loadTile(dc + "wall/brick_brown_0.png", "inner_wall_2.png", 40, 40);
+        innerWallImg[1][1] = loadTile(dc + "wall/brick_brown_1.png", "inner_wall_2.png", 40, 40);
+        innerWallImg[1][2] = loadTile(dc + "wall/brick_brown_2.png", "inner_wall_2.png", 40, 40);
+        innerWallImg[1][3] = loadTile(dc + "wall/brick_brown_3.png", "inner_wall_2.png", 40, 40);
+
+        floorAImg[1][0] = loadTile(dc + "floor/pebble_brown_0_new.png", "floor_a_2.png", 40, 40);
+        floorAImg[1][1] = loadTile(dc + "floor/pebble_brown_1_new.png", "floor_a_2.png", 40, 40);
+        floorAImg[1][2] = loadTile(dc + "floor/pebble_brown_2_new.png", "floor_a_2.png", 40, 40);
+
+        floorBImg[1][0] = loadTile(dc + "floor/pebble_brown_3_new.png", "floor_b_2.png", 40, 40);
+        floorBImg[1][1] = loadTile(dc + "floor/pebble_brown_4_new.png", "floor_b_2.png", 40, 40);
+        floorBImg[1][2] = loadTile(dc + "floor/pebble_brown_5_new.png", "floor_b_2.png", 40, 40);
+
+        // === THEME 3 — Dark/Crypt (Level 3) ===
+        // Dark brick walls (single family) + gray dirt floors (single family)
+        borderWallImg[2][0] = loadTile(dc + "wall/brick_dark_3.png", "border_wall_3.png", 40, 40);
+        borderWallImg[2][1] = loadTile(dc + "wall/brick_dark_4.png", "border_wall_3.png", 40, 40);
+        borderWallImg[2][2] = loadTile(dc + "wall/brick_dark_5.png", "border_wall_3.png", 40, 40);
+        borderWallImg[2][3] = loadTile(dc + "wall/brick_dark_6.png", "border_wall_3.png", 40, 40);
+
+        innerWallImg[2][0] = loadTile(dc + "wall/brick_dark_0.png", "inner_wall_3.png", 40, 40);
+        innerWallImg[2][1] = loadTile(dc + "wall/brick_dark_1.png", "inner_wall_3.png", 40, 40);
+        innerWallImg[2][2] = loadTile(dc + "wall/brick_dark_2.png", "inner_wall_3.png", 40, 40);
+        innerWallImg[2][3] = loadTile(dc + "wall/brick_dark_3.png", "inner_wall_3.png", 40, 40);
+
+        floorAImg[2][0] = loadTile(dc + "floor/grey_dirt_0_new.png", "floor_a_3.png", 40, 40);
+        floorAImg[2][1] = loadTile(dc + "floor/grey_dirt_1_new.png", "floor_a_3.png", 40, 40);
+        floorAImg[2][2] = loadTile(dc + "floor/grey_dirt_2_new.png", "floor_a_3.png", 40, 40);
+
+        floorBImg[2][0] = loadTile(dc + "floor/grey_dirt_b_0.png", "floor_b_3.png", 40, 40);
+        floorBImg[2][1] = loadTile(dc + "floor/grey_dirt_b_1.png", "floor_b_3.png", 40, 40);
+        floorBImg[2][2] = loadTile(dc + "floor/grey_dirt_b_2.png", "floor_b_3.png", 40, 40);
+
+        // === ESCAPE ROOMS ===
+        escapeRoomImg[0] = loadTile(dc + "doors/runed_door.png", "escape_room_green.png", 40, 40);
+        escapeRoomImg[1] = loadTile(dc + "doors/sealed_door.png", "escape_room_red.png", 40, 40);
+
+        // Open escape room images — use escape hatch / revealed room sprites (player
+        // has entered)
+        // escape_hatch_up.png looks like an opened portal/room floor tile
+        escapeRoomOpenImg[0] = loadTile(dc + "gateways/escape_hatch_up.png", "escape_room_green.png", 40, 40);
+        escapeRoomOpenImg[1] = loadTile(dc + "gateways/escape_hatch_up.png", "escape_room_red.png", 40, 40);
+
+        // === ATMOSPHERIC OVERLAYS ===
+        String misc = "/assets/images/misc/";
+        // Blood splats: 30 variants
+        for (int i = 0; i < 30; i++) {
+            overlayBloodSplat[i] = loadDcssTile(misc + "blood/blood_red_" + i + ".png", 40, 40);
+        }
+        overlayBloodSplat[0] = loadDcssTile(misc + "blood/blood_red.png", 40, 40);
+        overlayBloodSplat[1] = loadDcssTile(misc + "blood/blood_red_1_new.png", 40, 40);
+        overlayBloodSplat[2] = loadDcssTile(misc + "blood/blood_red_2_new.png", 40, 40);
+        overlayBloodSplat[3] = loadDcssTile(misc + "blood/blood_red_3_new.png", 40, 40);
+        overlayBloodSplat[4] = loadDcssTile(misc + "blood/blood_red_4_new.png", 40, 40);
+
+        // Wall blood: 19 base × 4 directions = 76
+        // Actual files: wall_blood_0_east.png, wall_blood_0_north.png, etc. (in
+        // misc/blood/)
+        String wallBlood = misc + "blood/wall_blood_";
+        String[] dirs = { "_east", "_north", "_south", "_west" };
+        for (int i = 0; i < 19; i++) {
+            for (int d = 0; d < 4; d++) {
+                int idx = i * 4 + d;
+                overlayWallBlood[idx] = loadDcssTile(wallBlood + i + dirs[d] + ".png", 40, 40);
+            }
+        }
+
+        // Floor vines
+        for (int i = 0; i < 4; i++) {
+            overlayFloorVines[i] = loadDcssTile(dc + "floor/floor_vines_" + i + "_new.png", 40, 40);
+        }
+
+        // Cracks/puddles
+        for (int i = 0; i < 5; i++) {
+            overlayCracks[i] = loadDcssTile(misc + "blood/blood_puddle_red" + (i > 0 ? "_" + i : "") + ".png", 40, 40);
+        }
+
+        // Sigils
+        for (int i = 0; i < 10; i++) {
+            overlaySigils[i] = loadDcssTile(dc + "floor/sigils/" + sigilNames[i] + ".png", 40, 40);
+        }
+
+        // Wall torches (5 variants)
+        for (int i = 0; i < 5; i++) {
+            overlayTorches[i] = loadDcssTile(dc + "wall/torches/torch_" + i + ".png", 40, 40);
+        }
+
+        // Water puddles
+        overlayWater[0] = loadDcssTile(dc + "water/shallow_water.png", 40, 40);
+        overlayWater[1] = loadDcssTile(dc + "water/shallow_water_2.png", 40, 40);
+
+        // === NEW: Additional atmospheric props ===
+        // Fountains (blue, blood, sparkling)
+        overlayFountains[0] = loadDcssTile(dc + "blue_fountain.png", 40, 40);
+        overlayFountains[1] = loadDcssTile(dc + "blue_fountain_2.png", 40, 40);
+        overlayFountains[2] = loadDcssTile(dc + "blood_fountain.png", 40, 40);
+        overlayFountains[3] = loadDcssTile(dc + "blood_fountain_2.png", 40, 40);
+        overlayFountains[4] = loadDcssTile(dc + "sparkling_fountain.png", 40, 40);
+        overlayFountains[5] = loadDcssTile(dc + "sparkling_fountain_2.png", 40, 40);
+        overlayFountains[6] = loadDcssTile(dc + "dry_fountain.png", 40, 40);
+
+        // Mold growth
+        for (int i = 0; i < 4; i++) {
+            overlayMold[i] = loadDcssTile(dc + "mold_large_" + (i + 1) + ".png", 40, 40);
+        }
+
+        // Extra floor variety: moss
+        overlayMoss[0] = loadDcssTile(dc + "floor/moss_0.png", 40, 40);
+        overlayMoss[1] = loadDcssTile(dc + "floor/moss_1.png", 40, 40);
+        overlayMoss[2] = loadDcssTile(dc + "floor/moss_2.png", 40, 40);
+        overlayMoss[3] = loadDcssTile(dc + "floor/moss_3.png", 40, 40);
+
+        // === CHEST SPRITES (for chest game phases) ===
+        // Theme 1: default chest, Theme 2: chest_2, Theme 3: chest_2
+        chestClosed[0] = loadDcssTile(dc + "chest.png", 40, 40);
+        chestClosed[1] = loadDcssTile(dc + "chest_2_closed.png", 40, 40);
+        chestClosed[2] = loadDcssTile(dc + "chest_2_closed.png", 40, 40);
+        chestOpen[0] = loadDcssTile(dc + "chest_2_open.png", 40, 40);
+        chestOpen[1] = loadDcssTile(dc + "chest_2_open.png", 40, 40);
+        chestOpen[2] = loadDcssTile(dc + "chest_2_open.png", 40, 40);
+
+        imagesInitialized = true;
+    }
+
+    private static final String[] sigilNames = {
+            "circle", "cross", "rhombus", "algiz",
+            "curve_north_east", "curve_north_west", "curve_south_east", "curve_south_west",
+            "straight_north_south", "straight_east_west"
+    };
+
+    private void drawTile(GraphicsContext gc, Image img, double x, double y) {
+        if (img != null) {
+            gc.drawImage(img, x, y, TILE_SIZE, TILE_SIZE);
+        } else {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        }
+    }
+
+    /** Deterministic variant index based on tile position. */
+    private static int variantIndex(int row, int col, int maxVariants) {
+        return Math.abs(row * 31 + col * 17) % maxVariants;
+    }
+
+    // ================= ESCAPE ROOM STATE =================
+
+    /**
+     * Updates which escape rooms are "open" based on player position. Call every
+     * frame.
+     */
+    public void updateEscapeRoomState(double playerX, double playerY) {
+        if (mapGrid == null)
+            return;
+
+        // Initialize escape room tracking on first call
+        if (escapeRoomOpen == null) {
+            List<int[]> rooms = getTilesOfType(6);
+            escapeRoomOpen = new boolean[rooms.size()];
+        }
+
+        int playerCol = (int) (playerX / TILE_SIZE);
+        int playerRow = (int) ((playerY - Y_OFFSET) / TILE_SIZE);
+
+        List<int[]> rooms = getTilesOfType(6);
+        for (int i = 0; i < rooms.size(); i++) {
+            int[] room = rooms.get(i);
+            int dr = Math.abs(playerRow - room[0]);
+            int dc = Math.abs(playerCol - room[1]);
+            // Player is "inside" if within 1 tile of the escape room
+            escapeRoomOpen[i] = (dr <= 1 && dc <= 1);
+        }
+    }
+
+    /**
+     * Returns true if the escape room at (row, col) is currently open (player
+     * inside).
+     */
+    private boolean isEscapeRoomOpen(int row, int col) {
+        if (escapeRoomOpen == null)
+            return false;
+        List<int[]> rooms = getTilesOfType(6);
+        for (int i = 0; i < rooms.size(); i++) {
+            if (rooms.get(i)[0] == row && rooms.get(i)[1] == col) {
+                return escapeRoomOpen[i];
+            }
+        }
+        return false;
+    }
+
+    // ================= CONSTRUCTORS =================
+
     public Maze(String csvFilePath) {
         loadMapFromCSV(csvFilePath);
     }
@@ -37,6 +330,8 @@ public class Maze {
         this.levelTheme = levelTheme;
         loadMapFromCSV(csvFilePath);
     }
+
+    // ================= MAP LOADING =================
 
     private void loadMapFromCSV(String path) {
         List<int[]> rowList = new ArrayList<>();
@@ -87,12 +382,15 @@ public class Maze {
         }
     }
 
+    // ================= RENDERING =================
+
     public void renderMaze(GraphicsContext gc) {
         if (mapGrid == null)
             return;
 
         int maxRow = mapGrid.length - 1;
         int maxCol = mapGrid[0].length - 1;
+        int ti = Math.min(levelTheme - 1, 2);
 
         for (int row = 0; row < mapGrid.length; row++) {
             for (int col = 0; col < mapGrid[row].length; col++) {
@@ -102,94 +400,127 @@ public class Maze {
                 int tile = mapGrid[row][col];
                 boolean isBorder = (row == 0 || row == maxRow || col == 0 || col == maxCol);
 
-                if (tile == 1) {
-                    if (isBorder) {
-                        renderBorderWall(gc, tileX, tileY);
+                if (tile == 6) {
+                    // === ESCAPE ROOM ===
+                    boolean isOpen = isEscapeRoomOpen(row, col);
+                    if (isOpen) {
+                        // Player entered: show an open room/floor tile instead of a door
+                        int fi = variantIndex(row, col, 3);
+                        Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
+                        drawTile(gc, floorImg, tileX, tileY);
+                        // Overlay the open escape room image (open door/escape hatch) on top
+                        Image openImg = escapeRoomOpenImg[levelTheme == 3 ? 1 : 0];
+                        if (openImg != null) {
+                            drawTile(gc, openImg, tileX, tileY);
+                        }
                     } else {
-                        renderInnerWall(gc, tileX, tileY);
+                        // Not entered yet: show the closed door
+                        Image doorImg = escapeRoomImg[levelTheme == 3 ? 1 : 0];
+                        drawTile(gc, doorImg, tileX, tileY);
                     }
-                } else if (tile == 6) {
-                    renderEscapeRoom(gc, tileX, tileY);
+                } else if (tile == 1) {
+                    // === WALL ===
+                    int vi = variantIndex(row, col, 4);
+                    if (isBorder) {
+                        drawTile(gc, borderWallImg[ti][vi], tileX, tileY);
+                    } else {
+                        drawTile(gc, innerWallImg[ti][vi], tileX, tileY);
+                    }
                 } else {
-                    renderFloor(gc, tileX, tileY, row, col);
+                    // === FLOOR ===
+                    int fi = variantIndex(row, col, 3);
+                    Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
+                    drawTile(gc, floorImg, tileX, tileY);
                 }
             }
         }
+
+        // Second pass: atmospheric overlays + corner statues
+        renderAtmosphericOverlays(gc);
     }
 
-    // Theme color palettes indexed by (levelTheme - 1)
-    private static final Color[] BORDER_FILL = { Color.rgb(16, 28, 16), Color.rgb(20, 18, 18), Color.rgb(22, 20, 24) };
-    private static final Color[] INNER_FILL = { Color.rgb(32, 60, 34), Color.rgb(55, 40, 48), Color.rgb(48, 46, 52) };
-    private static final Color[][] FLOOR_FILL = {
-            { Color.rgb(16, 24, 18), Color.rgb(18, 28, 20) },
-            { Color.rgb(18, 18, 22), Color.rgb(22, 22, 28) },
-            { Color.rgb(22, 22, 24), Color.rgb(28, 28, 32) }
-    };
+    // ================= ATMOSPHERIC OVERLAYS =================
 
-    private Color themeColor(Color[] palette) {
-        return palette[Math.min(levelTheme - 1, 2)];
+    /**
+     * Manually place a sprite at a specific grid position.
+     * Add your placements inside renderAtmosphericOverlays() below,
+     * right after the "=== MANUAL PLACEMENT ===" comment.
+     *
+     * <pre>
+     * Examples:
+     *   placeSprite(gc, overlayTorches[0],     8,  5, 48, 48, 1.0);   // torch at (col=8, row=5)
+     *   placeSprite(gc, overlayMold[2],        12, 10, 48, 48, 0.7);   // mold at (12,10)
+     *   placeSprite(gc, overlaySigils[0],      3,  7, 40, 40, 0.3);    // sigil at (3,7)
+     *   placeSprite(gc, overlayFountains[0],   15,  4, 40, 40, 0.9);   // fountain at (15,4)
+     *   placeSprite(gc, overlayCracks[1],      6,  9, 40, 40, 0.3);    // crack at (6,9)
+     *   placeSprite(gc, overlayBloodSplat[10], 4,  3, 40, 40, 0.25);   // blood at (4,3)
+     *   placeSprite(gc, overlayFloorVines[0],  10, 2, 40, 40, 0.5);    // vines at (10,2)
+     *   placeSprite(gc, overlayMoss[1],        7,  11, 40, 40, 0.4);   // moss at (7,11)
+     *   placeSprite(gc, overlayWater[0],       14, 8, 40, 40, 0.3);    // water at (14,8)
+     *   placeSprite(gc, overlayWallBlood[0],   5,  6, 40, 40, 0.3);    // wall blood at (5,6)
+     *   placeSprite(gc, getClosedChestImage(), 9,  6, 40, 40, 1.0);    // chest at (9,6)
+     * </pre>
+     *
+     * @param gc     graphics context
+     * @param image  the sprite to place
+     * @param col    grid column
+     * @param row    grid row
+     * @param width  draw width in pixels
+     * @param height draw height in pixels
+     * @param alpha  transparency (0.0–1.0)
+     */
+    public void placeSprite(GraphicsContext gc, Image image, int col, int row, double width, double height,
+            double alpha) {
+        if (image == null)
+            return;
+        double x = col * TILE_SIZE;
+        double y = row * TILE_SIZE + Y_OFFSET;
+        gc.setGlobalAlpha(alpha);
+        gc.drawImage(image, x, y, width, height);
+        gc.setGlobalAlpha(1.0);
     }
 
-    private void renderBorderWall(GraphicsContext gc, double x, double y) {
-        gc.setFill(themeColor(BORDER_FILL));
-        gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(30, 25, 32));
-        gc.setLineWidth(0.5);
-        gc.strokeLine(x, y + TILE_SIZE * 0.33, x + TILE_SIZE, y + TILE_SIZE * 0.33);
-        gc.strokeLine(x, y + TILE_SIZE * 0.66, x + TILE_SIZE, y + TILE_SIZE * 0.66);
-        gc.setStroke(Color.rgb(10, 8, 12));
-        gc.setLineWidth(1);
-        gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+    /**
+     * Second rendering pass: manual overlay placement only.
+     * No procedural/random overlays — every sprite is placed explicitly.
+     * Add your placeSprite() calls inside the "=== MANUAL PLACEMENT ===" block.
+     */
+    private void renderAtmosphericOverlays(GraphicsContext gc) {
+        if (mapGrid == null)
+            return;
+
+        // ================================================================
+        // === MANUAL PLACEMENT ===
+        // Add your overlay placements below. One per line.
+        // Format: placeSprite(gc, imageArray[index], col, row, width, height, alpha)
+        //
+        // Available overlay arrays:
+        //   overlayBloodSplat[0-29]   - blood splats on floor
+        //   overlayFloorVines[0-3]    - vine overlays on floor
+        //   overlayWater[0-1]         - water puddles
+        //   overlayMoss[0-3]          - moss patches
+        //   overlayCracks[0-4]        - blood puddles/cracks
+        //   overlayMold[0-3]          - large fungus (use 48x48, alpha 0.7)
+        //   overlaySigils[0-9]        - floor runes/sigils
+        //   overlayFountains[0-6]     - fountains/decorative
+        //   overlayTorches[0-4]       - wall torches (use 48x48)
+        //   overlayWallBlood[0-75]    - blood on walls
+        //   getClosedChestImage()     - closed chest for current theme
+        //   getOpenChestImage()       - open chest for current theme
+        //
+        // Examples:
+        //   placeSprite(gc, overlayTorches[0],     8,  5, 48, 48, 1.0);
+        //   placeSprite(gc, overlayMold[2],        12, 10, 48, 48, 0.7);
+        //   placeSprite(gc, overlaySigils[0],      3,  7, 40, 40, 0.3);
+        //   placeSprite(gc, getClosedChestImage(), 9,  6, 40, 40, 1.0);
+        // ================================================================
+
+
+
+        // === END MANUAL PLACEMENT ===
     }
 
-    private void renderInnerWall(GraphicsContext gc, double x, double y) {
-        gc.setFill(themeColor(INNER_FILL));
-        gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(38, 28, 35));
-        gc.setLineWidth(0.7);
-        gc.strokeLine(x, y + TILE_SIZE * 0.5, x + TILE_SIZE, y + TILE_SIZE * 0.5);
-        gc.strokeLine(x + TILE_SIZE * 0.5, y, x + TILE_SIZE * 0.5, y + TILE_SIZE * 0.5);
-        gc.strokeLine(x + TILE_SIZE * 0.25, y + TILE_SIZE * 0.5, x + TILE_SIZE * 0.25, y + TILE_SIZE);
-        gc.strokeLine(x + TILE_SIZE * 0.75, y + TILE_SIZE * 0.5, x + TILE_SIZE * 0.75, y + TILE_SIZE);
-        gc.setStroke(Color.rgb(70, 52, 62));
-        gc.setLineWidth(1);
-        gc.strokeLine(x + 1, y + 1, x + TILE_SIZE - 1, y + 1);
-        gc.strokeLine(x + 1, y + 1, x + 1, y + TILE_SIZE - 1);
-        gc.setStroke(Color.rgb(30, 20, 28));
-        gc.strokeLine(x + TILE_SIZE - 1, y + 1, x + TILE_SIZE - 1, y + TILE_SIZE - 1);
-        gc.strokeLine(x + 1, y + TILE_SIZE - 1, x + TILE_SIZE - 1, y + TILE_SIZE - 1);
-    }
-
-    private void renderEscapeRoom(GraphicsContext gc, double x, double y) {
-        boolean dark = levelTheme == 3;
-        gc.setFill(dark ? Color.rgb(26, 26, 26) : Color.rgb(12, 30, 12));
-        gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(dark ? Color.rgb(80, 20, 20) : Color.rgb(0, 80, 0));
-        gc.setLineWidth(1);
-        gc.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-        gc.setFill(dark ? Color.rgb(140, 40, 40, 0.6) : Color.rgb(0, 100, 0, 0.6));
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        gc.fillText("S", x + 14, y + 27);
-    }
-
-    private void renderFloor(GraphicsContext gc, double x, double y, int row, int col) {
-        int ti = Math.min(levelTheme - 1, 2);
-        gc.setFill(FLOOR_FILL[ti][(row + col) % 2 == 0 ? 0 : 1]);
-        gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.rgb(30, 30, 36));
-        gc.setLineWidth(0.3);
-        gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
-        if (levelTheme == 1) {
-            gc.setFill(Color.rgb(26, 44, 28, 0.45));
-            gc.fillOval(x + 8, y + 10, 4, 3);
-            gc.fillOval(x + 26, y + 24, 5, 4);
-        } else {
-            gc.setStroke(Color.rgb(12, 12, 16, 0.45));
-            gc.setLineWidth(0.6);
-            gc.strokeLine(x + 6, y + 10, x + 20, y + 16);
-            gc.strokeLine(x + 24, y + 28, x + 34, y + 34);
-        }
-    }
+    // ================= COLLISION & QUERIES =================
 
     /** Returns true if the projected hitbox overlaps any wall tile. */
     public boolean isWallCollision(Rectangle2D nextHitbox) {
@@ -262,12 +593,14 @@ public class Maze {
             int nr = centerRow + d[0];
             int nc = centerCol + d[1];
             if (nr >= 0 && nr < mapGrid.length && nc >= 0 && nc < mapGrid[0].length
-                    && mapGrid[nr][nc] != 1 && mapGrid[nr][nc] != 10) {
+                    && mapGrid[nr][nc] != 1) {
                 return new int[] { nr, nc };
             }
         }
         return new int[] { centerRow, centerCol };
     }
+
+    // ================= BFS PATHFINDING =================
 
     private static class Node {
         int r, c;
@@ -313,7 +646,7 @@ public class Maze {
                 int nc = curr.c + dc[i];
 
                 if (nr >= 0 && nr < rows && nc >= 0 && nc < cols
-                        && !visited[nr][nc] && mapGrid[nr][nc] != 1 && mapGrid[nr][nc] != 10) {
+                        && !visited[nr][nc] && mapGrid[nr][nc] != 1) {
 
                     visited[nr][nc] = true;
                     queue.add(new Node(nr, nc, curr));
@@ -355,7 +688,7 @@ public class Maze {
             int row = (int) Math.floor((cy - Y_OFFSET) / TILE_SIZE);
 
             if (row >= 0 && row < mapGrid.length && col >= 0 && col < mapGrid[0].length) {
-                if (mapGrid[row][col] == 1 || mapGrid[row][col] == 10)
+                if (mapGrid[row][col] == 1)
                     return false;
             }
         }
@@ -437,5 +770,19 @@ public class Maze {
 
     public int getPlayerSpawnCol() {
         return playerSpawnCol;
+    }
+
+    // ================= CHEST ACCESSORS =================
+
+    /** Returns the closed chest image for the current theme level. */
+    public Image getClosedChestImage() {
+        int ti = Math.min(levelTheme - 1, 2);
+        return chestClosed[ti];
+    }
+
+    /** Returns the open chest image for the current theme level. */
+    public Image getOpenChestImage() {
+        int ti = Math.min(levelTheme - 1, 2);
+        return chestOpen[ti];
     }
 }

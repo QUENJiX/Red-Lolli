@@ -4,8 +4,10 @@ import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcType;
+
+import java.io.InputStream;
 
 /**
  * The primary antagonist entity for Level 1, "Pale Luna".
@@ -16,6 +18,38 @@ public class Monster extends Entity implements Collidable {
     public enum State {
         DORMANT, STALKING, HUNTING, WAITING_AT_DOOR
     }
+
+    // ================= IMAGE ASSETS =================
+
+    private static Image monsterDormant;
+    private static Image monsterStalking;
+    private static Image monsterHunting;
+    private static Image monsterWaiting;
+    private static Image monsterAura;
+    private static boolean imagesInitialized = false;
+
+    private static Image loadSprite(String filename, int width, int height) {
+        try {
+            InputStream is = Monster.class.getResourceAsStream("/assets/images/sprites/" + filename);
+            if (is != null) {
+                return new Image(is, width, height, true, false);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void initImages() {
+        if (imagesInitialized) return;
+        monsterDormant = loadSprite("monster_dormant.png", 25, 25);
+        monsterStalking = loadSprite("monster_stalking.png", 25, 25);
+        monsterHunting = loadSprite("monster_hunting.png", 25, 25);
+        monsterWaiting = loadSprite("monster_waiting.png", 25, 25);
+        monsterAura = loadSprite("monster_aura.png", 35, 35);
+        imagesInitialized = true;
+    }
+
+    // ================= STATE =================
 
     private State state = State.DORMANT;
 
@@ -158,148 +192,37 @@ public class Monster extends Entity implements Collidable {
 
     @Override
     public void render(GraphicsContext gc) {
-        if (state != State.DORMANT) {
-            drawAura(gc);
+        // Aura (only when not dormant)
+        if (state != State.DORMANT && monsterAura != null) {
+            double pulse = Math.sin(pulsePhase) * 5;
+            gc.setGlobalAlpha(0.35);
+            gc.drawImage(monsterAura,
+                    x - pulse - 5, y - pulse - 5,
+                    size + (pulse + 5) * 2, size + (pulse + 5) * 2);
+            gc.setGlobalAlpha(1.0);
         }
-        drawHead(gc);
-        drawHair(gc);
-        drawMouth(gc);
-    }
 
-    private void drawAura(GraphicsContext gc) {
-        double pulseOffset = Math.sin(pulsePhase) * 5;
-        gc.setFill(Color.rgb(100, 0, 0, 0.35));
-        gc.fillOval(x - pulseOffset - 2, y - pulseOffset - 2,
-                size + (pulseOffset + 2) * 2, size + (pulseOffset + 2) * 2);
-    }
-
-    private void drawHead(GraphicsContext gc) {
-        double headX = x + 2, headY = y + 1;
-        double headW = size - 4, headH = size - 2;
-
-        Color skinColor = (state == State.DORMANT)
-                ? Color.rgb(220, 210, 200, 0.5)
-                : Color.rgb(240, 230, 220);
-        gc.setFill(skinColor);
-        gc.fillOval(headX, headY, headW, headH);
-    }
-
-    private void drawHair(GraphicsContext gc) {
-        double headX = x + 2, headY = y + 1;
-        double headW = size - 4, headH = size - 2;
-
-        Color hairColor = (state == State.DORMANT)
-                ? Color.rgb(180, 160, 40, 0.5)
-                : Color.rgb(220, 200, 60);
-        gc.setFill(hairColor);
-        gc.fillArc(headX - 1, headY - 3, headW + 2, headH * 0.6, 0, 180, ArcType.ROUND);
-        gc.fillOval(headX - 2, headY + 2, 5, headH - 4);
-        gc.fillOval(headX + headW - 3, headY + 2, 5, headH - 4);
-    }
-
-    private void drawMouth(GraphicsContext gc) {
-        double headX = x + 2, headY = y + 1;
-        double headW = size - 4, headH = size - 2;
-
+        // Body composite
+        Image body;
         switch (state) {
-            case HUNTING -> {
-                gc.setStroke(Color.rgb(80, 0, 0));
-                gc.setLineWidth(1.5);
-                gc.strokeArc(headX + 4, headY + headH * 0.55, headW - 8, 6, 180, 180, ArcType.OPEN);
-                gc.setStroke(Color.WHITE);
-                gc.setLineWidth(0.5);
-                double mouthY = headY + headH * 0.55 + 3;
-                for (int i = 0; i < 4; i++) {
-                    double tx = headX + 6 + i * 3;
-                    gc.strokeLine(tx, mouthY - 1, tx, mouthY + 1);
-                }
-            }
-            case WAITING_AT_DOOR -> {
-                gc.setStroke(Color.rgb(100, 0, 0));
-                gc.setLineWidth(1);
-                gc.strokeArc(headX + 5, headY + headH * 0.58, headW - 10, 4, 180, 180, ArcType.OPEN);
-            }
-            case STALKING -> {
-                gc.setStroke(Color.rgb(120, 20, 20));
-                gc.setLineWidth(1.2);
-                gc.strokeArc(headX + 4, headY + headH * 0.58, headW - 8, 4, 180, 180, ArcType.OPEN);
-            }
-            default -> {
-                gc.setStroke(Color.rgb(150, 120, 120, 0.4));
-                gc.setLineWidth(0.8);
-                gc.strokeLine(headX + 7, headY + headH * 0.65, headX + headW - 7, headY + headH * 0.65);
-            }
-        }
-    }
-
-    public void renderEyes(GraphicsContext gc) {
-        double headX = x + 2, headY = y + 1;
-        double headW = size - 4, headH = size - 2;
-        double eyeY = headY + headH * 0.35;
-        double lx = headX + headW * 0.22, rx = headX + headW * 0.58;
-
-        if (state == State.DORMANT) {
-            gc.setFill(Color.rgb(150, 0, 0, 0.5));
-            gc.fillOval(lx, eyeY + 1, 4, 2);
-            gc.fillOval(rx, eyeY + 1, 4, 2);
-            return;
+            case DORMANT -> body = monsterDormant;
+            case STALKING -> body = monsterStalking;
+            case HUNTING -> body = monsterHunting;
+            case WAITING_AT_DOOR -> body = monsterWaiting;
+            default -> body = monsterDormant;
         }
 
-        double pulseSpeed, baseSz;
-        Color glowCol, irisCol;
-        boolean hasHighlight;
-        switch (state) {
-            case HUNTING -> {
-                pulseSpeed = 3;
-                baseSz = 5;
-                glowCol = Color.rgb(255, 0, 0, 0.3);
-                irisCol = Color.rgb(255, 20, 20);
-                hasHighlight = true;
+        if (body != null) {
+            if (state == State.DORMANT) {
+                gc.setGlobalAlpha(0.5);
+                gc.drawImage(body, x, y, size, size);
+                gc.setGlobalAlpha(1.0);
+            } else {
+                gc.drawImage(body, x, y, size, size);
             }
-            case WAITING_AT_DOOR -> {
-                pulseSpeed = 0.8;
-                baseSz = 4;
-                glowCol = Color.rgb(40, 0, 0, 1.0);
-                irisCol = Color.rgb(220, 0, 0);
-                hasHighlight = true;
-            }
-            default /* STALKING */ -> {
-                pulseSpeed = 1.4;
-                baseSz = 3.6;
-                glowCol = Color.rgb(180, 0, 0, 0.35);
-                irisCol = Color.rgb(220, 40, 40, 0.85);
-                hasHighlight = false;
-            }
-        }
-
-        double pulse = Math.sin(pulsePhase * pulseSpeed)
-                * (state == State.HUNTING ? 1.5 : state == State.WAITING_AT_DOOR ? 0.5 : 0.8);
-        double sz = baseSz + pulse;
-
-        gc.setFill(glowCol);
-        gc.fillOval(lx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1),
-                sz + (state == State.HUNTING ? 6 : 2),
-                sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
-        gc.fillOval(rx - (state == State.HUNTING ? 3 : 1), eyeY - (state == State.HUNTING ? 3 : 1),
-                sz + (state == State.HUNTING ? 6 : 2),
-                sz + (state == State.HUNTING ? 5 : state == State.STALKING ? 2 : 1));
-
-        if (state == State.HUNTING) {
-            gc.setFill(Color.rgb(50, 0, 0));
-            gc.fillOval(lx - 1, eyeY - 1, sz + 2, sz);
-            gc.fillOval(rx - 1, eyeY - 1, sz + 2, sz);
-        }
-
-        gc.setFill(irisCol);
-        gc.fillOval(lx, eyeY, sz, state == State.STALKING ? sz : sz - 1);
-        gc.fillOval(rx, eyeY, sz, state == State.STALKING ? sz : sz - 1);
-
-        if (hasHighlight) {
-            Color hlCol = state == State.HUNTING ? Color.rgb(255, 200, 200) : Color.rgb(255, 100, 100);
-            double hlOff = state == State.HUNTING ? 1.5 : 1;
-            gc.setFill(hlCol);
-            gc.fillOval(lx + hlOff, eyeY + (state == State.HUNTING ? 1 : 0.5), 2, 1.5);
-            gc.fillOval(rx + hlOff, eyeY + (state == State.HUNTING ? 1 : 0.5), 2, 1.5);
+        } else {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, size, size);
         }
     }
 

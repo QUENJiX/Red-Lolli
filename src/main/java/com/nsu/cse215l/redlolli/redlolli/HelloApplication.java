@@ -17,9 +17,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -35,14 +32,6 @@ import java.util.Set;
 public class HelloApplication extends Application {
 
     private static final String[] ITEM_NAMES = { "Mud", "Shovel", "Rope" };
-    private static final String[] ITEM_FOUND_MAIN_TEXT = { "Mud Found", "Shovel Found", "Rope Found" };
-    private static final String[] ITEM_FOUND_BUTTON_TEXT = { "here.", "use", "now" };
-
-    private static final String[] MENU_SUBTITLES = {
-            "Find the cursed items. Survive the demon.",
-            "She remembers your last game.",
-            "You can only survive."
-    };
 
     private Stage mainWindow;
     private AnimationTimer gameLoop;
@@ -73,24 +62,67 @@ public class HelloApplication extends Application {
 
     private Scene createMainMenu() {
         menuVisits++;
-        VBox layout = new VBox(20);
+        SceneFactory.initUIImages();
+
+        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+
+        // Background (semi-transparent)
+        ImageView bgView = new ImageView(SceneFactory.getMenuBackgroundImg());
+        bgView.setFitWidth(880);
+        bgView.setFitHeight(730);
+        bgView.setPreserveRatio(false);
+        root.getChildren().add(bgView);
+
+        // Content VBox
+        VBox layout = new VBox(15);
         layout.setAlignment(Pos.CENTER);
-        layout.setStyle("-fx-background-color: black;");
 
-        Text title = new Text("ESCAPE PALE LUNA");
-        title.setFont(Font.font("Serif", FontWeight.BOLD, 56));
-        title.setFill(Color.DARKRED);
-        Text subtitle = new Text(MENU_SUBTITLES[(menuVisits - 1) % MENU_SUBTITLES.length]);
-        subtitle.setFont(Font.font("Serif", 19));
-        subtitle.setFill(Color.GRAY);
+        // Title
+        ImageView titleImg = new ImageView(SceneFactory.getMenuTitleImg());
+        titleImg.setPreserveRatio(true);
+        layout.getChildren().add(titleImg);
 
-        javafx.scene.control.Button newGameBtn = SceneFactory.createStyledButton("> NEW GAME");
-        javafx.scene.control.Button exitBtn = SceneFactory.createStyledButton("EXIT");
+        // Subtitle (cycles per visit)
+        Image subtitleImg = SceneFactory.getMenuSubtitleImg((menuVisits - 1) % 3);
+        if (subtitleImg != null) {
+            ImageView subView = new ImageView(subtitleImg);
+            subView.setPreserveRatio(true);
+            layout.getChildren().add(subView);
+        }
+
+        // Buttons using -fx-background-image CSS
+        javafx.scene.control.Button newGameBtn = createImageButton(
+                "> NEW GAME", "/assets/images/ui/btn_new_game.png", 200, 50);
+        javafx.scene.control.Button exitBtn = createImageButton(
+                "EXIT", "/assets/images/ui/btn_exit.png", 150, 50);
         newGameBtn.setOnAction(e -> playIntroAndStart());
         exitBtn.setOnAction(e -> System.exit(0));
 
-        layout.getChildren().addAll(title, subtitle, newGameBtn, exitBtn);
-        return new Scene(layout, 880, 730);
+        layout.getChildren().addAll(newGameBtn, exitBtn);
+        root.getChildren().add(layout);
+
+        return new Scene(root, 880, 730);
+    }
+
+    /** Creates a Button with a background image, transparent text, and styled borders. */
+    private javafx.scene.control.Button createImageButton(String text, String imagePath, int prefW, int prefH) {
+        javafx.scene.control.Button btn = new javafx.scene.control.Button(text);
+        btn.setPrefSize(prefW, prefH);
+        btn.setTextFill(Color.TRANSPARENT);
+        String bgUrl = getClass().getResource(imagePath).toExternalForm();
+        btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
+                + "-fx-background-size: stretch; "
+                + "-fx-background-color: transparent; "
+                + "-fx-border-color: darkred; -fx-border-width: 1px;");
+        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
+                + "-fx-background-size: stretch; "
+                + "-fx-background-color: rgba(100, 0, 0, 0.3); "
+                + "-fx-border-color: red; -fx-border-width: 2px;"));
+        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
+                + "-fx-background-size: stretch; "
+                + "-fx-background-color: transparent; "
+                + "-fx-border-color: darkred; -fx-border-width: 1px;"));
+        return btn;
     }
 
     private void playIntroAndStart() {
@@ -107,7 +139,7 @@ public class HelloApplication extends Application {
 
         Timeline timeline = new Timeline();
         for (int i = 0; i < 6; i++) {
-            String imgPath = "/assets/images/intro_" + (i + 1) + ".jpeg";
+            String imgPath = "/assets/images/cutscenes/intro/intro_" + (i + 1) + ".jpeg";
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(i * 1.7 + 0.5), e -> {
                 Image img = SceneFactory.tryLoadImage(imgPath);
                 if (img != null)
@@ -208,7 +240,7 @@ public class HelloApplication extends Application {
             gameLoop.stop();
         gsm.showingItemFound = true;
         mainWindow.setScene(SceneFactory.createItemFoundScene(
-                gsm.currentLevel, ITEM_FOUND_MAIN_TEXT, ITEM_FOUND_BUTTON_TEXT,
+                gsm.currentLevel,
                 () -> {
                     gsm.showingItemFound = false;
                     advanceLevel();
@@ -246,7 +278,7 @@ public class HelloApplication extends Application {
 
         Timeline timeline = new Timeline();
         for (int i = 0; i < 5; i++) {
-            String imgPath = "/assets/images/victory_" + (i + 1) + ".png";
+            String imgPath = "/assets/images/cutscenes/victory/victory_" + (i + 1) + ".png";
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(1.4 * i + 0.7), e -> {
                 Image img = SceneFactory.tryLoadImage(imgPath);
                 if (img != null)

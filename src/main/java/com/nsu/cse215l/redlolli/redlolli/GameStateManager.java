@@ -4,6 +4,7 @@ import com.nsu.cse215l.redlolli.redlolli.entities.*;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.systems.SoundManager;
 import com.nsu.cse215l.redlolli.redlolli.ui.GameRenderer;
+import com.nsu.cse215l.redlolli.redlolli.ui.HUDRenderer;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
@@ -88,6 +89,16 @@ public class GameStateManager {
     }
 
     void loadLevel() {
+        Maze.initImages();
+        Item.initImages();
+        CardboardClone.initImages();
+        GuardEntity.initImages();
+        SerialKillerEntity.initImages();
+        Player.initImages();
+        Monster.initImages();
+        GameRenderer.initImages();
+        HUDRenderer.initImages();
+
         maze = new Maze(MAP_FILES[currentLevel - 1], currentLevel);
         double spawnX = maze.getPlayerSpawnCol() * Maze.TILE_SIZE + 10;
         double spawnY = maze.getPlayerSpawnRow() * Maze.TILE_SIZE + Maze.Y_OFFSET + 10;
@@ -256,6 +267,9 @@ public class GameStateManager {
         boolean enteringEscapeRoom = !wasInEscapeRoom && inEscapeRoom;
         boolean exitingEscapeRoom = wasInEscapeRoom && !inEscapeRoom;
         player.setInEscapeRoom(inEscapeRoom);
+
+        // Update escape room visual state (open door when player inside)
+        maze.updateEscapeRoomState(player.getX(), player.getY());
 
         if (exitingEscapeRoom) {
             exitGraceFrames = 45;

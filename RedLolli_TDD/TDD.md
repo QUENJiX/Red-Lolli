@@ -1,404 +1,327 @@
-# PALE LUNA
-
-## HORROR FREAK SHOW TRANSFORMATION
+# Red Lolli
 
 ```
-Technical Design Document
+Technical Design Document — Current State & Future Improvements
 ```
-_"Luna, a blonde, white girl, was killed at age 11. They choked her with a
-rope. Then buried her in Central Park with a shovel. Now her demon roams
-the maze --- and only the Rope, the Mud, and the Shovel can put her back in
-the ground."_
+
+_"Luna, a blonde, white girl, was killed at age 11. They choked her with a rope. Then buried her in Central Park with a shovel. Now her demon roams the maze — and only the Rope, the Mud, and the Shovel can put her back in the ground."_
 
 ```
 CSE215 Java OOP Lab Project
-DO NOT PLAY ALONE
 ```
 
-## 1. Project Overview & Vision
+---
 
-Transform “Escape Pale Luna” from a maze puzzle into a **bone-chilling psychological horror
-experience** worth $4.99 on Steam.
+## 1. Project Overview
 
-### Inspirations
+A 2D horror maze game built with JavaFX. The player navigages three levels of a maze, collects items (lollipops) from chests, avoids threats, and reaches escape rooms. The game features image-based sprite rendering, a 4-state monster AI, level-specific guard entities, and atmospheric horror UI screens.
 
-- **Lone Survivor / Darkwood** — oppressive 2D darkness, flashlight mechanics, sanity sys-
-    tem.
-- **Inscription / Pony Island** — fourth-wall breaks, the game “talking” to the player.
-- **PT (Playable Teaser)** — looping dread, subtle environmental changes, subliminal horror.
-- **SCP: Containment Breach** — unpredictable AI, blinking mechanic tension.
-- **Creepypasta “Pale Luna”** — the original source material’s cold, clinical dread.
+### Core Premise
 
-### Core Horror Philosophy
+- **Luna** (blonde girl, killed at 11, choked with rope, buried in Central Park with a shovel)
+- Three items to banish her: **Mud**, **Shovel**, and **Rope**
+- 2D maze gameplay with three progressively harder levels
+- Each level has unique threats and mechanics
 
-The game doesn’t rely on cheap jumpscares. It builds **dread** — the feeling that something is
-_wrong_ and getting _worse_. The darkness is alive. Luna doesn’t just chase you — she **watches** ,
-she **whispers** , she **plays with you**.
+---
 
-### [!IMPORTANT
+## 2. Current Architecture (Implemented)
 
-```
-PREMISE STAYS INTACT] Luna (blonde girl, killed at 11, choked with rope, buried in Central
-Park with a shovel). The three items are Mud , Shovel , and Rope — the weapons to banish
-her demon. 2D maze gameplay preserved.
-```
-### [!WARNING
+### 2.1 Tech Stack
 
-```
-CONTENT WARNING] This plan includes intensely dark horror content — child death
-backstory, psychological manipulation, gore imagery (drawn with JavaFX primitives), and
-fourth-wall breaking elements. This is what “bonechilling, pant-shitting” requires.
-```
-### [!CAUTION
+| Component | Technology |
+|-----------|-----------|
+| Language | Java 25 |
+| UI Framework | JavaFX 21 (Canvas-based rendering) |
+| Build Tool | Maven |
+| Dependencies | javafx-controls, javafx-fxml, javafx-media, FXGL, ControlsFX, Jackson |
+| Testing | JUnit 5 |
+
+### 2.2 Project Structure
 
 ```
-AUDIO ASSETS] The game will utilize real.wavaudio files for maximum atmospheric
-terror. The architecture must include a robustSoundManagerwith dedicated hooks and
-placeholder file paths (e.g.,"assets/audio/heartbeat_fast.wav"). The developer will im-
-plement the actual audio files at a later stage, so the code must be structured to handle
-missing files gracefully and allow easy swapping of these placeholders without breaking
-game logic.
+src/main/java/com/nsu/cse215l/redlolli/redlolli/
+├── core/
+│   ├── Collidable.java          # Interface for collision detection
+│   └── Entity.java              # Abstract base class (x, y, size, render, update)
+├── entities/
+│   ├── Player.java              # User-controlled character with stamina/sprint system
+│   ├── Monster.java             # Pale Luna — 4-state AI (DORMANT/STALKING/HUNTING/WAITING)
+│   ├── SerialKillerEntity.java  # Level 3 boss — chase & decoy attack mechanics
+│   ├── GuardEntity.java         # Level 1 bats & Level 2 cobras — distraction system
+│   ├── CardboardClone.java      # Level 3 decoy item for Serial Killer
+│   └── Item.java                # Chests with content types (LOLLI, EMPTY, CLONE_DECOY)
+├── map/
+│   └── Maze.java                # Tile-based map loaded from CSV, collision, pathfinding (BFS)
+├── systems/
+│   └── SoundManager.java        # AudioClip-based SFX + looping music, null-safe for missing files
+├── ui/
+│   ├── GameRenderer.java        # Main game canvas rendering (entities, maze, effects)
+│   ├── HUDRenderer.java         # HUD overlay (lollipops, Luna status, level, utility items)
+│   └── SceneFactory.java        # UI screen creation (menu, transition, death, victory, item-found)
+├── GameStateManager.java        # Central game state coordinator — entities, collisions, update loop
+├── HelloApplication.java        # JavaFX entry point, input handling, scene management
+└── Launcher.java                # JVM launcher entry point
 ```
 
+### 2.3 Implemented Game Systems
 
-## 2. Core Horror Systems (Mechanics)
-
-These systems form the psychological horror backbone. Every mechanic feeds into the others
-to create layered, compounding dread.
-
-### 2.1 SanitySystem.java
-
-Psychological horror core mechanic — sanity drains passively and from events:
-
-- **Sanity bar** (0-100): Drains slowly over time, faster in darkness, faster when near Luna.
-- **Hallucination tiers** :
-    - **90-100** : Normal gameplay.
-    - **70-89** : Occasional shadow movement in peripheral vision. Faint whispers.
-    - **50-69** : False footstep sounds. Walls seem to shift.
-    - **30-49** : A **doppelganger** appears — looks exactly like the player but stands still in
-       corridors, staring. Text on HUD scrambles.
-    - **0-29** : The screen frequently flashes Luna’s face. Movement controls randomly invert
-       for 1 second. The maze walls appear to _breathe_ (subtle size pulsing). YOU CANNOT
-       TRUST ANYTHING.
-- **Sanity recovery** : Standing in escape rooms slowly recovers sanity. Finding items gives a
-    burst.
-- **If sanity hits 0** : Instant death with a unique death message (” _You stopped running. You_
-    _stopped breathing. She was already inside._ ”)
-
-### 2.2 FlashlightSystem.java
-
-The maze is DARK. The flashlight is your only friend. And it’s dying.
-
-- **Cone of light** : Rendered as a gradient cone from player position in the direction of last
-    movement.
-- **Battery system** : Flashlight battery drains over time (180 seconds total per level). When it
-    dies, you’re in near-total darkness with only a tiny circle of ambient light.
-- **Flicker mechanic** : When Luna is within 5 tiles, the flashlight starts flickering. Within 3
-    tiles, it goes out entirely for 0.5-second bursts.
-- **Darkness = danger** : Areas outside the flashlight cone are rendered as near-black with
-    only faint wall outlines. You literally cannot see Luna approaching from behind.
-- Toggle with **F key**. Turning it off saves battery but you’re vulnerable.
-
-### 2.3 EventSystem.java
-
-Scripted & random horror events that keep the player in constant terror:
-
-
-**Scripted (per-level):**
-
-- **Level 1 (Mud)** : After 30 seconds, all lights in visible range flicker out for 2 seconds. A single
-    message appears: ” _she remembers the cold earth_ ”
-- **Level 2 (Shovel)** : Midway through, the player finds a room with a ”child’s drawing” on
-    the wall (rendered with primitives — stick figure with X eyes). After leaving the room, the
-    drawing has CHANGED.
-- **Level 3 (Rope)** : The escape rooms start _disappearing_ after use. The walls close in. Luna is
-    faster. The endgame is pure survival.
-
-### 2.4 EasterEggSystem.java
-
-For the $4.99 Steam value — secrets that make players replay and share:
-
-- **Developer notes** : Hidden rooms (tile type 8) contain messages: ” _We’re sorry about Luna._
-    _— Dev Team_ ”, ” _The rope was the hardest part to code. Not because of programming._ ”, ” _If you’re_
-    _reading this at 3 AM... go to sleep. She’s not real. Probably._ ”
-- **Easter egg: Konami Code on main menu** →Unlocks a ”Luna’s Room” scene — a static
-    image of a child’s bedroom drawn with primitives. After 10 seconds, a music box tone
-    plays and the screen slowly fades to the game’s death screen.
-- **Easter egg: Die 5 times** →Death screen adds: ” _You keep coming back. She likes that._ ”
-- **Easter egg: Stand still for 30 seconds** →A message types itself: ” _areyoustillthere? ...good._
-    _don’t move._ ” Then Luna spawns directly next to you regardless of her timer.
-- **Easter egg: Type ”LUNA” on keyboard during gameplay** →Screen flashes white, then
-    black. A single line appears: ” _You called?_ ” Sanity drops to 30.
-
-
-## 3. Entity AI & Interactions
-
-### 3.1 Monster.java
-
-Complete AI overhaul — Luna is no longer a simple 3-state timer. She is **intelligent and terri-
-fying**.
-
-```
-New 4-State AI Protocol
-```
-1. **DORMANT** (replaces IDLE): Luna appears asleep, but her eyes track the player. She
-    wakes when: timer expires, player opens a chest with the item, or player’s sanity
-    drops below 50.
-2. **STALKING** (NEW): Luna follows the player at walking speed, staying just at the edge
-    of the flashlight range. She **does not kill you** in this state — she’s _watching_. She
-    stops if you turn toward her. If you turn away, she gets closer. **This is where pure**
-    **terror lives.** Duration: 8 seconds, then transitions to HUNTING.
-3. **HUNTING** (replaces CHASING): Full-speed BFS pursuit. Faster than the player. In-
-    stant kill on contact. Duration: 6 seconds.
-4. **WAITING_AT_DOOR** (kept): Same mechanic — waits for player to leave escape
-    room.
-
-```
-Visual overhaul:
-```
-- Luna’s appearance degrades per level: Level 1 she looks almost human (pale girl). Level
-    2 her mouth is too wide, eyes are hollow. Level 3 she’s barely recognizable — just a pale
-    shape with red eye-points and a gaping black mouth.
-- During STALKING, she’s rendered semi-transparent. The player might not even notice her
-    at first.
-- Her sprite has frame-by-frame jitter — she doesn’t move smoothly, she _glitches_ forward
-    like a broken video.
-
-### 3.2 Player.java
-
-Player now has physical and mental limitations:
-
-- **Stamina system** : Sprint with SHIFT key (speed×1.8) but stamina bar depletes in 3 sec-
-    onds. Regenerates slowly. When exhausted, player moves at 0.6×speed for 2 seconds
-    (punishes panic sprinting).
-- **Breathing indicator** : When stamina is low, a breathing animation overlays the screen
-    (slight zoom in/out pulse).
-- **Expression system enhanced** : 5 expression tiers based on sanity:
-    - 100-80: Calm
-    - 80-60: Nervous (eyes wider, slight tremble)
-    - 60-40: Scared (shrunken pupils, sweating drops)
-    - 40-20: Terrified (full body shake, crying animation)
-    - <20: Broken (thousand-yard stare, no expression — they’ve given up)
-
-
-### 3.3 Item.java
-
-Chests are now **coffins and reliquaries**. The items are cursed artifacts:
-
-- **Closed state** : Dark wooden coffin with iron bands. Emits a faint red glow when player is
-    within 3 tiles.
-- **Empty state** : Opens to reveal nothing but a child’s tooth, or a tuft of blonde hair, or scratch
-    marks on the inside (rotates per chest).
-- **Item state** : The Rope / Mud / Shovel emerges with a blood-red aura. Pickup triggers a
-    **lore flashback** — a fullscreen text crawl describing the moment it was used on Luna:
-       - **Mud** : ” _The earth was soft that night. Too soft. Like it was waiting for her._ ”
-       - **Shovel** : ” _The blade bit into the ground. Each scoop made a sound like breathing._ ”
-       - **Rope** : ” _She didn’t struggle. Not at the end. Her eyes were wide open. Smiling._ ”
-
-
-## 4. The World & Level Design
-
-```
-The maze will be in Central Park, where the maze walls will be either
-bushes or trees, and the escape room will be hidden behind a specific
-bush/tree. The maze will have different creatures at different levels (near
-escape rooms). It is to be noted that the creatures can't enter the escape
-room.
-```
-### 4.1 Maze.java
-
-The maze becomes a character in itself:
-
-- **New tile types** :
-    - 8 = Developer note room (rendered with faint text on floor)
-    - 9 = Blood trail tile (random smears on floor)
-    - 10 = Graffiti wall (text fragments: ” _SHE’S STILL SMILING_ ”, ” _DON’T DIG_ ”, ” _11 YEARS OLD_ ”)
-- **Fog of War** : Tiles beyond flashlight range are fully black. Tiles at the edge are dimly visible.
-- **Wall rendering overhaul** : Walls now look like crumbling stone with moss and dark stains.
-    Some walls have scratch marks (rendered with random line patterns).
-- **Floor redesign** : Cracked tiles with occasional dark puddles (could be water... could be
-    blood).
-- **Environmental storytelling** : Some rooms have ”crime scene” layouts — a small circle of
-    tiles with a cross drawn in the center (Central Park burial site callback).
-
-### 4.2 Level 1: The Park (The Bats)
-
-Open spaces with scattered trees (wall clusters). Largest map, most escape rooms. Developer
-note room hidden behind a false wall pattern. Tutorial-level pacing — Luna starts fully dormant
-for 20 seconds.
-
-- **The Threat [Bats]:** Bats guard two of the escape rooms. If a bat bites the player, Pale Luna
-    magically appears for an instant kill. Quick reflexes are mandatory.
-- **The Strategy:** The player is given two fruits to distract the two bats. (Fortunately, the bats
-    will not attack when the player is _exiting_ the room).
-- **The Catch:** Giving a bat a fruit distracts it for the remainder of the game. However, the
-    player must be careful not to accidentally waste both fruits on a single bat, or they won’t
-    have anything left for the second one.
-
-### 4.3 Level 2: The Basement (The Cobras)
-
-Tighter corridors. The shovel is in the hardest-to-reach corner. Contains a ”crime scene room”
-with blood trail tiles. **One of the chests contains an ”Invisibility” potion.**
-
-
-- **The Threat [The Cobras]:** Cobras guard the next set of escape rooms. If bitten, the player
-    is knocked unconscious for 5 seconds, giving Pale Luna a massive advantage to catch up.
-- **The Strategy:** The player must throw eggs to distract the cobras and safely enter the
-    room. (Fortunately, the snakes will not attack when the player is _exiting_ the room).
-- **The Catch:** The player only has 5 eggs for the entire round. Because the cobra resets and
-    guards the door again after eating, the player can only enter an escape room a maximum
-    of 5 times.
-
-### 4.4 Level 3: The Grave (The Serial Killer)
-
-Claustrophobic. Many dead-ends. Zero escape rooms (they _disappear_ after first use via EventSys-
-tem). Luna starts in STALKING mode immediately. Contains the burial site room — a 3×3 open
-area with a cross tile pattern.
-
-- **The Threat [The Serial Killer Who Killed Luna]:** He lost his mind and is still looking for
-    Pale Luna. He will start chasing the player when the player reaches his trigger point. He
-    will never stop, chasing for the rest of Map 3 until you are killed or win. He is slow, but if
-    he catches the player, he will aggressively knife them to death.
-- **The Strategy:** One of the chests contains a Clone of Luna; a still Cardboard Clone that just
-    stays. The clone is how she looked at age 11, not the ghostly one.
-- **The Catch:** Placing the clone anywhere on the map shifts the Killer’s attention to it. Upon
-    reaching the clone, the Killer will start knifing it for 10 seconds. Upon seeing no blood, he
-    will resume his hunt for the player.
-
-### 4.5 Endgame: Win Condition & Cutscene
-
-- **Objective:** Collect the Shovel, Mud, and Rope. Give them to the Serial Killer.
-- **The Cutscene:** The gameplay scene ends once the player finds the Rope. It transitions into
-    a cutscene of images (created externally). In the cutscene, the Serial Killer is powered up,
-    aggressively hunts down Pale Luna, kills her again with the rope, takes her to the grave,
-    opens it up with the shovel, and buries her for good.
-- **Resolution:** After the image cutscene finishes, the Game Win screen displays.
-
-### 4.6 Level Progression Sequence
-
-```
-Level 1 → Mud → mud found → here.
-Level 2 → Shovel → shovel found → use
-Level 3 → Rope → rope found → now
-```
-
-## 5. Audiovisual Architecture
-
-### 5.1 SoundManager.java
-
-Audio horror engine utilizing real.wavfiles via JavaFXAudioClip:
-
-- **Placeholder Architecture** : All audio calls must use defined constants or hooks for file
-    paths (e.g.,PLAY_STINGER_1), allowing the developer to easily drop in the final.wavfiles
-    later without breaking game logic.
-- **Heartbeat system** : Pulses faster when Luna is near. When she’s _right behind you_ , it be-
-    comes deafening.
-- **Ambient drones** : Low-frequency hum that loops and shifts based on sanity level.
-- **Whisper system** : Random quiet whisper-like sounds (” _here..._ ”, ” _turnaround..._ ”, ” _Iseeyou..._ ”)
-    at random intervals — player can never be sure if it’s real.
-- **Stinger sounds** : Sharp audio spike when Luna first appears, when lights go out, on death.
-
-### 5.2 ScreenEffects.java
-
-Visual distortion and horror overlay system:
-
-- **Screen shake** : Camera jolts during chase, death, and scripted events.
-- **VHS static lines** : Horizontal scan lines that intensify with low sanity.
-- **Blood drip overlay** : Thin red lines slowly dripping from the top of the screen, more when
-    damaged/scared.
-- **Subliminal flashes** : 1-3 frame images of Luna’s face or text (”HELP ME”, ”DIG”, ”SHE’S
-    HERE”) that flash so fast players _think_ they imagined it.
-- **Vignette darkness** : Screen edges darken based on sanity, creating tunnel vision.
-- **Color desaturation** : World loses color as sanity drops — pure grayscale at critical sanity.
-
-### 5.3 GameRenderer.java
-
-Complete rendering pipeline overhaul:
-
-- **Layer order** : Background→Maze→Fog of War→Entities→Eyes Layer→Flashlight
-    Cone→Screen Effects→HUD→Subliminal Flashes
-- **Flashlight rendering** : Circular gradient from player position — bright center, fading to
-    pitch black. Applied as a multiply blend over the maze.
-- **Luna’s reveal animation replaced** : Instead of a golden glow, finding the item triggers a
-    **blood-red pulse** that spreads across the screen. The item text appears letter-by-letter in
-    a typewriter style with clicking sounds.
-- **Death animation** : Screen slowly fills with red from the edges. Luna’s face appears in the
-    center, filling the screen.
-
-
-## 6. User Interface & Application Flow
-
-### 6.1 HUDRenderer.java
-
-HUD becomes a horror instrument:
-
-- **Sanity Meter** : Replaces the old chest counter. A brain icon that cracks and bleeds as sanity
-    drops. Below 30, the meter starts ”lying” (shows random values).
-- **Battery Indicator** : Flashlight battery bar. Flickers when low.
-- **Heartbeat Monitor** : A small ECG line that speeds up near Luna. Flatlines on death.
-- **Luna Status redesigned** : Instead of a timer bar, show Luna’s current state with cryptic
-    text:
-       - DORMANT: ” _She sleeps._ ”
-       - STALKING: ” _She watches._ ”
-       - HUNTING: ” _RUN._ ”
-       - WAITING: ” _She’s at the door._ ”
-- **HUD corruption** : At low sanity, HUD elements glitch — text scrambles, numbers display
-    wrong values, the sanity meter shows ”100%” when it’s actually at 15%.
-
-### 6.2 HowToPlayRenderer.java
-
-The ”How to Play” screen is presented as **found documents** — case files from a detective inves-
-tigating Luna’s death:
-
-- **Case File #1 — Victim** : Background on Luna (11, blonde, Central Park)
-- **Case File #2 — Evidence** : The three items (Rope, Shovel, Mud) and their significance
-- **Case File #3 — The Maze** : Instructions disguised as a detective’s notes about a ”recurring
-    dream” of a maze
-- **Case File #4 — Survival Notes** : Movement, flashlight, stamina, sanity
-- **Case File #5 — WARNING** : A handwritten note scrawled over the typed text: ” _DONT PLAY_
-    _THIS GAME. SHE GETS OUT._ ”
-- Visual style: Typewriter font on yellowed paper background with coffee stains and blood
-    smears
-
-### 6.3 HelloApplication.java
-
-Main controller rewrite to incorporate all new systems:
-
-- **Main Menu overhaul** :
-    - Black screen. After 2 seconds, Luna’s face fades in from the darkness behind the title
-       text.
-    - Title text rendered with a ”glitch” effect — letters randomly shift position for 1-2 frames.
-
-
-- Subtitle changes each time you visit the menu: ” _Find the cursed items. Survive the_
-    _demon._ ”, ” _She remembers your last game._ ”, ” _You can’t save her. You can only survive._ ”
-- Easter egg detection (Konami code, death counter)
-- **Game intro sequence** (before Level 1):
-- Black screen, typewriter-style text crawl telling Luna’s story.
-- ” _Central Park. November 14th, 2003._ ”
-- ” _They found her three days later._ ”
-- ” _The rope was still around her neck._ ”
-- ” _The ground was freshly turned._ ”
-- ” _Nobody heard her scream._ ”
-- ...long pause...
-- ” _She’s been screaming ever since._ ”
-- **Level transitions** : Each level transition shows a newspaper clipping style screen with in-
-creasingly disturbing headlines.
-- **Victory sequence** : After the cutscene completes, the final text types out slowly:
-_pale luna smiles wide,
-the ground is soft,
-pale luna smiles wide,
-there is a hole,
-pale luna smiles wide,
-tie her up with rope,
-congratulations! you have escaped from pale luna_
-- **Death sequence** : Player gets killed by Pale Luna or the Serial Killer. The final text types
-out slowly:
-_pale luna smiles wide,
-there is no escape,
-pale luna smiles wide,
-no more lollies to take,
-pale luna smiles wide,
-now you are dead_ →Hard cut to black→Main menu
+#### Monster AI (Monster.java) — 4-State Protocol
 
+| State | Behavior |
+|-------|----------|
+| **DORMANT** | Luna is inactive/partially transparent. Wakes when timer expires or lolli is collected. |
+| **STALKING** | Follows player at walking speed. Semi-transparent. Duration: 480 frames → HUNTING. |
+| **HUNTING** | Full-speed BFS pursuit (3.2 speed). Instant kill on contact. Duration: 360 frames → DORMANT. |
+| **WAITING_AT_DOOR** | Positions outside escape room, waits for player to exit. Duration: 180 frames → DORMANT. |
 
+#### Player Mechanics (Player.java)
+
+- **WASD movement** with wall collision detection
+- **Sprint** (Shift) — 1.8× speed with stamina bar (180 frames / 3 seconds)
+- **Exhaustion penalty** — 0.6× speed for 120 frames after stamina depletion
+- **Expression system** — 2 states: calm / terrified (switches when hunted)
+
+#### Level Threats
+
+| Level | Threat | Mechanic |
+|-------|--------|----------|
+| 1 (Park) | **Bats** (×2) guard escape rooms. Player has **2 fruits** to distract them. |
+| 2 (Basement) | **Cobras** (×3) guard escape rooms. Player has **5 eggs** to distract them. Bite → 5s unconscious. |
+| 3 (Grave) | **Serial Killer** — chases player continuously. **Cardboard Clone** item distracts him for 10s. |
+
+#### Item System (Item.java)
+
+- **Chests** loaded from CSV map tiles (tile type 2 = empty chest, 3 = lolli chest)
+- Content types: `LOLLI`, `EMPTY`, `CLONE_DECOY`
+- Image-based rendering with closed/opened states + content-specific glow overlays
+
+#### Maze System (Maze.java)
+
+- Tile-based map loaded from CSV files (`map.csv`, `map2.csv`, `map3.csv`)
+- 3 visual themes (different wall/floor color schemes per level)
+- BFS pathfinding for Monster and SerialKiller
+- Line-of-sight checks for Luna waiting at door
+- Level 3 escape rooms **collapse** after first use
+
+#### Sound System (SoundManager.java)
+
+- One-shot SFX via `AudioClip` with volume control
+- Looping background music via `MediaPlayer`
+- **Null-safe** — gracefully handles missing `.wav` files
+- Sound hooks: `FOOTSTEP`, `CHEST_OPEN`, `HEARTBEAT_FAST`, `STINGER_1`, `LUNA_SCREAM_NEARBY`, `GAME_START`, `GAME_OVER`
+
+#### Image-Based Rendering (All Entities)
+
+All game entities and maze tiles use pre-loaded PNG sprites with `smooth=false` for pixel-art crispness. Missing images fall back to magenta rectangles.
+
+- **~60 sprite images** in `/assets/images/sprites/`
+- **~35 UI images** in `/assets/images/ui/`
+- Centralized preloading via `initImages()` called from `GameStateManager.loadLevel()`
+
+#### UI Screens (SceneFactory.java)
+
+All UI screens use image-based rendering with `StackPane` + `VBox` + `ImageView` layouts:
+
+- **Main Menu** — background image, title, cycling subtitles, button images
+- **Level Transition** — newspaper clipping style with headline and item preview
+- **Item Found Screen** — "pale luna smiles wide..." with lore text
+- **Death Screen** — "YOU DIED" with death poem composite
+- **Victory Screen** — "YOU ESCAPED" with victory poem composite
+
+---
+
+## 3. What's NOT Yet Implemented (From Original Vision)
+
+The following systems were part of the original ambitious design but are **not currently implemented**:
+
+### 3.1 Sanity System
+- **Original plan:** 0-100 sanity bar with 5 hallucination tiers (shadow movement, doppelganger, screen flashes, control inversion, breathing walls)
+- **Current state:** No sanity mechanic exists. Player has only stamina.
+
+### 3.2 Flashlight System
+- **Original plan:** Cone of light with battery drain (180s), flicker near Luna, darkness = danger
+- **Current state:** Full maze visibility. No flashlight, no battery, no darkness rendering.
+
+### 3.3 Fog of War
+- **Original plan:** Tiles beyond flashlight range fully black, dim edges
+- **Current state:** Entire maze is visible at all times.
+
+### 3.4 Advanced Event System
+- **Original plan:** Scripted per-level horror events (lights flickering, changing child's drawings, disappearing rooms)
+- **Current state:** Level 3 escape room collapse is the only scripted environmental event.
+
+### 3.5 Easter Egg System
+- **Original plan:** Konami code, hidden developer notes, "LUNA" keyword, death count messages, stand-still penalty
+- **Current state:** Stand-still penalty exists (Luna teleports near player after 30s). Death count message not implemented.
+
+### 3.6 Advanced Visual Effects
+- **Original plan:** Screen shake, VHS static, blood drips, subliminal flashes, vignette darkness, color desaturation
+- **Current state:** Warning flash (red screen flash when Luna enters HUNTING state). Lolli reveal animation (concentric expanding circles).
+
+### 3.7 Audio Expansion
+- **Original plan:** Heartbeat system, ambient drones, whisper system, stinger sounds
+- **Current state:** Sound hooks are defined and working, but actual `.wav` asset files need to be created/placed.
+
+### 3.8 Environmental Storytelling
+- **Original plan:** Developer note rooms (tile 8), blood trail tiles (tile 9), graffiti walls (tile 10), crime scene layouts
+- **Current state:** Tile types 8-10 exist in `Maze.java` rendering but are not populated in current map CSVs.
+
+### 3.9 Intro/Outro Cutscenes
+- **Original plan:** Typewriter text crawl, newspaper headlines, image-based cutscenes, Serial Killer resolution sequence
+- **Current state:** Level transition screens exist with newspaper style. Victory/death poem screens exist. Full cutscene sequence not implemented.
+
+### 3.10 How-To-Play as Case Files
+- **Original plan:** Detective case file styled instructions with typewriter font, coffee stains, blood smears
+- **Current state:** No dedicated How-To-Play screen exists.
+
+---
+
+## 4. Future Improvement Suggestions
+
+These are realistic, incremental improvements that build on the current codebase.
+
+### 4.1 Audio Assets (Highest Priority)
+- Create/place `.wav` files for the existing sound hooks (`footstep.wav`, `chest_open.wav`, etc.)
+- The `SoundManager` is already structured to handle them — just needs actual files in `/assets/audio/`
+- Add ambient drone loop for atmosphere
+
+### 4.2 Sanity-Lite System
+Instead of the full 5-tier hallucination system, start with a simplified version:
+- Sanity drains passively (1 per 10 seconds) and faster when near Luna
+- Below 50: HUD text occasionally scrambles (already has the rendering hooks)
+- Below 25: Screen edges darken (vignette overlay — simple `fillRect` with radial gradient)
+- Recovery in escape rooms (+1 per second)
+- Death at 0 sanity with unique message
+
+### 4.3 Flashlight (Simplified)
+- Toggle with F key, no battery drain initially
+- Render as a simple radial gradient overlay (bright center → dark edges)
+- Later: add battery drain and flicker near Luna
+
+### 4.4 Death Count Messages
+- The `deathCount` variable already exists in `HelloApplication`
+- Add conditional text on death screen: "You keep coming back. She likes that." (5+ deaths)
+
+### 4.5 Map Content Expansion
+- Populate tile types 8 (developer notes), 9 (blood trails), 10 (graffiti) in existing CSV maps
+- Add hidden rooms with developer apology messages from the original design
+
+### 4.6 Screen Effects
+- Screen shake: offset canvas transform during chase/death (simple `gc.translate()` jitter)
+- Vignette: dark radial gradient overlay at screen edges (intensifies with low sanity if added)
+- Subliminal flash: 1-frame Luna face draw during low sanity or chase
+
+### 4.7 How-To-Play Screen
+- Create a case-file styled screen accessible from main menu
+- Explain controls (WASD, Shift, F for distractions, Clone placement)
+- Cover level-specific mechanics (fruits, eggs, clone decoy)
+
+### 4.8 Intro Sequence
+- Before Level 1, show a brief typewriter text crawl telling Luna's backstory
+- Already partially exists as text strings in the original TDD — just needs a simple `SceneFactory` screen
+
+### 4.9 Main Menu Enhancements
+- Luna face fade-in behind title after 2 seconds (simple opacity animation on an `ImageView`)
+- Subtitle already cycles — add more atmospheric variants
+
+### 4.10 Polish & Juice
+- Chest open particle burst (already has lolli reveal — reuse for empty chests)
+- Player death animation (screen fills red from edges — simple overlay)
+- Luna's blood-red pulse on item found (already has the hook in `GameRenderer`)
+
+---
+
+## 5. Design Decisions & Rationale
+
+### Image-Based Rendering Over Primitives
+All game entities and UI screens use pre-loaded PNG images instead of JavaFX primitive drawing. This gives:
+- Consistent visual quality (pixel art for sprites, horror typography for UI)
+- Easier art iteration (swap PNGs without touching code)
+- Graceful degradation (missing images → magenta rectangles, no crashes)
+
+### Canvas Over Scene Graph for Gameplay
+The game canvas (`GraphicsContext`) is used for all gameplay rendering. UI screens use JavaFX layout nodes (`VBox`, `StackPane`, `ImageView`). This separation keeps the game loop performant while leveraging JavaFX's layout engine for static screens.
+
+### Null-Safe Asset Loading
+All image and audio loading checks for `null` before use. Missing assets are silent no-ops. This allows development to proceed without all assets being in place.
+
+### BFS Pathfinding
+Both Monster and SerialKiller use BFS on the tile grid for pursuit. This is deterministic, fair, and easy to debug. The `Maze` class exposes `getNextMove()` for this purpose.
+
+---
+
+## 6. File Inventory
+
+### Sprite Assets (60 files in `/assets/images/sprites/`)
+
+| Category | Files |
+|----------|-------|
+| Maze tiles | `border_wall_[1-3]`, `inner_wall_[1-3]`, `floor_a_[1-3]`, `floor_b_[1-3]`, `escape_room_green`, `escape_room_red` |
+| Items | `chest_closed`, `chest_opened`, `chest_glow_lolli`, `chest_glow_clone` |
+| Clone | `clone_decoy` |
+| Guards | `guard_bat`, `guard_bat_distracted`, `guard_cobra`, `guard_cobra_distracted` |
+| Killer | `killer_inactive`, `killer_chase`, `killer_attack` |
+| Player | `player_calm`, `player_terrified` |
+| Monster | `monster_dormant`, `monster_stalking`, `monster_hunting`, `monster_waiting`, `monster_aura` |
+| HUD icons | `lolli_icon`, `pale_luna_[dormant/stalking/hunting/waiting]_icon` |
+
+### UI Assets (35 files in `/assets/images/ui/`)
+
+| Category | Files |
+|----------|-------|
+| Menu | `menu_background`, `menu_title`, `menu_subtitle_[1-3]`, `btn_new_game`, `btn_exit` |
+| Transitions | `transition_bg_[1-2]`, `transition_header`, `transition_headline_[1-3]`, `transition_[mud/shovel/rope]`, `btn_continue` |
+| Item Found | `item_bg`, `item_pale_luna_smiles`, `item_[mud/shovel/rope]_text`, `item_desc_[1-3]`, `btn_[here/use/now]` |
+| Death | `death_bg`, `death_you_died`, `death_poem`, `btn_restart`, `btn_main_menu` |
+| Victory | `victory_bg`, `victory_escaped`, `victory_poem`, `btn_main_menu` |
+
+### Map Files (3 CSVs)
+- `map.csv` — Level 1 (Park)
+- `map2.csv` — Level 2 (Basement)
+- `map3.csv` — Level 3 (Grave)
+
+### Audio Files
+- **None currently placed.** Sound hooks defined in `SoundManager.java` for: `heartbeat_fast.wav`, `stinger_1.wav`, `game_start.wav`, `game_over.wav`, `chest_open.wav`, `footstep.wav`, `luna_scream_nearby.wav`
+
+---
+
+## 7. Tile Type Reference
+
+| ID | Name | Rendering | Currently Used |
+|----|------|-----------|----------------|
+| 0 | Floor | floor_a / floor_b (alternating) | ✅ |
+| 1 | Wall | inner_wall (3 themes) | ✅ |
+| 2 | Empty chest tile | Converted to Item entity | ✅ (spawns chest) |
+| 3 | Lolli chest tile | Converted to Item entity | ✅ (spawns chest) |
+| 4 | Outer border | border_wall (3 themes) | ✅ |
+| 5 | Monster spawn | Converted to Monster entity | ✅ |
+| 6 | Escape room | escape_room_green / escape_room_red | ✅ |
+| 7 | Developer note room | Faint text on floor | ⚠️ (renders, not placed in maps) |
+| 8 | Blood trail tile | Dark smears | ⚠️ (renders, not placed in maps) |
+| 9 | Graffiti wall | Text fragments | ⚠️ (renders, not placed in maps) |
+| 10 | Non-walkable (decorative) | Rendered as wall | ✅ |
+
+---
+
+## 8. Controls Reference
+
+| Key | Action |
+|-----|--------|
+| **W/A/S/D** | Move up/left/down/right |
+| **Shift** | Sprint (consumes stamina) |
+| **F** | Use distraction item (fruit/egg) on nearest guard |
+| **C** | Place cardboard clone decoy (Level 3 only, requires clone item) |
+| **F3** | Toggle debug overlay |
+| **Enter** | Confirm/continue on UI screens |
+| **Escape** | Return to main menu (from UI screens) |
+
+---
+
+## 9. Notes for Contributors
+
+- **Adding new entities:** Extend `Entity`, implement `Collidable`, add `initImages()` + `loadSprite()` pattern, call from `GameStateManager`.
+- **Adding new sounds:** Add constant to `SoundManager`, place `.wav` in `/assets/audio/`, call `playOneShot()`.
+- **Adding new tile types:** Add to `Maze` tile switch, update CSV maps, add sprite to `/assets/images/sprites/`.
+- **Adding new UI screens:** Add to `SceneFactory`, create images in `/assets/images/ui/`, wire button actions in `HelloApplication`.
+- **Image loading:** Game sprites use `loadSprite()` with `smooth=false`. UI images use `tryLoadImage()` with default smoothing. Never call `new Image()` directly in render methods.

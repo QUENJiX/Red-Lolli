@@ -4,12 +4,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 
 import java.net.URL;
 
@@ -23,139 +22,275 @@ public class SceneFactory {
     private static final int WIDTH = 880;
     private static final int HEIGHT = 730;
 
+    // ================= UI IMAGE ASSETS =================
+
+    private static Image menuBackgroundImg;
+    private static Image menuTitleImg;
+    private static Image[] menuSubtitleImg = new Image[3];
+    private static Image transitionBgImg1;
+    private static Image transitionBgImg2;
+    private static Image transitionHeaderImg;
+    private static Image[] transitionHeadlineImg = new Image[3];
+    private static Image[] transitionItemImg = new Image[3];
+    private static Image itemBgImg;
+    private static Image itemPaleLunaSmilesImg;
+    private static Image[] itemTextImg = new Image[3];
+    private static Image[] itemDescImg = new Image[3];
+    private static Image deathBgImg;
+    private static Image deathYouDiedImg;
+    private static Image deathPoemImg;
+    private static Image victoryBgImg;
+    private static Image victoryEscapedImg;
+    private static Image victoryPoemImg;
+    private static boolean uiImagesInitialized = false;
+
+    public static void initUIImages() {
+        if (uiImagesInitialized) return;
+        menuBackgroundImg = tryLoadImage("/assets/images/ui/menu_background.png");
+        menuTitleImg = tryLoadImage("/assets/images/ui/menu_title.png");
+        menuSubtitleImg[0] = tryLoadImage("/assets/images/ui/menu_subtitle_1.png");
+        menuSubtitleImg[1] = tryLoadImage("/assets/images/ui/menu_subtitle_2.png");
+        menuSubtitleImg[2] = tryLoadImage("/assets/images/ui/menu_subtitle_3.png");
+        transitionBgImg1 = tryLoadImage("/assets/images/ui/transition_bg_1.png");
+        transitionBgImg2 = tryLoadImage("/assets/images/ui/transition_bg_2.png");
+        transitionHeaderImg = tryLoadImage("/assets/images/ui/transition_header.png");
+        transitionHeadlineImg[0] = tryLoadImage("/assets/images/ui/transition_headline_1.png");
+        transitionHeadlineImg[1] = tryLoadImage("/assets/images/ui/transition_headline_2.png");
+        transitionHeadlineImg[2] = tryLoadImage("/assets/images/ui/transition_headline_3.png");
+        transitionItemImg[0] = tryLoadImage("/assets/images/ui/transition_mud.png");
+        transitionItemImg[1] = tryLoadImage("/assets/images/ui/transition_shovel.png");
+        transitionItemImg[2] = tryLoadImage("/assets/images/ui/transition_rope.png");
+        itemBgImg = tryLoadImage("/assets/images/ui/item_bg.png");
+        itemPaleLunaSmilesImg = tryLoadImage("/assets/images/ui/item_pale_luna_smiles.png");
+        itemTextImg[0] = tryLoadImage("/assets/images/ui/item_mud_text.png");
+        itemTextImg[1] = tryLoadImage("/assets/images/ui/item_shovel_text.png");
+        itemTextImg[2] = tryLoadImage("/assets/images/ui/item_rope_text.png");
+        itemDescImg[0] = tryLoadImage("/assets/images/ui/item_desc_1.png");
+        itemDescImg[1] = tryLoadImage("/assets/images/ui/item_desc_2.png");
+        itemDescImg[2] = tryLoadImage("/assets/images/ui/item_desc_3.png");
+        deathBgImg = tryLoadImage("/assets/images/ui/death_bg.png");
+        deathYouDiedImg = tryLoadImage("/assets/images/ui/death_you_died.png");
+        deathPoemImg = tryLoadImage("/assets/images/ui/death_poem.png");
+        victoryBgImg = tryLoadImage("/assets/images/ui/victory_bg.png");
+        victoryEscapedImg = tryLoadImage("/assets/images/ui/victory_escaped.png");
+        victoryPoemImg = tryLoadImage("/assets/images/ui/victory_poem.png");
+        uiImagesInitialized = true;
+    }
+
+    // Getters
+    public static Image getMenuBackgroundImg() { return menuBackgroundImg; }
+    public static Image getMenuTitleImg() { return menuTitleImg; }
+    public static Image getMenuSubtitleImg(int index) {
+        if (index < 0 || index >= menuSubtitleImg.length) return null;
+        return menuSubtitleImg[index];
+    }
+
     // ========================= TEXT SCENES =========================
 
     /** Creates the death screen scene. */
     public static Scene createDeathScene(String activeDeathMessage, int deathCount,
             Runnable onRestart, Runnable onMainMenu) {
+        initUIImages();
+        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+
+        // Background
+        if (deathBgImg != null) {
+            ImageView bg = new ImageView(deathBgImg);
+            bg.setFitWidth(WIDTH);
+            bg.setFitHeight(HEIGHT);
+            bg.setPreserveRatio(false);
+            root.getChildren().add(bg);
+        }
+
         VBox layout = newBlackVBox(14);
 
-        Text title = new Text("YOU DIED");
-        title.setFont(Font.font("Serif", FontWeight.BOLD, 70));
-        title.setFill(Color.DARKRED);
-        layout.getChildren().add(title);
-
-        String[] deathLines = {
-                "pale luna smiles wide", "there is no escape",
-                "pale luna smiles wide", "no more lollies to take",
-                "pale luna smiles wide", "now you are dead"
-        };
-        for (String line : deathLines) {
-            layout.getChildren().add(styledText(line, "Serif", 21, Color.LIGHTGRAY));
+        // "YOU DIED" title image
+        if (deathYouDiedImg != null) {
+            ImageView titleImg = new ImageView(deathYouDiedImg);
+            titleImg.setPreserveRatio(true);
+            layout.getChildren().add(titleImg);
         }
 
+        // Poem image
+        if (deathPoemImg != null) {
+            ImageView poemImg = new ImageView(deathPoemImg);
+            poemImg.setPreserveRatio(true);
+            layout.getChildren().add(poemImg);
+        }
+
+        // Dynamic death message (not baked into composite)
         if (activeDeathMessage != null && !activeDeathMessage.isBlank()) {
-            layout.getChildren()
-                    .add(styledText(activeDeathMessage, "Serif", FontWeight.BOLD, 18, Color.rgb(190, 130, 130)));
+            layout.getChildren().add(styledText(activeDeathMessage, "Serif", 18, Color.rgb(190, 130, 130)));
         }
         if (deathCount >= 5) {
-            layout.getChildren().add(styledText("You keep coming back. She likes that.", "Serif", FontWeight.BOLD, 18,
+            layout.getChildren().add(styledText("You keep coming back. She likes that.", "Serif", 18,
                     Color.rgb(200, 70, 70)));
         }
 
-        Button restartBtn = createStyledButton("RESTART FROM LEVEL 1");
+        Button restartBtn = createImageButton("RESTART FROM LEVEL 1", "/assets/images/ui/btn_restart.png");
         restartBtn.setOnAction(e -> onRestart.run());
-        Button menuBtn = createStyledButton("MAIN MENU");
+        Button menuBtn = createImageButton("MAIN MENU", "/assets/images/ui/btn_main_menu.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
         layout.getChildren().addAll(new Text(""), restartBtn, menuBtn);
-        return new Scene(layout, WIDTH, HEIGHT);
+        root.getChildren().add(layout);
+        return new Scene(root, WIDTH, HEIGHT);
     }
 
     /** Creates the victory screen scene. */
     public static Scene createVictoryScene(Runnable onMainMenu) {
-        VBox layout = newBlackVBox(14);
+        initUIImages();
+        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
 
-        Text title = new Text("YOU ESCAPED");
-        title.setFont(Font.font("Serif", FontWeight.BOLD, 60));
-        title.setFill(Color.LIMEGREEN);
-        layout.getChildren().add(title);
-
-        String[] victoryLines = {
-                "pale luna smiles wide,", "the ground is soft,",
-                "pale luna smiles wide,", "there is a hole,",
-                "pale luna smiles wide,", "tie her up with rope,",
-                "congratulations! you have escaped from pale luna"
-        };
-        for (String line : victoryLines) {
-            boolean isFinal = line.startsWith("congratulations");
-            layout.getChildren().add(styledText(line, "Serif",
-                    isFinal ? FontWeight.BOLD : FontWeight.NORMAL,
-                    isFinal ? 24 : 20,
-                    isFinal ? Color.GOLD : Color.LIGHTGRAY));
+        // Background
+        if (victoryBgImg != null) {
+            ImageView bg = new ImageView(victoryBgImg);
+            bg.setFitWidth(WIDTH);
+            bg.setFitHeight(HEIGHT);
+            bg.setPreserveRatio(false);
+            root.getChildren().add(bg);
         }
 
-        Button menuBtn = createStyledButton("MAIN MENU");
+        VBox layout = newBlackVBox(14);
+
+        // "YOU ESCAPED" title image
+        if (victoryEscapedImg != null) {
+            ImageView titleImg = new ImageView(victoryEscapedImg);
+            titleImg.setPreserveRatio(true);
+            layout.getChildren().add(titleImg);
+        }
+
+        // Poem image
+        if (victoryPoemImg != null) {
+            ImageView poemImg = new ImageView(victoryPoemImg);
+            poemImg.setPreserveRatio(true);
+            layout.getChildren().add(poemImg);
+        }
+
+        Button menuBtn = createImageButton("MAIN MENU", "/assets/images/ui/btn_main_menu.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
         layout.getChildren().add(menuBtn);
-        return new Scene(layout, WIDTH, HEIGHT);
+        root.getChildren().add(layout);
+        return new Scene(root, WIDTH, HEIGHT);
     }
 
     /** Creates the item-found screen scene. */
-    public static Scene createItemFoundScene(int level, String[] itemFoundMainText,
-            String[] itemFoundButtonText, Runnable onContinue) {
+    public static Scene createItemFoundScene(int level, Runnable onContinue) {
+        initUIImages();
+        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+
+        // Background
+        if (itemBgImg != null) {
+            ImageView bg = new ImageView(itemBgImg);
+            bg.setFitWidth(WIDTH);
+            bg.setFitHeight(HEIGHT);
+            bg.setPreserveRatio(false);
+            root.getChildren().add(bg);
+        }
+
         VBox layout = newBlackVBox(25);
 
-        layout.getChildren()
-                .add(styledText("pale luna smiles wide...", "Serif", FontWeight.BOLD, 28, Color.rgb(120, 0, 0)));
+        int idx = Math.min(level - 1, 2);
 
-        Text mainText = new Text(itemFoundMainText[level - 1]);
-        mainText.setTextAlignment(TextAlignment.CENTER);
-        mainText.setFont(Font.font("Serif", FontWeight.BOLD, 65));
-        mainText.setFill(Color.DARKRED);
+        // "pale luna smiles wide..." image
+        if (itemPaleLunaSmilesImg != null) {
+            layout.getChildren().add(imgView(itemPaleLunaSmilesImg));
+        }
 
-        String[] itemDescriptions = {
-                "The earth was soft that night. Too soft. Like it was waiting for her.",
-                "The blade bit into the ground. Each scoop made a sound like breathing.",
-                "She did not struggle at the end. Her eyes were wide open. Smiling."
+        // Item name image
+        if (itemTextImg[idx] != null) {
+            layout.getChildren().add(imgView(itemTextImg[idx]));
+        }
+
+        // Description image
+        if (itemDescImg[idx] != null) {
+            layout.getChildren().add(imgView(itemDescImg[idx]));
+        }
+
+        // Action button (level-specific)
+        String[] btnPaths = {
+                "/assets/images/ui/btn_here.png",
+                "/assets/images/ui/btn_use.png",
+                "/assets/images/ui/btn_now.png"
         };
-        Text descText = new Text(itemDescriptions[level - 1]);
-        descText.setWrappingWidth(700);
-        descText.setTextAlignment(TextAlignment.CENTER);
-        descText.setFont(Font.font("Serif", 19));
-        descText.setFill(Color.rgb(170, 150, 145));
-
-        Button continueBtn = new Button(itemFoundButtonText[level - 1]);
-        continueBtn.setFont(Font.font("Serif", FontWeight.BOLD, 28));
-        String normalStyle = "-fx-background-color: #1a0000; -fx-text-fill: #cc0000; -fx-border-color: #660000; -fx-border-width: 2px; -fx-padding: 12 50;";
-        String hoverStyle = "-fx-background-color: #330000; -fx-text-fill: #ff3333; -fx-border-color: #990000; -fx-border-width: 2px; -fx-padding: 12 50;";
-        continueBtn.setStyle(normalStyle);
-        continueBtn.setOnMouseEntered(e -> continueBtn.setStyle(hoverStyle));
-        continueBtn.setOnMouseExited(e -> continueBtn.setStyle(normalStyle));
+        String[] btnLabels = { "here.", "use", "now" };
+        Button continueBtn = createImageButton(btnLabels[idx], btnPaths[idx]);
+        continueBtn.setFont(Font.font("Serif", 28));
         continueBtn.setOnAction(e -> onContinue.run());
 
-        layout.getChildren().addAll(mainText, descText, new Text(""), continueBtn);
-        return new Scene(layout, WIDTH, HEIGHT);
+        layout.getChildren().addAll(new Text(""), continueBtn);
+        root.getChildren().add(layout);
+        return new Scene(root, WIDTH, HEIGHT);
     }
 
     /** Creates the level transition newspaper screen. */
     public static Scene createLevelTransitionScene(int currentLevel, Runnable onContinue) {
+        initUIImages();
+        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+
+        // Background (level-specific)
+        Image bgImg = (currentLevel == 1) ? transitionBgImg1 : transitionBgImg2;
+        if (bgImg != null) {
+            ImageView bg = new ImageView(bgImg);
+            bg.setFitWidth(WIDTH);
+            bg.setFitHeight(HEIGHT);
+            bg.setPreserveRatio(false);
+            root.getChildren().add(bg);
+        }
+
+        int idx = Math.min(currentLevel - 1, 2);
         VBox layout = newBlackVBox(20);
-        String[] headlines = {
-                "CENTRAL PARK DIG SITE RETURNS TO NEWS",
-                "BASEMENT SKETCHES FOUND IN COLD CASE",
-                "ROPE RECOVERED. HUNTER UNSEEN."
-        };
-        layout.getChildren()
-                .add(styledText("NEWSPAPER CLIPPING", "Serif", FontWeight.BOLD, 36, Color.rgb(170, 170, 170)));
-        layout.getChildren().add(styledText(headlines[Math.min(currentLevel - 1, headlines.length - 1)], "Serif",
-                FontWeight.BOLD, 24, Color.rgb(170, 60, 60)));
-        Button next = createStyledButton("CONTINUE");
+
+        // Header image
+        if (transitionHeaderImg != null) {
+            layout.getChildren().add(imgView(transitionHeaderImg));
+        }
+
+        // Headline image
+        if (transitionHeadlineImg[idx] != null) {
+            layout.getChildren().add(imgView(transitionHeadlineImg[idx]));
+        }
+
+        // Item image (mud/shovel/rope)
+        if (transitionItemImg[idx] != null) {
+            ImageView itemView = new ImageView(transitionItemImg[idx]);
+            itemView.setPreserveRatio(true);
+            layout.getChildren().add(itemView);
+        }
+
+        Button next = createImageButton("CONTINUE", "/assets/images/ui/btn_continue.png");
         next.setOnAction(e -> onContinue.run());
         layout.getChildren().add(next);
-        return new Scene(layout, WIDTH, HEIGHT);
+        root.getChildren().add(layout);
+        return new Scene(root, WIDTH, HEIGHT);
     }
 
     // ========================= SHARED UTILITIES =========================
 
-    /** Creates a standard styled game menu button. */
-    public static Button createStyledButton(String text) {
+    /** Creates a standard game menu button with a background image. */
+    public static Button createImageButton(String text, String imagePath) {
         Button btn = new Button(text);
-        btn.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        String normalStyle = "-fx-background-color: #1a1a1a; -fx-text-fill: white; -fx-border-color: darkred; -fx-border-width: 1px; -fx-padding: 10 40;";
-        String hoverStyle = "-fx-background-color: #330000; -fx-text-fill: white; -fx-border-color: red; -fx-border-width: 1px; -fx-padding: 10 40;";
-        btn.setStyle(normalStyle);
-        btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
-        btn.setOnMouseExited(e -> btn.setStyle(normalStyle));
+        btn.setFont(Font.font("Arial", 16));
+        btn.setTextFill(Color.TRANSPARENT);
+        URL url = SceneFactory.class.getResource(imagePath);
+        if (url != null) {
+            String bgUrl = url.toExternalForm();
+            btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
+                    + "-fx-background-size: stretch; "
+                    + "-fx-background-color: transparent; "
+                    + "-fx-border-color: darkred; -fx-border-width: 1px;");
+            btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
+                    + "-fx-background-size: stretch; "
+                    + "-fx-background-color: rgba(100, 0, 0, 0.3); "
+                    + "-fx-border-color: red; -fx-border-width: 2px;"));
+            btn.setOnMouseExited(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
+                    + "-fx-background-size: stretch; "
+                    + "-fx-background-color: transparent; "
+                    + "-fx-border-color: darkred; -fx-border-width: 1px;"));
+        } else {
+            // Fallback if image missing
+            btn.setTextFill(Color.WHITE);
+            btn.setStyle("-fx-background-color: #1a1a1a; -fx-text-fill: white; -fx-border-color: darkred; -fx-border-width: 1px; -fx-padding: 10 40;");
+        }
         return btn;
     }
 
@@ -181,14 +316,16 @@ public class SceneFactory {
         return layout;
     }
 
-    private static Text styledText(String content, String fontFamily, int fontSize, Color color) {
-        return styledText(content, fontFamily, FontWeight.NORMAL, fontSize, color);
+    private static ImageView imgView(Image img) {
+        ImageView v = new ImageView(img);
+        v.setPreserveRatio(true);
+        return v;
     }
 
-    private static Text styledText(String content, String fontFamily, FontWeight weight, int fontSize, Color color) {
+    private static Text styledText(String content, String fontFamily, int fontSize, Color color) {
         Text t = new Text(content);
-        t.setTextAlignment(TextAlignment.CENTER);
-        t.setFont(Font.font(fontFamily, weight, fontSize));
+        t.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        t.setFont(Font.font(fontFamily, fontSize));
         t.setFill(color);
         return t;
     }

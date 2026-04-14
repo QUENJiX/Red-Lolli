@@ -21,6 +21,11 @@ public class GameRenderer {
     private static final double SCREEN_WIDTH = 880;
     private static final double SCREEN_HEIGHT = 730;
 
+    /** No-op placeholder for centralized preloading. This class uses primitives for reveal animation. */
+    public static void initImages() {
+        // No image assets in GameRenderer — lolli reveal uses primitive shapes
+    }
+
     /**
      * The primary entry point for drawing a complete game frame.
      */
@@ -43,10 +48,6 @@ public class GameRenderer {
             e.render(gc);
         }
 
-        if (paleLuna != null) {
-            paleLuna.renderEyes(gc);
-        }
-
         if (warningFlashTimer > 0) {
             gc.setFill(Color.rgb(255, 0, 0, 0.15));
             gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -57,7 +58,7 @@ public class GameRenderer {
         }
 
         pulsePhase = HUDRenderer.drawHUD(gc, level, chests, itemNames, paleLuna, player,
-                fruitCount, eggCount, hasCloneItem, 0, pulsePhase);
+                fruitCount, eggCount, hasCloneItem, pulsePhase);
 
         if (player.isInEscapeRoom()) {
             gc.setFill(Color.rgb(0, 80, 0, 0.25));

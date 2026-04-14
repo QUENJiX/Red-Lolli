@@ -8,7 +8,12 @@
       "Bash(findstr *)",
       "Bash(mvnw *)",
       "Bash(del *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(mkdir *)",
+      "Bash(move *)",
+      "Bash(dir *)",
+      "Bash(@dir *)",
+      "Bash(echo.)"
     ]
   },
   "$version": 3
