@@ -12,6 +12,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.shape.ArcType;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
+import com.nsu.cse215l.redlolli.redlolli.entities.TorchEntity;
 
 import java.io.InputStream;
 import java.util.List;
@@ -23,6 +29,9 @@ public class GameRenderer {
 
     private static final double SCREEN_WIDTH = 880;
     private static final double SCREEN_HEIGHT = 730;
+
+    private static Canvas lightBuffer = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+    private static GraphicsContext lightGC = lightBuffer.getGraphicsContext2D();
 
     // ================= IMAGE ASSETS =================
 
@@ -131,6 +140,37 @@ public class GameRenderer {
                 gc.setGlobalAlpha(1.0);
             }
         }
+
+        // --- MULTIPLICATIVE LIGHTING LAYER ---
+        // 1. Fill light buffer with ambient darkness
+        lightGC.setGlobalBlendMode(BlendMode.SRC_OVER);
+        lightGC.setFill(Color.rgb(12, 12, 15, 0.96)); // 96% darkness
+        lightGC.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        
+        // 2. Additive blending for lights
+        lightGC.setGlobalBlendMode(BlendMode.ADD);
+        
+        // Player's personal light (dimmer depending on sanity)
+        double playerLightRadius = 150 + (player.getSanityPercent() * 50.0);
+        drawRadialLight(lightGC, player.getX() + 10, player.getY() + 10, playerLightRadius, Color.rgb(220, 230, 255, 1.0));
+        
+        // Torch lights
+        for (Entity e : entities) {
+            if (e instanceof TorchEntity) {
+                TorchEntity t = (TorchEntity) e;
+                if (t.isLit()) {
+                    // Small flicker in radius
+                    double flicker = Math.random() * 8.0 - 4.0;
+                    drawRadialLight(lightGC, t.getX() + 20, t.getY() + 20, 220 + flicker, Color.rgb(255, 170, 50, 0.85));
+                }
+            }
+        }
+        
+        // 3. Composite light map to main screen
+        gc.setGlobalBlendMode(BlendMode.MULTIPLY);
+        gc.drawImage(lightBuffer.snapshot(null, null), 0, 0);
+        gc.setGlobalBlendMode(BlendMode.SRC_OVER);
+        // -------------------------------------
 
         if (warningFlashTimer > 0) {
             gc.setFill(Color.rgb(255, 0, 0, 0.15));
@@ -254,6 +294,16 @@ public class GameRenderer {
         gc.setStroke(Color.rgb(200, 170, 120));
         gc.setLineWidth(2);
         gc.strokeLine(cx, cy + size / 2 - 2, cx, cy + size / 2 + 8);
+    }
+
+    private static void drawRadialLight(GraphicsContext gc, double x, double y, double radius, Color color) {
+        RadialGradient lightPulse = new RadialGradient(0, 0, x, y, radius, false, CycleMethod.NO_CYCLE,
+                new Stop(0.0, color),                                    // Bright core center
+                new Stop(0.4, color.deriveColor(0, 1, 1, 0.6)),  // Mid drop off
+                new Stop(1.0, Color.TRANSPARENT)                         // Edges fade entirely
+        );
+        gc.setFill(lightPulse);
+        gc.fillOval(x - radius, y - radius, radius * 2, radius * 2);
     }
 
     /** Animation state for the Red Lolli reveal effect. */

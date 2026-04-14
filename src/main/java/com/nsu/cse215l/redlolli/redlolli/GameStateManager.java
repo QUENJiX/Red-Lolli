@@ -34,6 +34,7 @@ public class GameStateManager {
     final List<Entity> entities = new ArrayList<>();
     final List<Item> chests = new ArrayList<>();
     final List<GuardEntity> guards = new ArrayList<>();
+    final List<TorchEntity> torches = new ArrayList<>();
 
     int currentLevel = 1;
     boolean showingItemFound = false;
@@ -69,6 +70,7 @@ public class GameStateManager {
         entities.clear();
         chests.clear();
         guards.clear();
+        torches.clear();
         overlays.clear();
 
         paleLuna = null;
@@ -110,6 +112,7 @@ public class GameStateManager {
         SerialKillerEntity.initImages();
         Player.initImages();
         Monster.initImages();
+        TorchEntity.initImages();
         GameRenderer.initImages();
         HUDRenderer.initImages();
 
@@ -128,6 +131,7 @@ public class GameStateManager {
         int[][] grid = maze.getMapGrid();
         List<int[]> emptyChestTiles = new ArrayList<>();
         List<int[]> lolliChestTiles = new ArrayList<>();
+        List<int[]> torchTiles = new ArrayList<>();
         int lunaRow = -1, lunaCol = -1;
 
         for (int row = 0; row < grid.length; row++) {
@@ -143,6 +147,9 @@ public class GameStateManager {
                     lunaRow = row;
                     lunaCol = col;
                     grid[row][col] = 0;
+                } else if (tile == 8) {
+                    torchTiles.add(new int[] { row, col });
+                    grid[row][col] = 1; // Turn back into a wall tile for rendering/collision
                 }
             }
         }
@@ -161,6 +168,12 @@ public class GameStateManager {
                     Item.ContentType.LOLLI);
             chests.add(chest);
             entities.add(chest);
+        }
+        
+        for (int[] pos : torchTiles) {
+            TorchEntity torch = new TorchEntity(pos[1] * Maze.TILE_SIZE, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET);
+            torches.add(torch);
+            entities.add(torch);
         }
 
         if (lunaRow >= 0) {
@@ -254,6 +267,8 @@ public class GameStateManager {
             serialKiller.update();
         for (GuardEntity guard : guards)
             guard.update();
+        for (TorchEntity torch : torches)
+            torch.update();
 
         // Update player's near-Luna status for sanity drain
         if (paleLuna != null) {
