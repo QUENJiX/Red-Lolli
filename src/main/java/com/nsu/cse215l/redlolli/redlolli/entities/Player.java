@@ -34,10 +34,16 @@ public class Player extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        playerCalmImg = loadSprite("player_calm.png", 20, 20);
-        playerTerrifiedImg = loadSprite("player_terrified.png", 20, 20);
+        playerCalmImg = loadSprite("player_calm.png", 40, 40);
+        playerTerrifiedImg = loadSprite("player_terrified.png", 40, 40);
         imagesInitialized = true;
     }
+
+    /** Call this to force images to reload (e.g. after changing asset paths). */
+    public static void resetImages() { imagesInitialized = false; }
+
+    // Visual render size (sprite drawn 40x40 centered on the hitbox)
+    private static final double RENDER_SIZE = 40.0;
 
     // ================= LOGIC =================
 
@@ -56,6 +62,17 @@ public class Player extends Entity implements Collidable {
     private double facingX = 0;
     private double facingY = -1;
 
+    // Sanity system
+    private static final int MAX_SANITY = 100;
+    private static final int PASSIVE_DRAIN_INTERVAL = 60; // 1 sanity per 5 seconds (300 frames) 
+    private static final int NEAR_LUNA_DRAIN_INTERVAL = 120; // 1 sanity per 2 seconds when near Luna
+    private static final int ESCAPE_ROOM_RECOVERY_INTERVAL = 60; // +1 sanity per second in escape room
+    private static final int NEAR_LUNA_DISTANCE = 150; // pixels threshold for "near Luna"
+    private int sanity = MAX_SANITY;
+    private int sanityDrainCounter = 0;
+    private boolean isNearLuna = false;
+    private boolean sanityDead = false; // true when sanity hits 0
+
     public Player(double x, double y) {
         super(x, y, 20.0);
     }
@@ -64,6 +81,35 @@ public class Player extends Entity implements Collidable {
     public void update() {
         if (exhaustedFrames > 0) {
             exhaustedFrames--;
+        }
+
+        // Sanity drain/recovery logic
+        if (sanity <= 0) {
+            sanityDead = true;
+            sanity = 0;
+            return;
+        }
+
+        if (isInEscapeRoom) {
+            // Recovery in escape rooms: +1 per second (60 frames)
+            sanityDrainCounter++;
+            if (sanityDrainCounter >= ESCAPE_ROOM_RECOVERY_INTERVAL && sanity < MAX_SANITY) {
+                sanity++;
+                sanityDrainCounter = 0;
+            }
+        } else {
+            // Passive drain: 1 per 5 seconds (300 frames)
+            // Faster when near Luna: 1 per 2 seconds (120 frames)
+            sanityDrainCounter++;
+            int drainInterval = isNearLuna ? NEAR_LUNA_DRAIN_INTERVAL : PASSIVE_DRAIN_INTERVAL;
+            if (sanityDrainCounter >= drainInterval) {
+                sanity--;
+                sanityDrainCounter = 0;
+                if (sanity <= 0) {
+                    sanity = 0;
+                    sanityDead = true;
+                }
+            }
         }
     }
 
@@ -100,12 +146,13 @@ public class Player extends Entity implements Collidable {
     @Override
     public void render(GraphicsContext gc) {
         Image img = isBeingChased ? playerTerrifiedImg : playerCalmImg;
-
+        // Draw sprite centered on hitbox (hitbox is 20x20, sprite renders at 40x40)
+        double offset = (RENDER_SIZE - size) / 2;
         if (img != null) {
-            gc.drawImage(img, x, y, size, size);
+            gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         } else {
-            gc.setFill(Color.MAGENTA);
-            gc.fillRect(x, y, size, size);
+            gc.setFill(Color.rgb(100, 149, 237));
+            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         }
     }
 
@@ -144,6 +191,34 @@ public class Player extends Entity implements Collidable {
 
     public double getFacingY() {
         return facingY;
+    }
+
+    /** Updates whether the player is near Luna (used for faster sanity drain). */
+    public void updateNearLunaStatus(double lunaX, double lunaY) {
+        double dx = this.x - lunaX;
+        double dy = this.y - lunaY;
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        this.isNearLuna = dist < NEAR_LUNA_DISTANCE;
+    }
+
+    public int getSanity() {
+        return sanity;
+    }
+
+    public double getSanityPercent() {
+        return (double) sanity / MAX_SANITY;
+    }
+
+    public boolean isSanityDead() {
+        return sanityDead;
+    }
+
+    /** Resets sanity to full (used when loading new level). */
+    public void resetSanity() {
+        this.sanity = MAX_SANITY;
+        this.sanityDrainCounter = 0;
+        this.isNearLuna = false;
+        this.sanityDead = false;
     }
 
     private double getMovementSpeed(boolean sprinting) {

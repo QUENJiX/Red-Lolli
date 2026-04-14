@@ -51,10 +51,15 @@ public class GameStateManager {
     int guardHitCooldownFrames = 0;
     int footstepCooldownFrames = 0;
     int lunaScreamCooldownFrames = 0;
+    int screenShakeFrames = 0; // For screen shake effect
+    int playerDeathAnimFrames = 0; // Death animation counter (screen fills red)
+    boolean playerIsDead = false; // Persistent flag to prevent re-triggering death
 
     boolean hasCloneItem = false;
     boolean wasInEscapeRoom = false;
     boolean escapeRoomsCollapsed = false;
+
+    final List<GameRenderer.Overlay> overlays = new ArrayList<>();
 
     final SoundManager soundManager = new SoundManager();
 
@@ -64,6 +69,7 @@ public class GameStateManager {
         entities.clear();
         chests.clear();
         guards.clear();
+        overlays.clear();
 
         paleLuna = null;
         serialKiller = null;
@@ -83,9 +89,17 @@ public class GameStateManager {
         guardHitCooldownFrames = 0;
         footstepCooldownFrames = 0;
         lunaScreamCooldownFrames = 0;
+        screenShakeFrames = 0;
+        playerDeathAnimFrames = 0;
+        playerIsDead = false;
         hasCloneItem = false;
         wasInEscapeRoom = false;
         escapeRoomsCollapsed = false;
+
+        // Reset player sanity
+        if (player != null) {
+            player.resetSanity();
+        }
     }
 
     void loadLevel() {
@@ -199,6 +213,17 @@ public class GameStateManager {
 
     // ========================= FRAME UPDATE =========================
 
+    /** Triggers player death animation and sets death message. */
+    private boolean triggerPlayerDeath(String message) {
+        // Only trigger once — prevents re-triggering after animation finishes
+        if (playerIsDead)
+            return true;
+        activeDeathMessage = message;
+        playerDeathAnimFrames = 60; // 1 second death animation (60 frames)
+        playerIsDead = true;
+        return true;
+    }
+
     /** Returns true if the player died this frame. */
     boolean update(Set<KeyCode> activeKeys) {
         if (showingItemFound)
@@ -220,12 +245,27 @@ public class GameStateManager {
             guardHitCooldownFrames--;
         if (lunaScreamCooldownFrames > 0)
             lunaScreamCooldownFrames--;
+        if (screenShakeFrames > 0)
+            screenShakeFrames--;
+        if (playerDeathAnimFrames > 0)
+            playerDeathAnimFrames--;
 
         if (serialKiller != null)
             serialKiller.update();
         for (GuardEntity guard : guards)
             guard.update();
+
+        // Update player's near-Luna status for sanity drain
+        if (paleLuna != null) {
+            player.updateNearLunaStatus(paleLuna.getX(), paleLuna.getY());
+        }
+
         player.update();
+
+        // Check for sanity death
+        if (player.isSanityDead()) {
+            return triggerPlayerDeath("Your mind broke before she could.");
+        }
 
         // Stand-still penalty
         boolean movingInput = activeKeys.contains(KeyCode.W) || activeKeys.contains(KeyCode.A)
@@ -326,10 +366,9 @@ public class GameStateManager {
             return false;
         for (GuardEntity guard : guards) {
             if (!guard.isDistracted() && guard.isPlayerOnGuardedRoom(player.getHitbox())) {
-                activeDeathMessage = guard.getType() == GuardEntity.Type.BAT
+                return triggerPlayerDeath(guard.getType() == GuardEntity.Type.BAT
                         ? "The bat bit first. Luna answered instantly."
-                        : "The snake was still hungry. No egg, no escape.";
-                return true;
+                        : "The snake was still hungry. No egg, no escape.");
             }
         }
         return false;
@@ -357,8 +396,7 @@ public class GameStateManager {
             return false;
         }
         if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(player.getHitbox())) {
-            activeDeathMessage = "Steel and panic. He never stops hunting.";
-            return true;
+            return triggerPlayerDeath("Steel and panic. He never stops hunting.");
         }
         return false;
     }
@@ -372,11 +410,11 @@ public class GameStateManager {
         paleLuna.update(player.getX(), player.getY(), inEscapeRoom, lolliRecentlyCollected, maze);
 
         if (exitingEscapeRoom && paleLuna.isWaitingAtDoor()) {
-            activeDeathMessage = "She waited at the door. You stepped out anyway.";
-            return true;
+            return triggerPlayerDeath("She waited at the door. You stepped out anyway.");
         }
         if (prevState != Monster.State.HUNTING && paleLuna.getState() == Monster.State.HUNTING) {
             warningFlashTimer = 30;
+            screenShakeFrames = 15; // Screen shake for 15 frames when Luna starts hunting
             soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
         }
         if (warningFlashTimer > 0)
@@ -389,22 +427,34 @@ public class GameStateManager {
             lunaScreamCooldownFrames = 130;
         }
         if (!inEscapeRoom && paleLuna.isHunting() && player.getHitbox().intersects(paleLuna.getHitbox())) {
-            activeDeathMessage = "She found your pulse before you heard her footsteps.";
-            return true;
+            return triggerPlayerDeath("She found your pulse before you heard her footsteps.");
         }
         if (!inEscapeRoom && paleLuna.isWaitingAtDoor()) {
             boolean canSee = maze.hasLineOfSight(
                     paleLuna.getX() + 12, paleLuna.getY() + 12,
                     player.getX() + 10, player.getY() + 10);
             if (canSee) {
-                activeDeathMessage = "She waited at the door. You stepped out anyway.";
-                return true;
+                return triggerPlayerDeath("She waited at the door. You stepped out anyway.");
             }
         }
         return false;
     }
 
     // ========================= ACTIONS =========================
+
+    /** Adds a manual image overlay to the current frame. Call each frame for persistent overlays. */
+    public void addOverlay(javafx.scene.image.Image image, double x, double y, double width, double height, double opacity) {
+        GameRenderer.Overlay o = new GameRenderer.Overlay(image, x, y, width, height);
+        o.setOpacity(opacity);
+        overlays.add(o);
+    }
+
+    /** Adds a manual overlay at world (maze) coordinates. */
+    public void addWorldOverlay(javafx.scene.image.Image image, double worldX, double worldY, double width, double height, double opacity) {
+        GameRenderer.Overlay o = new GameRenderer.Overlay(image, worldX, worldY, width, height, true);
+        o.setOpacity(opacity);
+        overlays.add(o);
+    }
 
     void tryUseDistraction() {
         GuardEntity nearest = null;

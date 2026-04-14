@@ -18,6 +18,7 @@ public class SoundManager {
     public static final String CHEST_OPEN = "/assets/audio/chest_open.wav";
     public static final String FOOTSTEP = "/assets/audio/footstep.wav";
     public static final String LUNA_SCREAM_NEARBY = "/assets/audio/luna_scream_nearby.wav";
+    public static final String AMBIENT_DRONE = "/assets/audio/ambient_drone.wav";
 
     private MediaPlayer currentMusic;
 

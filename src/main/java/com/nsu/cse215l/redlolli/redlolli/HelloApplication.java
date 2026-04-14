@@ -171,6 +171,7 @@ public class HelloApplication extends Application {
         isPlaying = true;
         setupGameScene();
         gsm.soundManager.playOneShot(SoundManager.GAME_START, 0.75);
+        gsm.soundManager.playMusicIfPresent(SoundManager.AMBIENT_DRONE);
     }
 
     private void setupGameScene() {
@@ -198,8 +199,15 @@ public class HelloApplication extends Application {
                 if (isPlaying) {
                     boolean died = gsm.update(activeKeys);
                     if (died) {
-                        triggerDeath();
-                        return;
+                        // Play death animation before transitioning to death screen
+                        if (gsm.playerIsDead && gsm.playerDeathAnimFrames > 0) {
+                            render(gc);
+                            renderDeathAnimation(gc, gsm.playerDeathAnimFrames);
+                            return;
+                        } else if (gsm.playerIsDead) {
+                            triggerDeath();
+                            return;
+                        }
                     }
                     if (gsm.isLolliRevealJustFinished()) {
                         showItemFoundScreen();
@@ -215,12 +223,53 @@ public class HelloApplication extends Application {
     }
 
     private void render(GraphicsContext gc) {
+        // Calculate vignette intensity based on sanity (only below 25)
+        double vignetteIntensity = 0;
+        if (gsm.player != null) {
+            int sanity = gsm.player.getSanity();
+            if (sanity < 25) {
+                // Below 25: start vignette, intensifies as sanity decreases
+                vignetteIntensity = (25 - sanity) / 25.0; // 0.0 to 1.0
+            }
+        }
+
         gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.maze, gsm.entities, gsm.paleLuna, gsm.player,
                 gsm.warningFlashTimer, gsm.lolliRevealState, gsm.currentLevel, gsm.chests, ITEM_NAMES,
                 gsm.fruitCount, gsm.eggCount, gsm.hasCloneItem,
-                gsm.pulsePhaseHUD);
+                gsm.pulsePhaseHUD,
+                gsm.paleLuna != null && gsm.paleLuna.isHunting(),
+                gsm.screenShakeFrames,
+                vignetteIntensity,
+                gsm.overlays);
         if (showDebugOverlay)
             gsm.drawDebugOverlay(gc, activeKeys);
+    }
+
+    /** Renders the player death animation - screen fills red from edges. */
+    private void renderDeathAnimation(GraphicsContext gc, int framesRemaining) {
+        double progress = 1.0 - (double) framesRemaining / 60.0; // 0.0 to 1.0 over 60 frames
+
+        // Draw red overlay filling from edges
+        double edgeSize = progress * 400; // Expands from edges to center
+
+        // Draw red from all four edges
+        gc.setFill(Color.rgb(180, 0, 0, 0.7));
+
+        // Top edge
+        gc.fillRect(0, 0, 880, edgeSize);
+        // Bottom edge
+        gc.fillRect(0, 730 - edgeSize, 880, edgeSize);
+        // Left edge
+        gc.fillRect(0, 0, edgeSize, 730);
+        // Right edge
+        gc.fillRect(880 - edgeSize, 0, edgeSize, 730);
+
+        // Darken center as animation progresses
+        if (progress > 0.5) {
+            double centerAlpha = (progress - 0.5) * 1.4; // 0.0 to 0.7
+            gc.setFill(Color.rgb(0, 0, 0, centerAlpha));
+            gc.fillRect(edgeSize, edgeSize, 880 - edgeSize * 2, 730 - edgeSize * 2);
+        }
     }
 
     // ========================= SCREEN TRANSITIONS =========================

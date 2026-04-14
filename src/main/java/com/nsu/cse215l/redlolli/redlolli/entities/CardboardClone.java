@@ -29,9 +29,15 @@ public class CardboardClone extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        cloneDecoyImg = loadSprite("clone_decoy.png", 20, 20);
+        cloneDecoyImg = loadSprite("clone_decoy.png", 40, 40);
         imagesInitialized = true;
     }
+
+    /** Call this to force images to reload (e.g. after changing asset paths). */
+    public static void resetImages() { imagesInitialized = false; }
+
+    // Visual render size (40x40 centered on the 20x20 hitbox)
+    private static final double RENDER_SIZE = 40.0;
 
     // ================= LOGIC =================
 
@@ -45,11 +51,13 @@ public class CardboardClone extends Entity implements Collidable {
 
     @Override
     public void render(GraphicsContext gc) {
+        // Draw sprite centered on hitbox (hitbox 20x20, sprite 40x40)
+        double offset = (RENDER_SIZE - size) / 2;
         if (cloneDecoyImg != null) {
-            gc.drawImage(cloneDecoyImg, x, y, size, size);
+            gc.drawImage(cloneDecoyImg, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         } else {
-            gc.setFill(Color.MAGENTA);
-            gc.fillRect(x, y, size, size);
+            gc.setFill(Color.rgb(210, 180, 140));
+            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         }
     }
 

@@ -41,13 +41,20 @@ public class Monster extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        monsterDormant = loadSprite("monster_dormant.png", 25, 25);
-        monsterStalking = loadSprite("monster_stalking.png", 25, 25);
-        monsterHunting = loadSprite("monster_hunting.png", 25, 25);
-        monsterWaiting = loadSprite("monster_waiting.png", 25, 25);
-        monsterAura = loadSprite("monster_aura.png", 35, 35);
+        monsterDormant = loadSprite("monster_dormant.png", 40, 40);
+        monsterStalking = loadSprite("monster_stalking.png", 40, 40);
+        monsterHunting = loadSprite("monster_hunting.png", 40, 40);
+        monsterWaiting = loadSprite("monster_waiting.png", 40, 40);
+        monsterAura = loadSprite("monster_aura.png", 56, 56);
         imagesInitialized = true;
     }
+
+    /** Call this to force images to reload (e.g. after changing asset paths). */
+    public static void resetImages() { imagesInitialized = false; }
+
+    // Visual render size (40x40 centered on the 25x25 hitbox)
+    private static final double RENDER_SIZE = 40.0;
+    private static final double AURA_SIZE = 56.0;
 
     // ================= STATE =================
 
@@ -192,13 +199,16 @@ public class Monster extends Entity implements Collidable {
 
     @Override
     public void render(GraphicsContext gc) {
+        double offset = (RENDER_SIZE - size) / 2;
+        double auraOffset = (AURA_SIZE - size) / 2;
+
         // Aura (only when not dormant)
         if (state != State.DORMANT && monsterAura != null) {
             double pulse = Math.sin(pulsePhase) * 5;
             gc.setGlobalAlpha(0.35);
             gc.drawImage(monsterAura,
-                    x - pulse - 5, y - pulse - 5,
-                    size + (pulse + 5) * 2, size + (pulse + 5) * 2);
+                    x - auraOffset - pulse, y - auraOffset - pulse,
+                    AURA_SIZE + pulse * 2, AURA_SIZE + pulse * 2);
             gc.setGlobalAlpha(1.0);
         }
 
@@ -215,14 +225,16 @@ public class Monster extends Entity implements Collidable {
         if (body != null) {
             if (state == State.DORMANT) {
                 gc.setGlobalAlpha(0.5);
-                gc.drawImage(body, x, y, size, size);
+                gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
                 gc.setGlobalAlpha(1.0);
             } else {
-                gc.drawImage(body, x, y, size, size);
+                gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
             }
         } else {
-            gc.setFill(Color.MAGENTA);
-            gc.fillRect(x, y, size, size);
+            gc.setFill(Color.rgb(220, 220, 240));
+            if (state == State.DORMANT) gc.setGlobalAlpha(0.5);
+            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+            gc.setGlobalAlpha(1.0);
         }
     }
 

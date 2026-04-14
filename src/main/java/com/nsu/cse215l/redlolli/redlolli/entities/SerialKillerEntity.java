@@ -35,11 +35,17 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        killerInactiveImg = loadSprite("killer_inactive.png", 24, 24);
-        killerChaseImg = loadSprite("killer_chase.png", 24, 24);
-        killerAttackImg = loadSprite("killer_attack.png", 24, 24);
+        killerInactiveImg = loadSprite("killer_inactive.png", 40, 40);
+        killerChaseImg = loadSprite("killer_chase.png", 40, 40);
+        killerAttackImg = loadSprite("killer_attack.png", 40, 40);
         imagesInitialized = true;
     }
+
+    /** Call this to force images to reload (e.g. after changing asset paths). */
+    public static void resetImages() { imagesInitialized = false; }
+
+    // Visual render size (40x40 centered on the 24x24 hitbox)
+    private static final double RENDER_SIZE = 40.0;
 
     private static final double SPEED = 1.75;
 
@@ -100,12 +106,13 @@ public class SerialKillerEntity extends Entity implements Collidable {
         } else {
             img = killerChaseImg;
         }
-
+        // Draw centered (hitbox 24x24, sprite 40x40)
+        double offset = (RENDER_SIZE - size) / 2;
         if (img != null) {
-            gc.drawImage(img, x, y, size, size);
+            gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         } else {
-            gc.setFill(Color.MAGENTA);
-            gc.fillRect(x, y, size, size);
+            gc.setFill(active ? Color.rgb(180, 20, 20) : Color.rgb(80, 40, 40));
+            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         }
     }
 
