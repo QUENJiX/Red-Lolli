@@ -34,22 +34,22 @@ public class Player extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        idleFrontImg = loadSprite("idle_front.png", 40, 40);
-        idleBackImg = loadSprite("idle_back.png", 40, 40);
-        idleLeftImg = loadSprite("idle_left.png", 40, 40);
-        idleRightImg = loadSprite("idle_right.png", 40, 40);
+        idleFrontImg = loadSprite("idle_front.png", 32, 32);
+        idleBackImg = loadSprite("idle_back.png", 32, 32);
+        idleLeftImg = loadSprite("idle_left.png", 32, 32);
+        idleRightImg = loadSprite("idle_right.png", 32, 32);
         
         walkBackImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkBackImgs[i-1] = loadSprite("walk_back_" + i + ".png", 40, 40);
+        for (int i=1; i<=3; i++) walkBackImgs[i-1] = loadSprite("walk_back_" + i + ".png", 28, 28);
         
         walkFrontImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkFrontImgs[i-1] = loadSprite("walk_front_" + i + ".png", 40, 40);
+        for (int i=1; i<=3; i++) walkFrontImgs[i-1] = loadSprite("walk_front_" + i + ".png", 28, 28);
         
         walkLeftImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkLeftImgs[i-1] = loadSprite("walk_left_" + i + ".png", 40, 40);
+        for (int i=1; i<=3; i++) walkLeftImgs[i-1] = loadSprite("walk_left_" + i + ".png", 28, 28);
         
         walkRightImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkRightImgs[i-1] = loadSprite("walk_right_" + i + ".png", 40, 40);
+        for (int i=1; i<=3; i++) walkRightImgs[i-1] = loadSprite("walk_right_" + i + ".png", 28, 28);
 
         imagesInitialized = true;
     }
@@ -58,7 +58,7 @@ public class Player extends Entity implements Collidable {
     public static void resetImages() { imagesInitialized = false; }
 
     // Visual render size
-    private static final double RENDER_SIZE = 40.0;
+    private static final double RENDER_SIZE = 32.0;
 
     // ================= LOGIC =================
 
