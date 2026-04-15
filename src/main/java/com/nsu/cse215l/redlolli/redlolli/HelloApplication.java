@@ -245,30 +245,50 @@ public class HelloApplication extends Application {
             gsm.drawDebugOverlay(gc, activeKeys);
     }
 
-    /** Renders the player death animation - screen fills red from edges. */
+    /** Renders the player death animation - screen fills red closing in a circle with flashes and jitters. */
     private void renderDeathAnimation(GraphicsContext gc, int framesRemaining) {
         double progress = 1.0 - (double) framesRemaining / 60.0; // 0.0 to 1.0 over 60 frames
 
-        // Draw red overlay filling from edges
-        double edgeSize = progress * 400; // Expands from edges to center
+        // Max radius to cover the 880x730 screen is approx 575 (from center)
+        double maxRadius = 600.0;
+        // Exponential ease-in so it closes faster at the end
+        double currentRadius = maxRadius * (1.0 - Math.pow(progress, 1.5));
 
-        // Draw red from all four edges
-        gc.setFill(Color.rgb(180, 0, 0, 0.7));
+        // Add some jitter that intensifies as it closes
+        double jitterStrength = progress * 25.0;
+        double jitterX = (Math.random() - 0.5) * jitterStrength;
+        double jitterY = (Math.random() - 0.5) * jitterStrength;
 
-        // Top edge
-        gc.fillRect(0, 0, 880, edgeSize);
-        // Bottom edge
-        gc.fillRect(0, 730 - edgeSize, 880, edgeSize);
-        // Left edge
-        gc.fillRect(0, 0, edgeSize, 730);
-        // Right edge
-        gc.fillRect(880 - edgeSize, 0, edgeSize, 730);
+        double centerX = 440.0 + jitterX;
+        double centerY = 365.0 + jitterY;
 
-        // Darken center as animation progresses
-        if (progress > 0.5) {
-            double centerAlpha = (progress - 0.5) * 1.4; // 0.0 to 0.7
-            gc.setFill(Color.rgb(0, 0, 0, centerAlpha));
-            gc.fillRect(edgeSize, edgeSize, 880 - edgeSize * 2, 730 - edgeSize * 2);
+        // Flashes randomness
+        boolean isFlash = progress > 0.2 && Math.random() < 0.2; 
+
+        double centerAlpha = progress > 0.5 ? Math.min(1.0, (progress - 0.5) * 2.0) : 0.0;
+        Color centerColor = Color.rgb(0, 0, 0, centerAlpha);
+        Color bloodRed = isFlash ? Color.rgb(255, 0, 0, 0.9) : Color.rgb(150, 0, 0, 0.85);
+
+        // Normalize ratios for the gradient stops (must be 0.0 to 1.0)
+        double innerRatio = Math.max(0.001, currentRadius / maxRadius);
+        double outerRatio = Math.min(1.0, innerRatio + 0.15); // soft edge transition
+
+        javafx.scene.paint.RadialGradient gradient = new javafx.scene.paint.RadialGradient(
+                0, 0, centerX, centerY, maxRadius, false,
+                javafx.scene.paint.CycleMethod.NO_CYCLE,
+                new javafx.scene.paint.Stop(0.0, centerColor),
+                new javafx.scene.paint.Stop(innerRatio, centerColor),
+                new javafx.scene.paint.Stop(outerRatio, bloodRed),
+                new javafx.scene.paint.Stop(1.0, bloodRed)
+        );
+
+        gc.setFill(gradient);
+        gc.fillRect(0, 0, 880, 730);
+
+        // Occasional intense white/red screen-wide flash
+        if (isFlash && Math.random() < 0.3) {
+            gc.setFill(Color.rgb(255, 100, 100, 0.3));
+            gc.fillRect(0, 0, 880, 730);
         }
     }
 

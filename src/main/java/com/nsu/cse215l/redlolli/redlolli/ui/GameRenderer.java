@@ -113,9 +113,10 @@ public class GameRenderer {
 
         // Screen shake effect
         double shakeX = 0, shakeY = 0;
-        if (screenShakeFrames > 0) {
-            shakeX = (Math.random() - 0.5) * screenShakeFrames * 0.5;
-            shakeY = (Math.random() - 0.5) * screenShakeFrames * 0.5;
+        if (screenShakeFrames > 0 || isLunaHunting) {
+            double intensity = screenShakeFrames > 0 ? screenShakeFrames * 0.5 : 2.5; // Constant jitter when hunted
+            shakeX = (Math.random() - 0.5) * intensity;
+            shakeY = (Math.random() - 0.5) * intensity;
             gc.translate(shakeX, shakeY);
         }
 
@@ -197,8 +198,33 @@ public class GameRenderer {
         }
 
         // Vignette overlay (darkens screen edges, intensifies with low sanity)
-        if (vignetteIntensity > 0) {
-            drawVignetteOverlay(gc, vignetteIntensity);
+        if (vignetteIntensity > 0 || isLunaHunting) {
+            double effVignette = Math.max(vignetteIntensity, isLunaHunting ? 0.3 + (Math.sin(System.currentTimeMillis() / 150.0) * 0.15) : 0);
+            drawVignetteOverlay(gc, effVignette);
+        }
+        
+        // Add hunting panic overrides
+        if (isLunaHunting) {
+            // Heartbeat red pulsing
+            double pulse = Math.abs(Math.sin(System.currentTimeMillis() / 200.0));
+            gc.setFill(Color.rgb(180, 0, 0, 0.05 + (0.05 * pulse)));
+            gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            
+            // Random horizontal glitch slices
+            if (Math.random() < 0.25) {
+                gc.setFill(Color.rgb(0, 0, 0, 0.4));
+                double glitchY = Math.random() * SCREEN_HEIGHT;
+                double glitchHeight = Math.random() * 8 + 2;
+                gc.fillRect(0, glitchY, SCREEN_WIDTH, glitchHeight);
+            }
+            
+            // Chromatic aberration simulation
+            if (Math.random() < 0.05) {
+                gc.setGlobalBlendMode(BlendMode.DIFFERENCE);
+                gc.setFill(Color.rgb(255, 0, 0, 0.2));
+                gc.fillRect(-4, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+                gc.setGlobalBlendMode(BlendMode.SRC_OVER);
+            }
         }
 
         // Subliminal flash - 1-frame Luna face during low sanity or chase
@@ -212,7 +238,7 @@ public class GameRenderer {
         // This is handled by HelloApplication after death is detected
 
         // Reset transform if shaken
-        if (screenShakeFrames > 0) {
+        if (screenShakeFrames > 0 || isLunaHunting) {
             gc.translate(-shakeX, -shakeY);
         }
 

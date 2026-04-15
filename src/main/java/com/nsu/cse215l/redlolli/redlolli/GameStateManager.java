@@ -337,7 +337,7 @@ public class GameStateManager {
 
         // Collision & threat checks
         checkChestCollisions();
-        if (checkGuardThreats(enteringEscapeRoom))
+        if (checkGuardThreats(inEscapeRoom, enteringEscapeRoom))
             return true;
         if (updateSerialKiller())
             return true;
@@ -376,11 +376,18 @@ public class GameStateManager {
     }
 
     /** Returns true if player died. */
-    private boolean checkGuardThreats(boolean enteringEscapeRoom) {
-        if (guardHitCooldownFrames > 0 || !enteringEscapeRoom)
+    private boolean checkGuardThreats(boolean inEscapeRoom, boolean enteringEscapeRoom) {
+        if (guardHitCooldownFrames > 0)
             return false;
+            
+        // Player is safely inside the escape room and not actively crossing the threshold
+        if (inEscapeRoom && !enteringEscapeRoom) {
+            return false;
+        }
+        
         for (GuardEntity guard : guards) {
-            if (!guard.isDistracted() && guard.isPlayerOnGuardedRoom(player.getHitbox())) {
+            // Guard kills if not distracted and player touches the guarded room or the guard itself
+            if (!guard.isDistracted() && (guard.isPlayerOnGuardedRoom(player.getHitbox()) || guard.getHitbox().intersects(player.getHitbox()))) {
                 return triggerPlayerDeath(guard.getType() == GuardEntity.Type.BAT
                         ? "The bat bit first. Luna answered instantly."
                         : "The snake was still hungry. No egg, no escape.");
