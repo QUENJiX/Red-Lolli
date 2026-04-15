@@ -241,6 +241,13 @@ public class GameStateManager {
     boolean update(Set<KeyCode> activeKeys) {
         if (showingItemFound)
             return false;
+            
+        if (playerIsDead) {
+            if (playerDeathAnimFrames > 0) {
+                playerDeathAnimFrames--;
+            }
+            return true;
+        }
 
         if (lolliRevealState != null && lolliRevealState.active) {
             lolliRevealState.timer--;
@@ -260,8 +267,6 @@ public class GameStateManager {
             lunaScreamCooldownFrames--;
         if (screenShakeFrames > 0)
             screenShakeFrames--;
-        if (playerDeathAnimFrames > 0)
-            playerDeathAnimFrames--;
 
         if (serialKiller != null)
             serialKiller.update();
