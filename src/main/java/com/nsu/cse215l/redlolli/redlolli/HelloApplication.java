@@ -134,15 +134,36 @@ public class HelloApplication extends Application {
             }));
         }
         timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(11.5), e -> {
+            scene.setOnKeyPressed(null);
             gsm.soundManager.stopMusic();
-            startGame(1);
+            
+            root.getChildren().clear();
+            javafx.scene.text.Text loadingText = new javafx.scene.text.Text("LOADING...");
+            loadingText.setFill(Color.WHITE);
+            loadingText.setFont(javafx.scene.text.Font.font("Serif", 30));
+            root.getChildren().add(loadingText);
+            
+            javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(50));
+            pt.setOnFinished(evt -> startGame(1));
+            pt.play();
         }));
         timeline.play();
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
+                // Prevent multiple enters and give immediate visual feedback
+                scene.setOnKeyPressed(null);
                 timeline.stop();
                 gsm.soundManager.stopMusic();
-                startGame(1);
+                
+                root.getChildren().clear();
+                javafx.scene.text.Text loadingText = new javafx.scene.text.Text("LOADING...");
+                loadingText.setFill(Color.WHITE);
+                loadingText.setFont(javafx.scene.text.Font.font("Serif", 30));
+                root.getChildren().add(loadingText);
+                
+                javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(50));
+                pt.setOnFinished(evt -> startGame(1));
+                pt.play();
             }
         });
     }
@@ -285,8 +306,7 @@ public class HelloApplication extends Application {
         if (gsm.currentLevel >= 3) {
             triggerVictoryCutscene();
         } else {
-            mainWindow.setScene(SceneFactory.createLevelTransitionScene(
-                    gsm.currentLevel, () -> startGame(gsm.currentLevel + 1)));
+            startGame(gsm.currentLevel + 1);
         }
     }
 

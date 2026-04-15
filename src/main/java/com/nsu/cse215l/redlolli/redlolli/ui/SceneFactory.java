@@ -13,8 +13,7 @@ import javafx.scene.text.Text;
 import java.net.URL;
 
 /**
- * Factory for building the game's static UI scenes (death, victory, item-found,
- * level transition).
+ * Factory for building the game's static UI scenes (death, victory, item-found).
  * Provides shared button styling and resource loading utilities.
  */
 public class SceneFactory {
@@ -25,8 +24,6 @@ public class SceneFactory {
     // ================= UI IMAGE ASSETS =================
 
     private static Image menuBackgroundImg;
-    private static Image transitionBgImg1;
-    private static Image transitionBgImg2;
     private static Image[] itemBgImg = new Image[3];
     private static Image deathBgImg;
     private static Image victoryBgImg;
@@ -35,8 +32,6 @@ public class SceneFactory {
     public static void initUIImages() {
         if (uiImagesInitialized) return;
         menuBackgroundImg = tryLoadImage("/assets/images/ui/menu_background.png");
-        transitionBgImg1 = tryLoadImage("/assets/images/ui/transition_bg_1.png");
-        transitionBgImg2 = tryLoadImage("/assets/images/ui/transition_bg_2.png");
         itemBgImg[0] = tryLoadImage("/assets/images/ui/item_bg_1.png");
         itemBgImg[1] = tryLoadImage("/assets/images/ui/item_bg_2.png");
         itemBgImg[2] = tryLoadImage("/assets/images/ui/item_bg_3.png");
@@ -232,31 +227,6 @@ public class SceneFactory {
         continueBtn.setOnAction(e -> onContinue.run());
 
         layout.getChildren().addAll(new Text(""), continueBtn);
-        root.getChildren().add(layout);
-        return new Scene(root, WIDTH, HEIGHT);
-    }
-
-    /** Creates the level transition newspaper screen. */
-    public static Scene createLevelTransitionScene(int currentLevel, Runnable onContinue) {
-        initUIImages();
-        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
-        root.setStyle("-fx-background-color: black;");
-
-        // Background (level-specific)
-        Image bgImg = (currentLevel == 1) ? transitionBgImg1 : transitionBgImg2;
-        if (bgImg != null) {
-            ImageView bg = new ImageView(bgImg);
-            bg.setFitWidth(WIDTH);
-            bg.setFitHeight(HEIGHT);
-            bg.setPreserveRatio(false);
-            root.getChildren().add(bg);
-        }
-
-        VBox layout = newBlackVBox(20);
-
-        Button next = createIconButton("/assets/images/ui/icon_continue.png", "/assets/images/ui/btn_continue.png", "/assets/images/ui/btn_continue_pressed.png");
-        next.setOnAction(e -> onContinue.run());
-        layout.getChildren().add(next);
         root.getChildren().add(layout);
         return new Scene(root, WIDTH, HEIGHT);
     }
