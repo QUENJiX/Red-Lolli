@@ -205,7 +205,7 @@ public class GameStateManager {
                 entities.add(cobra);
             }
         } else if (currentLevel == 3) {
-            serialKiller = new SerialKillerEntity(17 * Maze.TILE_SIZE + 6, 5 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
+            serialKiller = new SerialKillerEntity(18 * Maze.TILE_SIZE + 6, 5 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
             entities.add(serialKiller);
         }
     }
@@ -416,12 +416,16 @@ public class GameStateManager {
         double targetY = cloneDecoy != null ? cloneDecoy.getY() : player.getY();
         serialKiller.updateChase(targetX, targetY, maze);
 
-        if (cloneDecoy != null && serialKiller.getHitbox().intersects(cloneDecoy.getHitbox())) {
-            serialKiller.startDecoyAttack();
-            entities.remove(cloneDecoy);
-            cloneDecoy = null;
-            return false;
+        if (cloneDecoy != null) {
+            if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(cloneDecoy.getHitbox())) {
+                serialKiller.startDecoyAttack();
+            } else if (serialKiller.isAttackingDecoy() && serialKiller.getDecoyAttackFrames() <= 1) {
+                // Remove the clone right as the attack finishes
+                entities.remove(cloneDecoy);
+                cloneDecoy = null;
+            }
         }
+
         if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(player.getHitbox())) {
             return triggerPlayerDeath("Steel and panic. He never stops hunting.");
         }

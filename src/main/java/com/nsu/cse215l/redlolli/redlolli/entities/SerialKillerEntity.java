@@ -17,16 +17,19 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
-    private static Image killerInactiveImg;
-    private static Image killerChaseImg;
-    private static Image killerAttackImg;
+    private static Image idleImg;
+    private static Image idleLeftImg;
+    private static Image chaseImg;
+    private static Image chaseLeftImg;
+    private static Image attackImg;
+    private static Image attackLeftImg;
     private static boolean imagesInitialized = false;
 
-    private static Image loadSprite(String filename, int width, int height) {
+    private static Image loadSprite(String filename) {
         try {
             InputStream is = SerialKillerEntity.class.getResourceAsStream("/assets/images/sprites/" + filename);
             if (is != null) {
-                return new Image(is, width, height, true, false);
+                return new Image(is); // Load at native resolution for slicing
             }
         } catch (Exception ignored) {
         }
@@ -35,23 +38,32 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        killerInactiveImg = loadSprite("killer_inactive.png", 40, 40);
-        killerChaseImg = loadSprite("killer_chase.png", 40, 40);
-        killerAttackImg = loadSprite("killer_attack.png", 40, 40);
+        idleImg = loadSprite("killer_idle_right.png");
+        idleLeftImg = loadSprite("killer_idle_left.png");
+        chaseImg = loadSprite("killer_chase_right.png");
+        chaseLeftImg = loadSprite("killer_chase_left.png");
+        attackImg = loadSprite("killer_attack_right.png");
+        attackLeftImg = loadSprite("killer_attack_left.png");
         imagesInitialized = true;
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
     public static void resetImages() { imagesInitialized = false; }
 
-    // Visual render size (40x40 centered on the 24x24 hitbox)
-    private static final double RENDER_SIZE = 40.0;
+    // Height of the killer in pixels. Width is calculated automatically to keep aspect ratio.
+    private static final double RENDER_HEIGHT = 48.0;
 
     private static final double SPEED = 1.75;
 
     private boolean active;
     private boolean attackingDecoy;
     private int decoyAttackFrames;
+
+    // Animation state
+    private int currentFrame = 0;
+    private int frameTick = 0;
+    private final int ticksPerFrame = 6;
+    private boolean facingLeft = true;
 
     public SerialKillerEntity(double x, double y) {
         super(x, y, 24.0);
@@ -65,6 +77,17 @@ public class SerialKillerEntity extends Entity implements Collidable {
                 attackingDecoy = false;
             }
         }
+        
+        // Animation logic
+        frameTick++;
+        if (frameTick >= ticksPerFrame) {
+            frameTick = 0;
+            currentFrame++;
+            int maxFrames = (!active) ? 1 : 5; 
+            if (currentFrame >= maxFrames) {
+                currentFrame = 0;
+            }
+        }
     }
 
     public void updateChase(double targetX, double targetY, Maze maze) {
@@ -72,8 +95,11 @@ public class SerialKillerEntity extends Entity implements Collidable {
             return;
         }
 
-        int currentC = (int) ((this.x + size / 2) / Maze.TILE_SIZE);
-        int currentR = (int) ((this.y + size / 2 - Maze.Y_OFFSET) / Maze.TILE_SIZE);
+        // Find current center tile
+        double centerX = x + size / 2;
+        double centerY = y + size / 2 - Maze.Y_OFFSET;
+        int currentC = (int) (centerX / Maze.TILE_SIZE);
+        int currentR = (int) (centerY / Maze.TILE_SIZE);
         int targetC = (int) ((targetX + 10) / Maze.TILE_SIZE);
         int targetR = (int) ((targetY + 10 - Maze.Y_OFFSET) / Maze.TILE_SIZE);
 
@@ -82,37 +108,97 @@ public class SerialKillerEntity extends Entity implements Collidable {
             return;
         }
 
-        double nextX = nextTile[1] * Maze.TILE_SIZE + (Maze.TILE_SIZE - size) / 2;
-        double nextY = nextTile[0] * Maze.TILE_SIZE + Maze.Y_OFFSET + (Maze.TILE_SIZE - size) / 2;
+        // Find the absolute center coordinates of the next requested tile
+        double targetTileCenterX = nextTile[1] * Maze.TILE_SIZE + Maze.TILE_SIZE / 2.0;
+        double targetTileCenterY = nextTile[0] * Maze.TILE_SIZE + Maze.TILE_SIZE / 2.0;
 
-        double dx = nextX - x;
-        double dy = nextY - y;
+        // Vector math from CURRENT absolute center to TARGET absolute center
+        double dx = targetTileCenterX - centerX;
+        double dy = targetTileCenterY - centerY;
         double dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist > 0.0) {
+            if (dx < -0.1) facingLeft = true;
+            else if (dx > 0.1) facingLeft = false;
+
             double move = Math.min(SPEED, dist);
-            x += (dx / dist) * move;
-            y += (dy / dist) * move;
+            
+            // True grid movement to prevent floating-point overshoot jitter and diagonal wall clipping
+            if (Math.abs(dx) >= Math.abs(dy)) { 
+                // Primary movement is horizontal
+                if (Math.abs(dx) <= move) {
+                    x += dx;
+                    move -= Math.abs(dx);
+                } else {
+                    x += Math.signum(dx) * move;
+                    move = 0;
+                }
+                // Use remaining move, or soft-correct Y to center of hallway
+                if (move > 0 && Math.abs(dy) > 0) {
+                    y += Math.signum(dy) * Math.min(Math.abs(dy), move);
+                } else if (Math.abs(dy) > 0) {
+                    y += Math.signum(dy) * Math.min(Math.abs(dy), SPEED * 0.5);
+                }
+            } else {
+                // Primary movement is vertical
+                if (Math.abs(dy) <= move) {
+                    y += dy;
+                    move -= Math.abs(dy);
+                } else {
+                    y += Math.signum(dy) * move;
+                    move = 0;
+                }
+                // Use remaining move, or soft-correct X to center of hallway
+                if (move > 0 && Math.abs(dx) > 0) {
+                    x += Math.signum(dx) * Math.min(Math.abs(dx), move);
+                } else if (Math.abs(dx) > 0) {
+                    x += Math.signum(dx) * Math.min(Math.abs(dx), SPEED * 0.5);
+                }
+            }
         }
     }
 
     @Override
     public void render(GraphicsContext gc) {
-        Image img;
+        Image imgToDraw;
+        int frameWidth = 128; 
+        int maxFrames = 5;
+
         if (!active) {
-            img = killerInactiveImg;
+            imgToDraw = facingLeft ? idleLeftImg : idleImg;
+            frameWidth = 40; // Idle is now just a single 40 width image
+            maxFrames = 1;
         } else if (attackingDecoy) {
-            img = killerAttackImg;
+            imgToDraw = facingLeft ? attackLeftImg : attackImg;
+            frameWidth = 128; // 640 width / 5 frames
+            maxFrames = 5;
         } else {
-            img = killerChaseImg;
+            imgToDraw = facingLeft ? chaseLeftImg : chaseImg;
+            frameWidth = 128; // 640 width / 5 frames
+            maxFrames = 5;
         }
-        // Draw centered (hitbox 24x24, sprite 40x40)
-        double offset = (RENDER_SIZE - size) / 2;
-        if (img != null) {
-            gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+
+        // Safety check to prevent IndexOutOfBoundsException during state transitions
+        if (currentFrame >= maxFrames) {
+            currentFrame = 0;
+        }
+
+        // Calculate aspect-correct width based on the active animation frame
+        double scale = RENDER_HEIGHT / 70.0;
+        double drawWidth = frameWidth * scale;
+        
+        // Draw centered (hitbox 24x24)
+        double offsetX = (drawWidth - size) / 2;
+        double offsetY = (RENDER_HEIGHT - size) / 2;
+
+        if (imgToDraw != null) {
+            int sourceX = currentFrame * frameWidth;
+            gc.drawImage(imgToDraw, 
+                    sourceX, 0, frameWidth, 70,                        // Source slice dimensions updated to 70 height
+                    x - offsetX, y - offsetY, drawWidth, RENDER_HEIGHT); // Destination bounding box
         } else {
             gc.setFill(active ? Color.rgb(180, 20, 20) : Color.rgb(80, 40, 40));
-            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+            gc.fillOval(x - offsetX, y - offsetY, RENDER_HEIGHT, RENDER_HEIGHT);
         }
     }
 
@@ -136,5 +222,9 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     public boolean isAttackingDecoy() {
         return attackingDecoy;
+    }
+
+    public int getDecoyAttackFrames() {
+        return decoyAttackFrames;
     }
 }
