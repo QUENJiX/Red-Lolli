@@ -25,64 +25,64 @@ public class SceneFactory {
     // ================= UI IMAGE ASSETS =================
 
     private static Image menuBackgroundImg;
-    private static Image menuTitleImg;
-    private static Image[] menuSubtitleImg = new Image[3];
     private static Image transitionBgImg1;
     private static Image transitionBgImg2;
-    private static Image transitionHeaderImg;
-    private static Image[] transitionHeadlineImg = new Image[3];
-    private static Image[] transitionItemImg = new Image[3];
-    private static Image itemBgImg;
-    private static Image itemPaleLunaSmilesImg;
-    private static Image[] itemTextImg = new Image[3];
-    private static Image[] itemDescImg = new Image[3];
+    private static Image[] itemBgImg = new Image[3];
     private static Image deathBgImg;
-    private static Image deathYouDiedImg;
-    private static Image deathPoemImg;
     private static Image victoryBgImg;
-    private static Image victoryEscapedImg;
-    private static Image victoryPoemImg;
     private static boolean uiImagesInitialized = false;
 
     public static void initUIImages() {
         if (uiImagesInitialized) return;
         menuBackgroundImg = tryLoadImage("/assets/images/ui/menu_background.png");
-        menuTitleImg = tryLoadImage("/assets/images/ui/menu_title.png");
-        menuSubtitleImg[0] = tryLoadImage("/assets/images/ui/menu_subtitle_1.png");
-        menuSubtitleImg[1] = tryLoadImage("/assets/images/ui/menu_subtitle_2.png");
-        menuSubtitleImg[2] = tryLoadImage("/assets/images/ui/menu_subtitle_3.png");
         transitionBgImg1 = tryLoadImage("/assets/images/ui/transition_bg_1.png");
         transitionBgImg2 = tryLoadImage("/assets/images/ui/transition_bg_2.png");
-        transitionHeaderImg = tryLoadImage("/assets/images/ui/transition_header.png");
-        transitionHeadlineImg[0] = tryLoadImage("/assets/images/ui/transition_headline_1.png");
-        transitionHeadlineImg[1] = tryLoadImage("/assets/images/ui/transition_headline_2.png");
-        transitionHeadlineImg[2] = tryLoadImage("/assets/images/ui/transition_headline_3.png");
-        transitionItemImg[0] = tryLoadImage("/assets/images/ui/transition_mud.png");
-        transitionItemImg[1] = tryLoadImage("/assets/images/ui/transition_shovel.png");
-        transitionItemImg[2] = tryLoadImage("/assets/images/ui/transition_rope.png");
-        itemBgImg = tryLoadImage("/assets/images/ui/item_bg.png");
-        itemPaleLunaSmilesImg = tryLoadImage("/assets/images/ui/item_pale_luna_smiles.png");
-        itemTextImg[0] = tryLoadImage("/assets/images/ui/item_mud_text.png");
-        itemTextImg[1] = tryLoadImage("/assets/images/ui/item_shovel_text.png");
-        itemTextImg[2] = tryLoadImage("/assets/images/ui/item_rope_text.png");
-        itemDescImg[0] = tryLoadImage("/assets/images/ui/item_desc_1.png");
-        itemDescImg[1] = tryLoadImage("/assets/images/ui/item_desc_2.png");
-        itemDescImg[2] = tryLoadImage("/assets/images/ui/item_desc_3.png");
+        itemBgImg[0] = tryLoadImage("/assets/images/ui/item_bg_1.png");
+        itemBgImg[1] = tryLoadImage("/assets/images/ui/item_bg_2.png");
+        itemBgImg[2] = tryLoadImage("/assets/images/ui/item_bg_3.png");
         deathBgImg = tryLoadImage("/assets/images/ui/death_bg.png");
-        deathYouDiedImg = tryLoadImage("/assets/images/ui/death_you_died.png");
-        deathPoemImg = tryLoadImage("/assets/images/ui/death_poem.png");
         victoryBgImg = tryLoadImage("/assets/images/ui/victory_bg.png");
-        victoryEscapedImg = tryLoadImage("/assets/images/ui/victory_escaped.png");
-        victoryPoemImg = tryLoadImage("/assets/images/ui/victory_poem.png");
         uiImagesInitialized = true;
     }
 
-    // Getters
-    public static Image getMenuBackgroundImg() { return menuBackgroundImg; }
-    public static Image getMenuTitleImg() { return menuTitleImg; }
-    public static Image getMenuSubtitleImg(int index) {
-        if (index < 0 || index >= menuSubtitleImg.length) return null;
-        return menuSubtitleImg[index];
+    // ========================= MENUS & CUTSCENES =========================
+    // Moving text generation methods here instead of image getters.
+    
+    public static Image getMenuBackgroundImg() {
+        return menuBackgroundImg;
+    }
+
+    public static Text getMenuTitleText() {
+        return styledText("RED LOLLI", "Serif", 72, Color.RED);
+    }
+    
+    public static javafx.scene.Node getMenuSubtitleText() {
+        Text t1 = styledText("DONT PLAY\nTHIS GAME. ", "Serif", 30, Color.LIGHTGRAY);
+        Text t2 = styledText("SHE GETS OUT.", "Serif", 30, Color.RED);
+        javafx.scene.text.TextFlow flow = new javafx.scene.text.TextFlow(t1, t2);
+        flow.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        return flow;
+    }
+
+    public static void animateTyping(Text textNode, String fullString) {
+        textNode.setText("");
+        javafx.animation.AnimationTimer timer = new javafx.animation.AnimationTimer() {
+            private long lastUpdate = 0;
+            private int charIndex = 0;
+            @Override
+            public void handle(long now) {
+                if (now - lastUpdate >= 40_000_000L) { // 40ms per char
+                    if (charIndex <= fullString.length()) {
+                        textNode.setText(fullString.substring(0, charIndex));
+                        charIndex++;
+                        lastUpdate = now;
+                    } else {
+                        this.stop();
+                    }
+                }
+            }
+        };
+        timer.start();
     }
 
     // ========================= TEXT SCENES =========================
@@ -92,6 +92,7 @@ public class SceneFactory {
             Runnable onRestart, Runnable onMainMenu) {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+        root.setStyle("-fx-background-color: black;");
 
         // Background
         if (deathBgImg != null) {
@@ -99,23 +100,30 @@ public class SceneFactory {
             bg.setFitWidth(WIDTH);
             bg.setFitHeight(HEIGHT);
             bg.setPreserveRatio(false);
+            bg.setOpacity(0.4);
             root.getChildren().add(bg);
         }
 
         VBox layout = newBlackVBox(14);
 
-        // "YOU DIED" title image
-        if (deathYouDiedImg != null) {
-            ImageView titleImg = new ImageView(deathYouDiedImg);
-            titleImg.setPreserveRatio(true);
-            layout.getChildren().add(titleImg);
-        }
+        // "YOU DIED" text
+        Text titleText = styledText("YOU DIED", "Serif", 72, Color.RED);
+        layout.getChildren().add(titleText);
 
-        // Poem image
-        if (deathPoemImg != null) {
-            ImageView poemImg = new ImageView(deathPoemImg);
-            poemImg.setPreserveRatio(true);
-            layout.getChildren().add(poemImg);
+        // Poem text
+        boolean isLunaOrKiller = activeDeathMessage != null &&
+            (!activeDeathMessage.contains("bat bit first") &&
+             !activeDeathMessage.contains("snake was still hungry") &&
+             !activeDeathMessage.contains("mind broke"));
+             
+        String poemStr = isLunaOrKiller ? 
+            "pale luna smiles wide,\nthere is no escape,\npale luna smiles wide,\nno more lollies to take,\npale luna smiles wide,\nnow you are dead" :
+            "She found you in the dark.\nNow your soul is hers to keep.\nForever lost in the maze.";
+
+        Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
+        layout.getChildren().add(poemText);
+        if (isLunaOrKiller) {
+            animateTyping(poemText, poemStr);
         }
 
         // Dynamic death message (not baked into composite)
@@ -127,11 +135,16 @@ public class SceneFactory {
                     Color.rgb(200, 70, 70)));
         }
 
-        Button restartBtn = createImageButton("RESTART FROM LEVEL 1", "/assets/images/ui/btn_restart.png");
+        Button restartBtn = createIconButton("/assets/images/ui/icon_restart.png", "/assets/images/ui/btn_restart.png", "/assets/images/ui/btn_restart_pressed.png");
         restartBtn.setOnAction(e -> onRestart.run());
-        Button menuBtn = createImageButton("MAIN MENU", "/assets/images/ui/btn_main_menu.png");
+        Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png", "/assets/images/ui/btn_main_menu_pressed.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
-        layout.getChildren().addAll(new Text(""), restartBtn, menuBtn);
+
+        javafx.scene.layout.HBox btnContainer = new javafx.scene.layout.HBox(40);
+        btnContainer.setAlignment(Pos.CENTER);
+        btnContainer.getChildren().addAll(restartBtn, menuBtn);
+
+        layout.getChildren().addAll(new Text(""), btnContainer);
         root.getChildren().add(layout);
         return new Scene(root, WIDTH, HEIGHT);
     }
@@ -140,6 +153,7 @@ public class SceneFactory {
     public static Scene createVictoryScene(Runnable onMainMenu) {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+        root.setStyle("-fx-background-color: black;");
 
         // Background
         if (victoryBgImg != null) {
@@ -147,26 +161,23 @@ public class SceneFactory {
             bg.setFitWidth(WIDTH);
             bg.setFitHeight(HEIGHT);
             bg.setPreserveRatio(false);
+            bg.setOpacity(0.4);
             root.getChildren().add(bg);
         }
 
         VBox layout = newBlackVBox(14);
 
-        // "YOU ESCAPED" title image
-        if (victoryEscapedImg != null) {
-            ImageView titleImg = new ImageView(victoryEscapedImg);
-            titleImg.setPreserveRatio(true);
-            layout.getChildren().add(titleImg);
-        }
+        // "YOU ESCAPED" title text
+        Text titleText = styledText("YOU ESCAPED", "Serif", 72, Color.RED);
+        layout.getChildren().add(titleText);
 
-        // Poem image
-        if (victoryPoemImg != null) {
-            ImageView poemImg = new ImageView(victoryPoemImg);
-            poemImg.setPreserveRatio(true);
-            layout.getChildren().add(poemImg);
-        }
+        // Poem text
+        String poemStr = "pale luna smiles wide,\nthe ground is soft,\npale luna smiles wide,\nthere is a hole,\npale luna smiles wide,\ntie her up with rope,\ncongratulations! you have escaped from pale luna";
+        Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
+        layout.getChildren().add(poemText);
+        animateTyping(poemText, poemStr);
 
-        Button menuBtn = createImageButton("MAIN MENU", "/assets/images/ui/btn_main_menu.png");
+        Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png", "/assets/images/ui/btn_main_menu_pressed.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
         layout.getChildren().add(menuBtn);
         root.getChildren().add(layout);
@@ -177,44 +188,47 @@ public class SceneFactory {
     public static Scene createItemFoundScene(int level, Runnable onContinue) {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+        root.setStyle("-fx-background-color: black;");
+        
+        int idx = Math.min(level - 1, 2);
 
         // Background
-        if (itemBgImg != null) {
-            ImageView bg = new ImageView(itemBgImg);
+        if (itemBgImg[idx] != null) {
+            ImageView bg = new ImageView(itemBgImg[idx]);
             bg.setFitWidth(WIDTH);
             bg.setFitHeight(HEIGHT);
             bg.setPreserveRatio(false);
+            bg.setOpacity(0.4);
             root.getChildren().add(bg);
         }
 
+        // Background removal (or black fill)
         VBox layout = newBlackVBox(25);
 
-        int idx = Math.min(level - 1, 2);
+        // "pale luna smiles wide..." text
+        layout.getChildren().add(styledText("Pale Luna smiles wide...", "Serif", 36, Color.RED));
 
-        // "pale luna smiles wide..." image
-        if (itemPaleLunaSmilesImg != null) {
-            layout.getChildren().add(imgView(itemPaleLunaSmilesImg));
-        }
+        // Item name text
+        String[] itemNames = { "The Mud", "The Shovel", "The Rope" };
+        layout.getChildren().add(styledText(itemNames[idx], "Serif", 72, Color.WHITE));
 
-        // Item name image
-        if (itemTextImg[idx] != null) {
-            layout.getChildren().add(imgView(itemTextImg[idx]));
-        }
-
-        // Description image
-        if (itemDescImg[idx] != null) {
-            layout.getChildren().add(imgView(itemDescImg[idx]));
-        }
+        // Description text
+        String[] itemDescs = {
+            "\"The earth was soft that night. Too soft. Like it was waiting for her.\"",
+            "\"The blade bit into the ground. Each scoop made a sound like breathing.\"",
+            "\"She didn't struggle. Not at the end. Her eyes were wide open. Smiling.\""
+        };
+        layout.getChildren().add(styledText(itemDescs[idx], "Serif", 24, Color.LIGHTGRAY));
 
         // Action button (level-specific)
         String[] btnPaths = {
-                "/assets/images/ui/btn_here.png",
-                "/assets/images/ui/btn_use.png",
-                "/assets/images/ui/btn_now.png"
+                "/assets/images/ui/btn_here",
+                "/assets/images/ui/btn_use",
+                "/assets/images/ui/btn_now"
         };
-        String[] btnLabels = { "here.", "use", "now" };
-        Button continueBtn = createImageButton(btnLabels[idx], btnPaths[idx]);
-        continueBtn.setFont(Font.font("Serif", 28));
+        String[] btnLabels = { "HERE.", "USE", "NOW" };
+        
+        Button continueBtn = createTextButton(btnLabels[idx], btnPaths[idx] + ".png", btnPaths[idx] + "_pressed.png");
         continueBtn.setOnAction(e -> onContinue.run());
 
         layout.getChildren().addAll(new Text(""), continueBtn);
@@ -226,6 +240,7 @@ public class SceneFactory {
     public static Scene createLevelTransitionScene(int currentLevel, Runnable onContinue) {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+        root.setStyle("-fx-background-color: black;");
 
         // Background (level-specific)
         Image bgImg = (currentLevel == 1) ? transitionBgImg1 : transitionBgImg2;
@@ -237,27 +252,9 @@ public class SceneFactory {
             root.getChildren().add(bg);
         }
 
-        int idx = Math.min(currentLevel - 1, 2);
         VBox layout = newBlackVBox(20);
 
-        // Header image
-        if (transitionHeaderImg != null) {
-            layout.getChildren().add(imgView(transitionHeaderImg));
-        }
-
-        // Headline image
-        if (transitionHeadlineImg[idx] != null) {
-            layout.getChildren().add(imgView(transitionHeadlineImg[idx]));
-        }
-
-        // Item image (mud/shovel/rope)
-        if (transitionItemImg[idx] != null) {
-            ImageView itemView = new ImageView(transitionItemImg[idx]);
-            itemView.setPreserveRatio(true);
-            layout.getChildren().add(itemView);
-        }
-
-        Button next = createImageButton("CONTINUE", "/assets/images/ui/btn_continue.png");
+        Button next = createIconButton("/assets/images/ui/icon_continue.png", "/assets/images/ui/btn_continue.png", "/assets/images/ui/btn_continue_pressed.png");
         next.setOnAction(e -> onContinue.run());
         layout.getChildren().add(next);
         root.getChildren().add(layout);
@@ -266,31 +263,85 @@ public class SceneFactory {
 
     // ========================= SHARED UTILITIES =========================
 
-    /** Creates a standard game menu button with a background image. */
-    public static Button createImageButton(String text, String imagePath) {
-        Button btn = new Button(text);
-        btn.setFont(Font.font("Arial", 16));
-        btn.setTextFill(Color.TRANSPARENT);
-        URL url = SceneFactory.class.getResource(imagePath);
-        if (url != null) {
-            String bgUrl = url.toExternalForm();
-            btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
-                    + "-fx-background-size: stretch; "
-                    + "-fx-background-color: transparent; "
-                    + "-fx-border-color: darkred; -fx-border-width: 1px;");
-            btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
-                    + "-fx-background-size: stretch; "
-                    + "-fx-background-color: rgba(100, 0, 0, 0.3); "
-                    + "-fx-border-color: red; -fx-border-width: 2px;"));
-            btn.setOnMouseExited(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
-                    + "-fx-background-size: stretch; "
-                    + "-fx-background-color: transparent; "
-                    + "-fx-border-color: darkred; -fx-border-width: 1px;"));
-        } else {
-            // Fallback if image missing
-            btn.setTextFill(Color.WHITE);
-            btn.setStyle("-fx-background-color: #1a1a1a; -fx-text-fill: white; -fx-border-color: darkred; -fx-border-width: 1px; -fx-padding: 10 40;");
+    /** Creates a game button with an icon on top of the background sprite. */
+    public static Button createIconButton(String iconPath, String normalBgPath, String pressedBgPath) {
+        Button btn = new Button();
+        btn.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+
+        Image normalBg = tryLoadImage(normalBgPath);
+        Image pressedBg = tryLoadImage(pressedBgPath);
+        ImageView bgView = new ImageView(normalBg);
+        bgView.setFitWidth(128);
+        bgView.setFitHeight(128);
+
+        javafx.scene.layout.StackPane graphic = new javafx.scene.layout.StackPane();
+        graphic.getChildren().add(bgView);
+
+        ImageView iconView = null;
+        if (iconPath != null) {
+            Image iconImg = tryLoadImage(iconPath);
+            if (iconImg != null) {
+                iconView = new ImageView(iconImg);
+                iconView.setPreserveRatio(true);
+                // Adjust icon size to make it smaller
+                iconView.setFitWidth(40); 
+                iconView.setFitHeight(40);
+                iconView.setTranslateY(-8); // Visually center it on the unpressed button face
+                graphic.getChildren().add(iconView);
+            }
         }
+
+        btn.setGraphic(graphic);
+
+        final ImageView finalIconView = iconView;
+        btn.setOnMousePressed(e -> {
+            bgView.setImage(pressedBg);
+            if (finalIconView != null) finalIconView.setTranslateY(0); // Moves down when pressed
+        });
+        btn.setOnMouseReleased(e -> {
+            bgView.setImage(normalBg);
+            if (finalIconView != null) finalIconView.setTranslateY(-8);
+        });
+
+        return btn;
+    }
+
+    /** Creates a game button with text on top of the background sprite. */
+    public static Button createTextButton(String text, String normalBgPath, String pressedBgPath) {
+        Button btn = new Button();
+        btn.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+
+        Image normalBg = tryLoadImage(normalBgPath);
+        Image pressedBg = tryLoadImage(pressedBgPath);
+        ImageView bgView = new ImageView(normalBg);
+        bgView.setFitWidth(128);
+        bgView.setFitHeight(128);
+
+        javafx.scene.layout.StackPane graphic = new javafx.scene.layout.StackPane();
+        graphic.getChildren().add(bgView);
+
+        Text labelText = null;
+        if (text != null) {
+            labelText = new Text(text);
+            labelText.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+            labelText.setFont(Font.font("Serif", javafx.scene.text.FontWeight.BOLD, 18));
+            labelText.setFill(Color.rgb(20, 20, 20)); // Darker
+            labelText.setTranslateY(-8); // Visually center
+            graphic.getChildren().add(labelText);
+        }
+
+        btn.setGraphic(graphic);
+
+        final Text finalLabelText = labelText;
+        btn.setOnMousePressed(e -> {
+            bgView.setImage(pressedBg);
+            if (finalLabelText != null) finalLabelText.setTranslateY(0);
+        });
+        btn.setOnMouseReleased(e -> {
+            bgView.setImage(normalBg);
+            if (finalLabelText != null) finalLabelText.setTranslateY(-8);
+        });
+
         return btn;
     }
 
@@ -312,14 +363,8 @@ public class SceneFactory {
     private static VBox newBlackVBox(int spacing) {
         VBox layout = new VBox(spacing);
         layout.setAlignment(Pos.CENTER);
-        layout.setStyle("-fx-background-color: black;");
+        layout.setStyle("-fx-background-color: transparent;");
         return layout;
-    }
-
-    private static ImageView imgView(Image img) {
-        ImageView v = new ImageView(img);
-        v.setPreserveRatio(true);
-        return v;
     }
 
     private static Text styledText(String content, String fontFamily, int fontSize, Color color) {

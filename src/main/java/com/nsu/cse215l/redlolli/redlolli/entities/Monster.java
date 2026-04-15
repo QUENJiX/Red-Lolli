@@ -25,7 +25,6 @@ public class Monster extends Entity implements Collidable {
     private static Image monsterStalking;
     private static Image monsterHunting;
     private static Image monsterWaiting;
-    private static Image monsterAura;
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -45,7 +44,6 @@ public class Monster extends Entity implements Collidable {
         monsterStalking = loadSprite("monster_stalking.png", 40, 40);
         monsterHunting = loadSprite("monster_hunting.png", 40, 40);
         monsterWaiting = loadSprite("monster_waiting.png", 40, 40);
-        monsterAura = loadSprite("monster_aura.png", 56, 56);
         imagesInitialized = true;
     }
 
@@ -200,15 +198,53 @@ public class Monster extends Entity implements Collidable {
     @Override
     public void render(GraphicsContext gc) {
         double offset = (RENDER_SIZE - size) / 2;
-        double auraOffset = (AURA_SIZE - size) / 2;
+        double cx = x + size / 2;
+        double cy = y + size / 2;
 
         // Aura (only when not dormant)
-        if (state != State.DORMANT && monsterAura != null) {
+        if (state != State.DORMANT) {
             double pulse = Math.sin(pulsePhase) * 5;
-            gc.setGlobalAlpha(0.35);
-            gc.drawImage(monsterAura,
-                    x - auraOffset - pulse, y - auraOffset - pulse,
-                    AURA_SIZE + pulse * 2, AURA_SIZE + pulse * 2);
+            double baseRadius = AURA_SIZE / 2 + pulse;
+            
+            // Base jagged shape mimicking an organic, flickering, torch-like randomized flame
+            int numPoints = 16;
+            double[] xPoints = new double[numPoints];
+            double[] yPoints = new double[numPoints];
+            
+            for (int layer = 0; layer < 3; layer++) {
+                for (int i = 0; i < numPoints; i++) {
+                    double angle = Math.PI * 2 * ((double) i / numPoints);
+                    // Apply random jitter to radius for a spiky torch effect
+                    double radiusJitter = 0.75 + (Math.random() * 0.45);
+                    double currentR = baseRadius * radiusJitter;
+                    
+                    if (layer == 1) currentR *= 0.65;
+                    if (layer == 2) currentR *= 0.35;
+                    
+                    xPoints[i] = cx + (Math.cos(angle) * currentR);
+                    yPoints[i] = cy + (Math.sin(angle) * currentR);
+                }
+
+                if (layer == 0) {
+                    gc.setGlobalAlpha(0.25);
+                    gc.setFill(Color.rgb(180, 20, 20));
+                } else if (layer == 1) {
+                    gc.setGlobalAlpha(0.45);
+                    gc.setFill(Color.rgb(220, 30, 30));
+                } else {
+                    gc.setGlobalAlpha(0.7);
+                    gc.setFill(Color.rgb(255, 60, 60));
+                }
+                gc.fillPolygon(xPoints, yPoints, numPoints);
+            }
+
+            // Erratic shuddering static rings for the terrifying aura glitch aesthetic
+            gc.setGlobalAlpha(0.6);
+            gc.setStroke(Color.rgb(40, 0, 0));
+            gc.setLineWidth(1.5);
+            double ringShift = (Math.random() - 0.5) * 8;
+            gc.strokeOval(cx - baseRadius + ringShift, cy - baseRadius - ringShift, baseRadius * 2, baseRadius * 2);
+            
             gc.setGlobalAlpha(1.0);
         }
 

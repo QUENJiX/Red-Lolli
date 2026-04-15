@@ -56,7 +56,7 @@ public class GameRenderer {
     public static void initImages() {
         if (imagesInitialized)
             return;
-        lunaFlashImg = loadSprite("luna_flash.png", 235, 244);
+        lunaFlashImg = loadSprite("luna_flash.png", 500, 500); // Scaled larger
         imagesInitialized = true;
     }
 
@@ -304,10 +304,10 @@ public class GameRenderer {
     private static void drawSubliminalFlash(GraphicsContext gc) {
         if (lunaFlashImg != null) {
             // Draw centered, semi-transparent
-            double drawX = (SCREEN_WIDTH - 235) / 2;
-            double drawY = (SCREEN_HEIGHT - 244) / 2;
+            double drawX = (SCREEN_WIDTH - 500) / 2;
+            double drawY = (SCREEN_HEIGHT - 500) / 2;
             gc.setGlobalAlpha(0.65);
-            gc.drawImage(lunaFlashImg, drawX, drawY, 235, 244);
+            gc.drawImage(lunaFlashImg, drawX, drawY, 500, 500);
             gc.setGlobalAlpha(1.0);
         } else {
             // Fallback: draw primitive pale face

@@ -43,7 +43,6 @@ public class HelloApplication extends Application {
     private final GameStateManager gsm = new GameStateManager();
 
     private int deathCount = 0;
-    private int menuVisits = 0;
     private boolean showDebugOverlay = false;
 
     @Override
@@ -61,68 +60,56 @@ public class HelloApplication extends Application {
     // ========================= MENUS & CUTSCENES =========================
 
     private Scene createMainMenu() {
-        menuVisits++;
         SceneFactory.initUIImages();
 
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
+        root.setStyle("-fx-background-color: black;");
 
         // Background (semi-transparent)
-        ImageView bgView = new ImageView(SceneFactory.getMenuBackgroundImg());
-        bgView.setFitWidth(880);
-        bgView.setFitHeight(730);
-        bgView.setPreserveRatio(false);
-        root.getChildren().add(bgView);
+        Image bgImg = SceneFactory.getMenuBackgroundImg();
+        if (bgImg != null) {
+            ImageView bgView = new ImageView(bgImg);
+            bgView.setFitWidth(880);
+            bgView.setFitHeight(730);
+            bgView.setPreserveRatio(false);
+            bgView.setOpacity(0.4);
+            root.getChildren().add(bgView);
+        }
 
         // Content VBox
         VBox layout = new VBox(15);
         layout.setAlignment(Pos.CENTER);
 
         // Title
-        ImageView titleImg = new ImageView(SceneFactory.getMenuTitleImg());
-        titleImg.setPreserveRatio(true);
-        layout.getChildren().add(titleImg);
+        javafx.scene.text.Text titleText = SceneFactory.getMenuTitleText();
+        layout.getChildren().add(titleText);
 
-        // Subtitle (cycles per visit)
-        Image subtitleImg = SceneFactory.getMenuSubtitleImg((menuVisits - 1) % 3);
-        if (subtitleImg != null) {
-            ImageView subView = new ImageView(subtitleImg);
-            subView.setPreserveRatio(true);
-            layout.getChildren().add(subView);
+        // Subtitle
+        javafx.scene.Node subText = SceneFactory.getMenuSubtitleText();
+        if (subText != null) {
+            layout.getChildren().add(subText);
         }
 
-        // Buttons using -fx-background-image CSS
-        javafx.scene.control.Button newGameBtn = createImageButton(
-                "> NEW GAME", "/assets/images/ui/btn_new_game.png", 200, 50);
-        javafx.scene.control.Button exitBtn = createImageButton(
-                "EXIT", "/assets/images/ui/btn_exit.png", 150, 50);
+        // Buttons using SceneFactory's new image swapping logic
+        javafx.scene.control.Button newGameBtn = SceneFactory.createIconButton(
+                "/assets/images/ui/icon_play.png", 
+                "/assets/images/ui/btn_new_game.png", 
+                "/assets/images/ui/btn_new_game_pressed.png");
+        javafx.scene.control.Button exitBtn = SceneFactory.createIconButton(
+                "/assets/images/ui/icon_exit.png", 
+                "/assets/images/ui/btn_exit.png", 
+                "/assets/images/ui/btn_exit_pressed.png");
         newGameBtn.setOnAction(e -> playIntroAndStart());
         exitBtn.setOnAction(e -> System.exit(0));
 
-        layout.getChildren().addAll(newGameBtn, exitBtn);
+        javafx.scene.layout.HBox btnContainer = new javafx.scene.layout.HBox(40);
+        btnContainer.setAlignment(Pos.CENTER);
+        btnContainer.getChildren().addAll(newGameBtn, exitBtn);
+
+        layout.getChildren().add(btnContainer);
         root.getChildren().add(layout);
 
         return new Scene(root, 880, 730);
-    }
-
-    /** Creates a Button with a background image, transparent text, and styled borders. */
-    private javafx.scene.control.Button createImageButton(String text, String imagePath, int prefW, int prefH) {
-        javafx.scene.control.Button btn = new javafx.scene.control.Button(text);
-        btn.setPrefSize(prefW, prefH);
-        btn.setTextFill(Color.TRANSPARENT);
-        String bgUrl = getClass().getResource(imagePath).toExternalForm();
-        btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
-                + "-fx-background-size: stretch; "
-                + "-fx-background-color: transparent; "
-                + "-fx-border-color: darkred; -fx-border-width: 1px;");
-        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
-                + "-fx-background-size: stretch; "
-                + "-fx-background-color: rgba(100, 0, 0, 0.3); "
-                + "-fx-border-color: red; -fx-border-width: 2px;"));
-        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-image: url('" + bgUrl + "'); "
-                + "-fx-background-size: stretch; "
-                + "-fx-background-color: transparent; "
-                + "-fx-border-color: darkred; -fx-border-width: 1px;"));
-        return btn;
     }
 
     private void playIntroAndStart() {
