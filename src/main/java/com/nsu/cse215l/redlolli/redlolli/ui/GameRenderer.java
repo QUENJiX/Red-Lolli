@@ -161,6 +161,13 @@ public class GameRenderer {
         drawRadialLight(lightGC, player.getX() + 10, player.getY() + 10, playerLightRadius,
                 Color.rgb(220, 230, 255, 1.0));
 
+        // Pale Luna's personal light (smaller and reddish)
+        if (paleLuna != null && !paleLuna.getState().name().equals("DORMANT")) {
+            double lunaLightRadius = isLunaHunting ? 140 : 90;
+            Color lightColor = isLunaHunting ? Color.rgb(255, 0, 0, 1.0) : Color.rgb(255, 60, 60, 0.85);
+            drawRadialLight(lightGC, paleLuna.getX() + 10, paleLuna.getY() + 10, lunaLightRadius, lightColor);
+        }
+
         // Torch lights
         for (Entity e : entities) {
             if (e instanceof TorchEntity) {
