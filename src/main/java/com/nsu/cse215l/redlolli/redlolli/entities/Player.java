@@ -34,22 +34,22 @@ public class Player extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        idleFrontImg = loadSprite("idle_front.png", 28, 28);
-        idleBackImg = loadSprite("idle_back.png", 28, 28);
-        idleLeftImg = loadSprite("idle_left.png", 28, 28);
-        idleRightImg = loadSprite("idle_right.png", 28, 28);
+        idleFrontImg = loadSprite("idle_front.png", 40, 40);
+        idleBackImg = loadSprite("idle_back.png", 40, 40);
+        idleLeftImg = loadSprite("idle_left.png", 40, 40);
+        idleRightImg = loadSprite("idle_right.png", 40, 40);
         
-        walkBackImgs = new Image[4];
-        for (int i=1; i<=4; i++) walkBackImgs[i-1] = loadSprite("walk_back_" + i + ".png", 28, 28);
+        walkBackImgs = new Image[3];
+        for (int i=1; i<=3; i++) walkBackImgs[i-1] = loadSprite("walk_back_" + i + ".png", 40, 40);
         
-        walkFrontImgs = new Image[2];
-        for (int i=1; i<=2; i++) walkFrontImgs[i-1] = loadSprite("walk_front_" + i + ".png", 28, 28);
+        walkFrontImgs = new Image[3];
+        for (int i=1; i<=3; i++) walkFrontImgs[i-1] = loadSprite("walk_front_" + i + ".png", 40, 40);
         
         walkLeftImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkLeftImgs[i-1] = loadSprite("walk_left_" + i + ".png", 28, 28);
+        for (int i=1; i<=3; i++) walkLeftImgs[i-1] = loadSprite("walk_left_" + i + ".png", 40, 40);
         
         walkRightImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkRightImgs[i-1] = loadSprite("walk_right_" + i + ".png", 28, 28);
+        for (int i=1; i<=3; i++) walkRightImgs[i-1] = loadSprite("walk_right_" + i + ".png", 40, 40);
 
         imagesInitialized = true;
     }
@@ -58,7 +58,7 @@ public class Player extends Entity implements Collidable {
     public static void resetImages() { imagesInitialized = false; }
 
     // Visual render size
-    private static final double RENDER_SIZE = 28.0;
+    private static final double RENDER_SIZE = 40.0;
 
     // ================= LOGIC =================
 
@@ -218,13 +218,15 @@ public class Player extends Entity implements Collidable {
             }
         }
 
-        // Draw sprite centered on hitbox (hitbox is 20x20, sprite renders at 40x40)
-        double offset = (RENDER_SIZE - size) / 2;
+        // Draw sprite horizontally centered, but vertically aligned at the bottom
+        // so legs don't clip into walls below the hitbox.
+        double offsetX = (RENDER_SIZE - size) / 2;
+        double offsetY = (RENDER_SIZE - size); // Shift up so bottom of sprite aligns with bottom of hitbox
         if (img != null) {
-            gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+            gc.drawImage(img, x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
         } else {
             gc.setFill(Color.rgb(100, 149, 237));
-            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+            gc.fillOval(x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
         }
     }
 
