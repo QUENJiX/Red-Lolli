@@ -88,13 +88,17 @@ public class Item extends Entity implements Collidable {
         if (isCollected) {
             drawImg(gc, chestOpenedImg, x - offset, y - offset);
             if (contentType == ContentType.LOLLI) {
-                gc.setGlobalAlpha(0.6);
-                drawImg(gc, chestGlowLolli, x - offset, y - offset);
-                gc.setGlobalAlpha(1.0);
+                if (chestGlowLolli != null) {
+                    gc.setGlobalAlpha(0.6);
+                    gc.drawImage(chestGlowLolli, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+                    gc.setGlobalAlpha(1.0);
+                }
             } else if (contentType == ContentType.CLONE_DECOY) {
-                gc.setGlobalAlpha(0.6);
-                drawImg(gc, chestGlowClone, x - offset, y - offset);
-                gc.setGlobalAlpha(1.0);
+                if (chestGlowClone != null) {
+                    gc.setGlobalAlpha(0.6);
+                    gc.drawImage(chestGlowClone, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+                    gc.setGlobalAlpha(1.0);
+                }
             }
         } else {
             drawImg(gc, chestClosedImg, x - offset, y - offset);

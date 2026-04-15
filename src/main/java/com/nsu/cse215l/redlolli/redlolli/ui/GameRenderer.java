@@ -326,7 +326,7 @@ public class GameRenderer {
         }
     }
 
-    private static void drawRedLolli(GraphicsContext gc, double cx, double cy, double size) {
+    public static void drawRedLolli(GraphicsContext gc, double cx, double cy, double size) {
         gc.setFill(Color.rgb(220, 20, 20));
         gc.fillOval(cx - size / 2, cy - size / 2 - 2, size, size);
         gc.setFill(Color.rgb(255, 100, 100, 0.6));

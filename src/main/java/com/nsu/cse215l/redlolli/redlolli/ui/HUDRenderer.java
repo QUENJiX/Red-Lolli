@@ -41,7 +41,6 @@ public class HUDRenderer {
     private static final double DIV_SANITY = 810;
 
     // ── Image assets ─────────────────────────────────────────────────────────
-    private static Image lolliIconImg;
     private static Image[] paleLunaIconImg = new Image[4];
     private static Image sanitySkullImg;
     private static Image sanitySkullLowImg;
@@ -57,7 +56,6 @@ public class HUDRenderer {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        lolliIconImg        = loadSprite("lolli_icon.png",        10, 20);
         paleLunaIconImg[0]  = loadSprite("monster_dormant.png",   18, 18);
         paleLunaIconImg[1]  = loadSprite("monster_stalking.png",  18, 18);
         paleLunaIconImg[2]  = loadSprite("monster_hunting.png",   18, 18);
@@ -140,13 +138,22 @@ public class HUDRenderer {
         boolean found = chests.stream().anyMatch(c -> c.isCollected() && c.hasLolli());
         double secX = DIV_LEVEL + 6;
 
-        // Small red lolli icon (or fallback red square)
-        if (lolliIconImg != null) {
-            gc.drawImage(lolliIconImg, secX, HUD_H / 2 - 10, 10, 20);
-        } else {
-            gc.setFill(Color.RED);
-            gc.fillRect(secX, HUD_H / 2 - 5, 8, 12);
+        double cx = secX + 5;
+        double cy = HUD_H / 2;
+        
+        // Glow effect similar to reveal
+        double pulse = Math.sin(System.currentTimeMillis() * 0.005) * 0.2 + 0.8;
+        if (found) {
+            gc.setFill(Color.rgb(255, 215, 0, 0.05 * pulse));
+            gc.fillOval(cx - 12, cy - 12, 24, 24);
+            gc.setFill(Color.rgb(255, 180, 0, 0.1 * pulse));
+            gc.fillOval(cx - 8, cy - 8, 16, 16);
+            gc.setFill(Color.rgb(255, 230, 100, 0.2 * pulse));
+            gc.fillOval(cx - 5, cy - 5, 10, 10);
         }
+        
+        // Draw the lolli itself
+        GameRenderer.drawRedLolli(gc, cx, cy - 2, 8);
 
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 13));
         gc.setFill(found ? Color.LIMEGREEN : Color.rgb(190, 190, 190));

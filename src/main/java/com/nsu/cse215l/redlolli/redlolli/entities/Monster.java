@@ -23,7 +23,9 @@ public class Monster extends Entity implements Collidable {
 
     private static Image monsterDormant;
     private static Image monsterStalking;
+    private static Image monsterStalkingRight;
     private static Image monsterHunting;
+    private static Image monsterHuntingRight;
     private static Image monsterWaiting;
     private static boolean imagesInitialized = false;
 
@@ -40,18 +42,21 @@ public class Monster extends Entity implements Collidable {
 
     public static void initImages() {
         if (imagesInitialized) return;
-        monsterDormant = loadSprite("monster_dormant.png", 40, 40);
-        monsterStalking = loadSprite("monster_stalking.png", 40, 40);
-        monsterHunting = loadSprite("monster_hunting.png", 40, 40);
-        monsterWaiting = loadSprite("monster_waiting.png", 40, 40);
+        // Load with larger size as requested
+        monsterDormant = loadSprite("monster_dormant.png", 50, 50);
+        monsterStalking = loadSprite("monster_stalking.png", 50, 50);
+        monsterStalkingRight = loadSprite("monster_stalking_right.png", 50, 50);
+        monsterHunting = loadSprite("monster_hunting.png", 50, 50);
+        monsterHuntingRight = loadSprite("monster_hunting_right.png", 50, 50);
+        monsterWaiting = loadSprite("monster_waiting.png", 50, 50);
         imagesInitialized = true;
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
     public static void resetImages() { imagesInitialized = false; }
 
-    // Visual render size (40x40 centered on the 25x25 hitbox)
-    private static final double RENDER_SIZE = 40.0;
+    // Visual render size (now 50x50 centered on the 25x25 hitbox)
+    private static final double RENDER_SIZE = 50.0;
     private static final double AURA_SIZE = 56.0;
 
     // ================= STATE =================
@@ -70,6 +75,7 @@ public class Monster extends Entity implements Collidable {
     private int huntTimer = 0;
     private int waitTimer = 0;
     private double pulsePhase = 0.0;
+    private boolean facingRight = false;
 
     public Monster(double x, double y) {
         super(x, y, 25.0);
@@ -85,6 +91,7 @@ public class Monster extends Entity implements Collidable {
             boolean lolliRecentlyCollected, Maze maze) {
 
         pulsePhase += 0.1;
+        this.facingRight = playerX > this.x;
 
         switch (state) {
             case DORMANT -> {
@@ -252,8 +259,8 @@ public class Monster extends Entity implements Collidable {
         Image body;
         switch (state) {
             case DORMANT -> body = monsterDormant;
-            case STALKING -> body = monsterStalking;
-            case HUNTING -> body = monsterHunting;
+            case STALKING -> body = facingRight ? monsterStalkingRight : monsterStalking;
+            case HUNTING -> body = facingRight ? monsterHuntingRight : monsterHunting;
             case WAITING_AT_DOOR -> body = monsterWaiting;
             default -> body = monsterDormant;
         }

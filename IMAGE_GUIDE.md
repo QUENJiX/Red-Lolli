@@ -24,7 +24,7 @@ src/main/resources/assets/images/
 │    ├── chest_open.png
 │    ├── chest_glow_lolli.png   ← optional, can be missing
 │    ├── chest_glow_clone.png   ← optional, can be missing
-│    ├── lolli_icon.png
+
 │    ├── sanity_skull.png
 │    ├── sanity_skull_2.png
 │    └── luna_flash.png
@@ -59,7 +59,7 @@ Every entity image loads and renders at **40×40 pixels** visually, but the **co
 | Bat Guard        | 28×28       | **40×40**     | `GuardEntity.java`      | `sprites/`    |
 | Cobra Guard      | 28×28       | **40×40**     | `GuardEntity.java`      | `sprites/`    |
 | Serial Killer    | 24×24       | **40×40**     | `SerialKillerEntity.java` | `sprites/`  |
-| Cardboard Clone  | 20×20       | **40×40**     | `CardboardClone.java`   | `sprites/`    |
+| Cardboard Clone  | 20×20       | **50×50**     | `CardboardClone.java`   | `sprites/`    |
 | Chest (Item)     | 16×16       | **32×32**     | `Item.java`             | `sprites/`    |
 
 > **Why small hitboxes?** The tile size is 40px. If an entity's hitbox also equals 40, it cannot navigate any corridor — it collides with walls on both sides simultaneously. The sprite is drawn **centered** on the hitbox (`x - (renderSize-hitboxSize)/2`) so it visually fills the tile while being able to move freely.
