@@ -243,7 +243,7 @@ public class HelloApplication extends Application {
 
         gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.maze, gsm.entities, gsm.paleLuna, gsm.player,
                 gsm.warningFlashTimer, gsm.lolliRevealState, gsm.currentLevel, gsm.chests, ITEM_NAMES,
-                gsm.fruitCount, gsm.eggCount, gsm.hasCloneItem,
+                gsm.distractionSpellCount, gsm.hasCloneItem,
                 gsm.pulsePhaseHUD,
                 gsm.paleLuna != null && gsm.paleLuna.isHunting(),
                 gsm.screenShakeFrames,
@@ -306,6 +306,7 @@ public class HelloApplication extends Application {
         if (gsm.currentLevel >= 3) {
             triggerVictoryCutscene();
         } else {
+            gsm.startingDistractions = gsm.distractionSpellCount;
             startGame(gsm.currentLevel + 1);
         }
     }

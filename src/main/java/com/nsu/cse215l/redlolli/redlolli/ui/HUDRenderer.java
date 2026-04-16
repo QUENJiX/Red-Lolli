@@ -72,7 +72,7 @@ public class HUDRenderer {
 
     public static double drawHUD(GraphicsContext gc, int level, List<Item> chests,
             String[] itemNames, Monster paleLuna, Player player,
-            int fruitCount, int eggCount, boolean hasCloneItem, double pulsePhase) {
+            int distractionSpellCount, boolean hasCloneItem, double pulsePhase) {
 
         drawBackground(gc);
 
@@ -85,7 +85,7 @@ public class HUDRenderer {
         drawDivider(gc, DIV_LOLLI);
 
         // Section 3 — Find target + utility sub-label
-        drawFindSection(gc, level, itemNames, fruitCount, eggCount, hasCloneItem);
+        drawFindSection(gc, level, itemNames, distractionSpellCount, hasCloneItem);
         drawDivider(gc, DIV_FIND);
 
         // Section 4 — Pale Luna phase tracker bar
@@ -160,9 +160,9 @@ public class HUDRenderer {
         gc.fillText((found ? "1" : "0") + "/1", secX + 14, HUD_H / 2 + 5);
     }
 
-    /** Section 3: "FIND: Mud" (top) + "Fruit: 2 (E)" sub-label (bottom) */
+    /** Section 3: "FIND: Mud" (top) + "Distraction Spell: 2 (E)" sub-label (bottom) */
     private static void drawFindSection(GraphicsContext gc, int level, String[] itemNames,
-            int fruitCount, int eggCount, boolean hasCloneItem) {
+            int distractionSpellCount, boolean hasCloneItem) {
         double secX = DIV_LOLLI + 8;
 
         // Top: FIND label
@@ -177,15 +177,12 @@ public class HUDRenderer {
         // Bottom: utility item counter
         gc.setFont(Font.font("Arial", FontWeight.NORMAL, 11));
         gc.setFill(Color.rgb(180, 175, 155));
-        if (level == 1) {
-            gc.fillText("🍎 Fruit: " + fruitCount + "  [E] to throw", secX, ROW2_Y);
-        } else if (level == 2) {
-            gc.fillText("🥚 Eggs: " + eggCount + "  [E] to throw", secX, ROW2_Y);
-        } else if (hasCloneItem) {
+        
+        if (level == 3 && hasCloneItem) {
             gc.setFill(Color.rgb(200, 200, 120));
             gc.fillText("📦 Clone ready  [C] to place", secX, ROW2_Y);
         } else {
-            gc.fillText("Place a clone decoy to distract", secX, ROW2_Y);
+            gc.fillText("✨ Spell: " + distractionSpellCount + "  [E] to cast", secX, ROW2_Y);
         }
     }
 

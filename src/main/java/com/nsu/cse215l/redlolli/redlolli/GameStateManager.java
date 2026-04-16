@@ -45,8 +45,8 @@ public class GameStateManager {
     boolean lolliRecentlyCollected = false;
     GameRenderer.LolliRevealState lolliRevealState = null;
 
-    int fruitCount = 0;
-    int eggCount = 0;
+    int distractionSpellCount = 0;
+    int startingDistractions = 1;
     int exitGraceFrames = 0;
     int standStillFrames = 0;
     int guardHitCooldownFrames = 0;
@@ -84,8 +84,11 @@ public class GameStateManager {
         activeDeathMessage = "";
         lolliRecentlyCollected = false;
 
-        fruitCount = currentLevel == 1 ? 1 : 0;
-        eggCount = currentLevel == 2 ? 5 : 0;
+        if (currentLevel == 1) {
+            startingDistractions = 1;
+        }
+
+        distractionSpellCount = startingDistractions;
         exitGraceFrames = 0;
         standStillFrames = 0;
         guardHitCooldownFrames = 0;
@@ -155,6 +158,8 @@ public class GameStateManager {
                         guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.BAT, -1, -1);
                     } else if (currentLevel == 2) {
                         guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.COBRA, -1, -1);
+                    } else if (currentLevel == 3) {
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.CENTIPEDE, -1, -1);
                     }
                     if (guard != null) {
                         guards.add(guard);
@@ -312,10 +317,6 @@ public class GameStateManager {
 
         if (exitingEscapeRoom) {
             exitGraceFrames = 45;
-            if (currentLevel == 3 && !escapeRoomsCollapsed) {
-                maze.collapseEscapeRooms();
-                escapeRoomsCollapsed = true;
-            }
         }
         wasInEscapeRoom = inEscapeRoom;
 
@@ -352,14 +353,11 @@ public class GameStateManager {
                 lolliRecentlyCollected = true;
                 soundManager.playOneShot(SoundManager.STINGER_1, 0.8);
                 lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 120);
+                distractionSpellCount += 3;
                 return;
             }
             if (chest.getContentType() == Item.ContentType.EMPTY) {
-                if (currentLevel == 1) {
-                    fruitCount++;
-                } else if (currentLevel == 2) {
-                    eggCount++;
-                }
+                distractionSpellCount++;
             }
             if (chest.getContentType() == Item.ContentType.CLONE_DECOY)
                 hasCloneItem = true;
@@ -379,9 +377,11 @@ public class GameStateManager {
         for (GuardEntity guard : guards) {
             // Guard kills if not distracted and player touches the guarded room or the guard itself
             if (!guard.isDistracted() && (guard.isPlayerOnGuardedRoom(player.getHitbox()) || guard.getHitbox().intersects(player.getHitbox()))) {
-                return triggerPlayerDeath(guard.getType() == GuardEntity.Type.BAT
-                        ? "The bat bit first. Luna answered instantly."
-                        : "The snake was still hungry. No egg, no escape.");
+                String msg;
+                if (guard.getType() == GuardEntity.Type.BAT) msg = "The bat bit first. Luna answered instantly.";
+                else if (guard.getType() == GuardEntity.Type.COBRA) msg = "The snake strikes! No spell cast, no escape.";
+                else msg = "The centipede swarmed you... the darkness follows.";
+                return triggerPlayerDeath(msg);
             }
         }
         return false;
@@ -492,16 +492,9 @@ public class GameStateManager {
         }
         if (nearest == null)
             return;
-        if (nearest.getType() == GuardEntity.Type.BAT) {
-            if (fruitCount > 0) {
-                fruitCount--;
-                nearest.distract();
-            }
-        } else {
-            if (eggCount > 0) {
-                eggCount--;
-                nearest.distract();
-            }
+        if (distractionSpellCount > 0) {
+            distractionSpellCount--;
+            nearest.distract();
         }
     }
 
@@ -545,7 +538,7 @@ public class GameStateManager {
                 "Level=" + currentLevel + " Tile=" + tileText + " InEscape=" + player.isInEscapeRoom(),
                 "Sprint=" + activeKeys.contains(KeyCode.SHIFT),
                 "Luna=" + lunaState + " Timer=" + lunaTimer + " Nearby=" + (lunaDist <= 5.0),
-                "Fruit=" + fruitCount + " Eggs=" + eggCount + " Clone=" + hasCloneItem,
+                "Spells=" + distractionSpellCount + " Clone=" + hasCloneItem,
                 "GuardCD=" + guardHitCooldownFrames
         };
         double y = 76;

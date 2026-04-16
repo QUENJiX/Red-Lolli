@@ -17,7 +17,8 @@ public class GuardEntity extends Entity implements Collidable {
 
     public enum Type {
         BAT,
-        COBRA
+        COBRA,
+        CENTIPEDE
     }
 
     // ================= IMAGE ASSETS =================
@@ -26,6 +27,8 @@ public class GuardEntity extends Entity implements Collidable {
     private static Image batDistractedImg;
     private static Image cobraImg;
     private static Image cobraDistractedImg;
+    private static Image centipedeImg;
+    private static Image centipedeDistractedImg;
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -45,6 +48,8 @@ public class GuardEntity extends Entity implements Collidable {
         batDistractedImg = loadSprite("guard_bat_distracted.png", 40, 40);
         cobraImg = loadSprite("guard_cobra.png", 40, 40);
         cobraDistractedImg = loadSprite("guard_cobra_distracted.png", 40, 40);
+        centipedeImg = loadSprite("guard_centipede.png", 40, 40);
+        centipedeDistractedImg = loadSprite("guard_centipede_distracted.png", 40, 40);
         imagesInitialized = true;
     }
 
@@ -72,6 +77,9 @@ public class GuardEntity extends Entity implements Collidable {
     // Level 2: Cobra distraction duration (TWIST: much shorter distraction window)
     private static final int COBRA_DISTRACTION_DURATION = 150; // 2.5 seconds
 
+    // Level 3: Centipede distraction duration
+    private static final int CENTIPEDE_DISTRACTION_DURATION = 150; // 2.5 seconds
+
     public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
         super(x, y, 28.0);
         this.type = type;
@@ -92,7 +100,9 @@ public class GuardEntity extends Entity implements Collidable {
     public void distract() {
         if (!distracted) {
             distracted = true;
-            distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION : COBRA_DISTRACTION_DURATION;
+            if (type == Type.BAT) distractionTimer = BAT_DISTRACTION_DURATION;
+            else if (type == Type.COBRA) distractionTimer = COBRA_DISTRACTION_DURATION;
+            else distractionTimer = CENTIPEDE_DISTRACTION_DURATION;
         }
     }
 
@@ -141,17 +151,21 @@ public class GuardEntity extends Entity implements Collidable {
         Image img;
         if (type == Type.BAT) {
             img = distracted ? batDistractedImg : batImg;
-        } else {
+        } else if (type == Type.COBRA) {
             img = distracted ? cobraDistractedImg : cobraImg;
+        } else {
+            img = distracted ? centipedeDistractedImg : centipedeImg;
         }
         // Draw sprite centered on hitbox (hitbox 28x28, sprite 40x40)
         double offset = (RENDER_SIZE - size) / 2;
         if (img != null) {
             gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         } else {
-            Color fallback = (type == Type.BAT)
-                    ? (distracted ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60))
-                    : (distracted ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30));
+            Color fallback = Color.GRAY;
+            if (type == Type.BAT) fallback = distracted ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60);
+            else if (type == Type.COBRA) fallback = distracted ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30);
+            else fallback = distracted ? Color.rgb(120, 50, 120) : Color.rgb(80, 30, 80);
+
             gc.setFill(fallback);
             gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         }

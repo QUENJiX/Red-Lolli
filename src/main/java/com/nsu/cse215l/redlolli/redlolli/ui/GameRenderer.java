@@ -100,8 +100,7 @@ public class GameRenderer {
             LolliRevealState revealState, int level,
             List<Item> chests,
             String[] itemNames,
-            int fruitCount,
-            int eggCount,
+            int distractionSpellCount,
             boolean hasCloneItem,
             double pulsePhase,
             boolean isLunaHunting,
@@ -197,7 +196,7 @@ public class GameRenderer {
         }
 
         pulsePhase = HUDRenderer.drawHUD(gc, level, chests, itemNames, paleLuna, player,
-                fruitCount, eggCount, hasCloneItem, pulsePhase);
+                distractionSpellCount, hasCloneItem, pulsePhase);
 
         if (player.isInEscapeRoom()) {
             gc.setFill(Color.rgb(0, 80, 0, 0.25));
