@@ -84,7 +84,7 @@ public class GameStateManager {
         activeDeathMessage = "";
         lolliRecentlyCollected = false;
 
-        fruitCount = currentLevel == 1 ? 2 : 0;
+        fruitCount = currentLevel == 1 ? 1 : 0;
         eggCount = currentLevel == 2 ? 5 : 0;
         exitGraceFrames = 0;
         standStillFrames = 0;
@@ -122,7 +122,6 @@ public class GameStateManager {
         player = new Player(spawnX, spawnY);
         entities.add(player);
         spawnEntities();
-        spawnLevelThreats();
     }
 
     // ========================= SPAWNING =========================
@@ -150,6 +149,24 @@ public class GameStateManager {
                 } else if (tile == 8) {
                     torchTiles.add(new int[] { row, col });
                     grid[row][col] = 1; // Turn back into a wall tile for rendering/collision
+                } else if (tile == 9) {
+                    GuardEntity guard = null;
+                    if (currentLevel == 1) {
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.BAT, -1, -1);
+                    } else if (currentLevel == 2) {
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.COBRA, -1, -1);
+                    }
+                    if (guard != null) {
+                        guards.add(guard);
+                        entities.add(guard);
+                    }
+                    grid[row][col] = 0; // Turn into floor
+                } else if (tile == 10) {
+                    if (currentLevel == 3) {
+                        serialKiller = new SerialKillerEntity(col * Maze.TILE_SIZE + 6, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
+                        entities.add(serialKiller);
+                    }
+                    grid[row][col] = 0; // Turn into floor
                 }
             }
         }
@@ -184,44 +201,6 @@ public class GameStateManager {
 
     private boolean containsContent(Item.ContentType type) {
         return chests.stream().anyMatch(c -> c.getContentType() == type);
-    }
-
-    private void spawnLevelThreats() {
-        List<int[]> escapeRooms = maze.getTilesOfType(6);
-        if (currentLevel == 1) {
-            for (int i = 0, count = Math.min(2, escapeRooms.size()); i < count; i++) {
-                int[] p = escapeRooms.get(i);
-                double[] pos = findGuardPosition(p[0], p[1]);
-                GuardEntity bat = new GuardEntity(pos[0], pos[1], GuardEntity.Type.BAT, p[0], p[1]);
-                guards.add(bat);
-                entities.add(bat);
-            }
-        } else if (currentLevel == 2) {
-            for (int i = 0, count = Math.min(3, escapeRooms.size()); i < count; i++) {
-                int[] p = escapeRooms.get(i);
-                double[] pos = findGuardPosition(p[0], p[1]);
-                GuardEntity cobra = new GuardEntity(pos[0], pos[1], GuardEntity.Type.COBRA, p[0], p[1]);
-                guards.add(cobra);
-                entities.add(cobra);
-            }
-        } else if (currentLevel == 3) {
-            serialKiller = new SerialKillerEntity(18 * Maze.TILE_SIZE + 6, 5 * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
-            entities.add(serialKiller);
-        }
-    }
-
-    private double[] findGuardPosition(int row, int col) {
-        int[][] g = maze.getMapGrid();
-        int[][] dirs = { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } };
-        for (int[] d : dirs) {
-            int nr = row + d[0], nc = col + d[1];
-            if (nr < 0 || nr >= g.length || nc < 0 || nc >= g[0].length)
-                continue;
-            if (g[nr][nc] != 1 && g[nr][nc] != 10) {
-                return new double[] { nc * Maze.TILE_SIZE + 10, nr * Maze.TILE_SIZE + Maze.Y_OFFSET + 10 };
-            }
-        }
-        return new double[] { col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10 };
     }
 
     // ========================= FRAME UPDATE =========================
@@ -374,6 +353,13 @@ public class GameStateManager {
                 soundManager.playOneShot(SoundManager.STINGER_1, 0.8);
                 lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 120);
                 return;
+            }
+            if (chest.getContentType() == Item.ContentType.EMPTY) {
+                if (currentLevel == 1) {
+                    fruitCount++;
+                } else if (currentLevel == 2) {
+                    eggCount++;
+                }
             }
             if (chest.getContentType() == Item.ContentType.CLONE_DECOY)
                 hasCloneItem = true;
