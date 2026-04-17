@@ -61,6 +61,13 @@ public class GameRenderer {
     private static Image idleFrontImg, idleBackImg, idleLeftImg, idleRightImg;
     private static Image[] walkLeftImgs, walkRightImgs, walkBackImgs, walkFrontImgs;
 
+    private static Image batImg;
+    private static Image batDistractedImg;
+    private static Image cobraImg;
+    private static Image cobraDistractedImg;
+    private static Image centipedeImg;
+    private static Image centipedeDistractedImg;
+
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -117,6 +124,13 @@ public class GameRenderer {
 
         walkRightImgs = new Image[3];
         for (int i = 1; i <= 3; i++) walkRightImgs[i - 1] = loadSprite("sprites/walk_right_" + i + ".png", 28, 28);
+
+        batImg = loadSprite("sprites/guard_bat.png", 40, 40);
+        batDistractedImg = loadSprite("sprites/guard_bat_distracted.png", 40, 40);
+        cobraImg = loadSprite("sprites/guard_cobra.png", 40, 40);
+        cobraDistractedImg = loadSprite("sprites/guard_cobra_distracted.png", 40, 40);
+        centipedeImg = loadSprite("sprites/guard_centipede.png", 40, 40);
+        centipedeDistractedImg = loadSprite("sprites/guard_centipede_distracted.png", 40, 40);
 
         imagesInitialized = true;
     }
@@ -274,6 +288,34 @@ public class GameRenderer {
         }
     }
 
+    private static void renderGuardEntity(GraphicsContext gc, com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity g) {
+        Image img;
+        if (g.getType() == com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity.Type.BAT) {
+            img = g.isDistracted() ? batDistractedImg : batImg;
+        } else if (g.getType() == com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity.Type.COBRA) {
+            img = g.isDistracted() ? cobraDistractedImg : cobraImg;
+        } else {
+            img = g.isDistracted() ? centipedeDistractedImg : centipedeImg;
+        }
+
+        double RENDER_SIZE = 40.0;
+        double offset = (RENDER_SIZE - g.getSize()) / 2;
+        if (img != null) {
+            gc.drawImage(img, g.getX() - offset, g.getY() - offset, RENDER_SIZE, RENDER_SIZE);
+        } else {
+            Color fallback;
+            if (g.getType() == com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity.Type.BAT)
+                fallback = g.isDistracted() ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60);
+            else if (g.getType() == com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity.Type.COBRA)
+                fallback = g.isDistracted() ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30);
+            else
+                fallback = g.isDistracted() ? Color.rgb(120, 80, 120) : Color.rgb(80, 30, 80);
+
+            gc.setFill(fallback);
+            gc.fillOval(g.getX() - offset, g.getY() - offset, RENDER_SIZE, RENDER_SIZE);
+        }
+    }
+
     private static void renderSerialKiller(GraphicsContext gc, SerialKillerEntity sk) {
         Image imgToDraw;
         int frameWidth = 128;
@@ -421,6 +463,8 @@ public class GameRenderer {
                 renderSerialKiller(gc, (SerialKillerEntity) e);
             } else if (e instanceof Player) {
                 renderPlayer(gc, (Player) e);
+            } else if (e instanceof com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity) {
+                renderGuardEntity(gc, (com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity) e);
             } else {
                 e.render(gc);
             }

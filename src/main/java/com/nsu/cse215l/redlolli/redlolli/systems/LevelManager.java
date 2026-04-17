@@ -25,7 +25,7 @@ public class LevelManager {
 
     public void loadLevel(EntityManager entityManager) {
         Maze.initImages();
-        GuardEntity.initImages();
+        // GuardEntity.initImages() moved to GameRenderer
         SerialKillerEntity.initImages();
         // Player.initImages() moved to GameRenderer
         GameRenderer.initImages();
