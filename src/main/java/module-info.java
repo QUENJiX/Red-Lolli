@@ -9,7 +9,7 @@ module com.nsu.cse215l.redlolli.redlolli {
     requires javafx.media;
     requires transitive javafx.graphics;
     requires java.desktop;
-    requires java.logging;
+    requires transitive java.logging;
 
     exports com.nsu.cse215l.redlolli.redlolli;
     exports com.nsu.cse215l.redlolli.redlolli.ui;
