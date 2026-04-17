@@ -3,60 +3,12 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 
 /**
  * User-controlled character with movement, stamina, and contextual rendering.
  * Facial expression changes based on chase/escape state.
  */
 public class Player extends Entity implements Collidable {
-
-    // ================= IMAGE ASSETS =================
-
-    private static Image idleFrontImg, idleBackImg, idleLeftImg, idleRightImg;
-    private static Image[] walkLeftImgs, walkRightImgs, walkBackImgs, walkFrontImgs;
-    private static boolean imagesInitialized = false;
-
-    private static Image loadSprite(String filename, int width, int height) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        idleFrontImg = loadSprite("idle_front.png", 32, 32);
-        idleBackImg = loadSprite("idle_back.png", 32, 32);
-        idleLeftImg = loadSprite("idle_left.png", 32, 32);
-        idleRightImg = loadSprite("idle_right.png", 32, 32);
-
-        walkBackImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkBackImgs[i - 1] = loadSprite("walk_back_" + i + ".png", 28, 28);
-
-        walkFrontImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkFrontImgs[i - 1] = loadSprite("walk_front_" + i + ".png", 28, 28);
-
-        walkLeftImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkLeftImgs[i - 1] = loadSprite("walk_left_" + i + ".png", 28, 28);
-
-        walkRightImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkRightImgs[i - 1] = loadSprite("walk_right_" + i + ".png", 28, 28);
-
-        imagesInitialized = true;
-    }
-
-    /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    // Visual render size
-    private static final double RENDER_SIZE = 32.0;
 
     // ================= LOGIC =================
 
@@ -190,63 +142,16 @@ public class Player extends Entity implements Collidable {
     }
 
     @Override
-    public void render(GraphicsContext gc) {
-        String dir = "front";
-        if (Math.abs(facingX) > Math.abs(facingY)) {
-            dir = facingX > 0 ? "right" : "left";
-        } else if (facingY != 0) {
-            dir = facingY > 0 ? "front" : "back";
-        }
+    public void render(javafx.scene.canvas.GraphicsContext gc) {
+        // Domain model has no view layer logic
+    }
 
-        Image img = idleFrontImg;
-        if (!isMoving) {
-            switch (dir) {
-                case "left":
-                    img = idleLeftImg;
-                    break;
-                case "right":
-                    img = idleRightImg;
-                    break;
-                case "back":
-                    img = idleBackImg;
-                    break;
-                default:
-                    img = idleFrontImg;
-                    break;
-            }
-        } else {
-            switch (dir) {
-                case "left":
-                    if (walkLeftImgs != null && walkLeftImgs.length > 0)
-                        img = walkLeftImgs[animFrame % walkLeftImgs.length];
-                    break;
-                case "right":
-                    if (walkRightImgs != null && walkRightImgs.length > 0)
-                        img = walkRightImgs[animFrame % walkRightImgs.length];
-                    break;
-                case "back":
-                    if (walkBackImgs != null && walkBackImgs.length > 0)
-                        img = walkBackImgs[animFrame % walkBackImgs.length];
-                    break;
-                case "front":
-                    if (walkFrontImgs != null && walkFrontImgs.length > 0)
-                        img = walkFrontImgs[animFrame % walkFrontImgs.length];
-                    else
-                        img = idleFrontImg;
-                    break;
-            }
-        }
+    public boolean isMoving() {
+        return isMoving;
+    }
 
-        // Draw sprite horizontally centered, but vertically aligned at the bottom
-        // so legs don't clip into walls below the hitbox.
-        double offsetX = (RENDER_SIZE - size) / 2;
-        double offsetY = (RENDER_SIZE - size); // Shift up so bottom of sprite aligns with bottom of hitbox
-        if (img != null) {
-            gc.drawImage(img, x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
-        } else {
-            gc.setFill(Color.rgb(100, 149, 237));
-            gc.fillOval(x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
-        }
+    public int getAnimFrame() {
+        return animFrame;
     }
 
     @Override

@@ -58,6 +58,9 @@ public class GameRenderer {
     private static Image killerAttackImg;
     private static Image killerAttackLeftImg;
 
+    private static Image idleFrontImg, idleBackImg, idleLeftImg, idleRightImg;
+    private static Image[] walkLeftImgs, walkRightImgs, walkBackImgs, walkFrontImgs;
+
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -97,6 +100,23 @@ public class GameRenderer {
         killerChaseLeftImg = loadSprite("sprites/killer_chase_left.png", 640, 70);
         killerAttackImg = loadSprite("sprites/killer_attack_right.png", 640, 70);
         killerAttackLeftImg = loadSprite("sprites/killer_attack_left.png", 640, 70);
+
+        idleFrontImg = loadSprite("sprites/idle_front.png", 32, 32);
+        idleBackImg = loadSprite("sprites/idle_back.png", 32, 32);
+        idleLeftImg = loadSprite("sprites/idle_left.png", 32, 32);
+        idleRightImg = loadSprite("sprites/idle_right.png", 32, 32);
+
+        walkBackImgs = new Image[3];
+        for (int i = 1; i <= 3; i++) walkBackImgs[i - 1] = loadSprite("sprites/walk_back_" + i + ".png", 28, 28);
+
+        walkFrontImgs = new Image[3];
+        for (int i = 1; i <= 3; i++) walkFrontImgs[i - 1] = loadSprite("sprites/walk_front_" + i + ".png", 28, 28);
+
+        walkLeftImgs = new Image[3];
+        for (int i = 1; i <= 3; i++) walkLeftImgs[i - 1] = loadSprite("sprites/walk_left_" + i + ".png", 28, 28);
+
+        walkRightImgs = new Image[3];
+        for (int i = 1; i <= 3; i++) walkRightImgs[i - 1] = loadSprite("sprites/walk_right_" + i + ".png", 28, 28);
 
         imagesInitialized = true;
     }
@@ -190,6 +210,67 @@ public class GameRenderer {
                 gc.setGlobalAlpha(0.5);
             gc.fillOval(m.getX() - offset, m.getY() - offset, RENDER_SIZE, RENDER_SIZE);
             gc.setGlobalAlpha(1.0);
+        }
+    }
+
+    private static void renderPlayer(GraphicsContext gc, Player p) {
+        String dir = "front";
+        if (Math.abs(p.getFacingX()) > Math.abs(p.getFacingY())) {
+            dir = p.getFacingX() > 0 ? "right" : "left";
+        } else if (p.getFacingY() != 0) {
+            dir = p.getFacingY() > 0 ? "front" : "back";
+        }
+
+        Image img = idleFrontImg;
+        if (!p.isMoving()) {
+            switch (dir) {
+                case "left":
+                    img = idleLeftImg;
+                    break;
+                case "right":
+                    img = idleRightImg;
+                    break;
+                case "back":
+                    img = idleBackImg;
+                    break;
+                default:
+                    img = idleFrontImg;
+                    break;
+            }
+        } else {
+            int animFrame = p.getAnimFrame();
+            switch (dir) {
+                case "left":
+                    if (walkLeftImgs != null && walkLeftImgs.length > 0)
+                        img = walkLeftImgs[animFrame % walkLeftImgs.length];
+                    break;
+                case "right":
+                    if (walkRightImgs != null && walkRightImgs.length > 0)
+                        img = walkRightImgs[animFrame % walkRightImgs.length];
+                    break;
+                case "back":
+                    if (walkBackImgs != null && walkBackImgs.length > 0)
+                        img = walkBackImgs[animFrame % walkBackImgs.length];
+                    break;
+                case "front":
+                    if (walkFrontImgs != null && walkFrontImgs.length > 0)
+                        img = walkFrontImgs[animFrame % walkFrontImgs.length];
+                    else
+                        img = idleFrontImg;
+                    break;
+            }
+        }
+
+        // Draw sprite horizontally centered, but vertically aligned at the bottom
+        // so legs don't clip into walls below the hitbox.
+        double RENDER_SIZE = 32.0; // from Player.java
+        double offsetX = (RENDER_SIZE - p.getSize()) / 2;
+        double offsetY = (RENDER_SIZE - p.getSize());
+        if (img != null) {
+            gc.drawImage(img, p.getX() - offsetX, p.getY() - offsetY, RENDER_SIZE, RENDER_SIZE);
+        } else {
+            gc.setFill(Color.rgb(100, 149, 237));
+            gc.fillOval(p.getX() - offsetX, p.getY() - offsetY, RENDER_SIZE, RENDER_SIZE);
         }
     }
 
@@ -338,6 +419,8 @@ public class GameRenderer {
                 renderMonster(gc, (Monster) e);
             } else if (e instanceof SerialKillerEntity) {
                 renderSerialKiller(gc, (SerialKillerEntity) e);
+            } else if (e instanceof Player) {
+                renderPlayer(gc, (Player) e);
             } else {
                 e.render(gc);
             }

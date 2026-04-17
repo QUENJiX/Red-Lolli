@@ -27,7 +27,7 @@ public class LevelManager {
         Maze.initImages();
         GuardEntity.initImages();
         SerialKillerEntity.initImages();
-        Player.initImages();
+        // Player.initImages() moved to GameRenderer
         GameRenderer.initImages();
         HUDRenderer.initImages();
 
