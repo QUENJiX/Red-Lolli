@@ -307,6 +307,10 @@ public class Player extends Entity implements Collidable {
         return sanity;
     }
 
+    public void setSanity(int value) {
+        this.sanity = value;
+    }
+
     public double getSanityPercent() {
         return (double) sanity / MAX_SANITY;
     }

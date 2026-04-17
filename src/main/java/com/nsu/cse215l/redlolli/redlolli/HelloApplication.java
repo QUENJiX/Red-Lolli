@@ -171,11 +171,19 @@ public class HelloApplication extends Application {
     // ========================= GAME LIFECYCLE =========================
 
     private void startGame(int level) {
+        int savedSanity = (gsm.player != null) ? gsm.player.getSanity() : 100;
+        
         gsm.currentLevel = level;
         gsm.resetGameState();
         activeKeys.clear();
         pressedThisFrame.clear();
         gsm.loadLevel();
+        
+        // Preserve sanity if advancing to a new level (not restarting from 1)
+        if (level > 1 && gsm.player != null) {
+            gsm.player.setSanity(savedSanity);
+        }
+        
         isPlaying = true;
         setupGameScene();
         gsm.soundManager.playOneShot(SoundManager.GAME_START, 0.75);
