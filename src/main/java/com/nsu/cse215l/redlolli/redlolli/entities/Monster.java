@@ -7,8 +7,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import java.io.InputStream;
-
 /**
  * The primary antagonist entity for Level 1, "Pale Luna".
  * Operates on a time-based 4-state AI cycle with BFS pathfinding.
@@ -30,16 +28,7 @@ public class Monster extends Entity implements Collidable {
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
-        try {
-            InputStream is = Monster.class.getResourceAsStream("/assets/images/sprites/" + filename);
-            if (is != null) {
-                return new Image(is, width, height, true, false);
-            }
-        } catch (Exception e) {
-            System.err.println("Error initializing Monster assets: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
     }
 
     public static void initImages() {

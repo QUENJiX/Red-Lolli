@@ -7,8 +7,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import java.io.InputStream;
-
 /**
  * User-controlled character with movement, stamina, and contextual rendering.
  * Facial expression changes based on chase/escape state.
@@ -22,17 +20,7 @@ public class Player extends Entity implements Collidable {
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
-        try {
-            InputStream is = Player.class.getResourceAsStream("/assets/images/sprites/" + filename);
-            if (is != null) {
-                return new Image(is, width, height, true, false);
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading Player sprite '" + filename + "': " + e.getMessage());
-            e.printStackTrace();
-            return new javafx.scene.image.WritableImage(width > 0 ? width : 32, height > 0 ? height : 32);
-        }
-        return new javafx.scene.image.WritableImage(width > 0 ? width : 32, height > 0 ? height : 32);
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
     }
 
     public static void initImages() {

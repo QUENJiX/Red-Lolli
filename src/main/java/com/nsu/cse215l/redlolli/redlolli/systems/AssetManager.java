@@ -2,8 +2,8 @@ package com.nsu.cse215l.redlolli.redlolli.systems;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
-import java.io.InputStream;
 import java.util.HashMap;
+import java.io.InputStream;
 import java.util.Map;
 
 /**

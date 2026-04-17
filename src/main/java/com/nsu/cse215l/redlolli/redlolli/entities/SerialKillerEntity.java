@@ -7,8 +7,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import java.io.InputStream;
-
 /**
  * Persistent antagonist in Level 3 using continuous BFS pathfinding.
  * Features unique logic to interact with CardboardClone decoys.
@@ -26,17 +24,7 @@ public class SerialKillerEntity extends Entity implements Collidable {
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename) {
-        try {
-            InputStream is = SerialKillerEntity.class.getResourceAsStream("/assets/images/sprites/" + filename);
-            if (is != null) {
-                return new Image(is); // Load at native resolution for slicing
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading SerialKiller sprite '" + filename + "': " + e.getMessage());
-            e.printStackTrace();
-            return new javafx.scene.image.WritableImage(32, 32);
-        }
-        return new javafx.scene.image.WritableImage(32, 32);
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename);
     }
 
     public static void initImages() {

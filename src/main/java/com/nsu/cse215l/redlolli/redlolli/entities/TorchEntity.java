@@ -3,8 +3,6 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
-import java.io.InputStream;
-
 /**
  * Animated torch that provides light on the map.
  */
@@ -21,18 +19,7 @@ public class TorchEntity extends Entity {
     private double timeDelta = 1.0;
 
     private static Image loadSprite(String filename) {
-        try {
-            InputStream is = TorchEntity.class.getResourceAsStream("/assets/images/dungeon/wall/torches/" + filename);
-            if (is != null) {
-                // Resize to 40x40 to fit nicely on wall tiles
-                return new Image(is, 40, 40, true, false);
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading Torch sprite '" + filename + "': " + e.getMessage());
-            e.printStackTrace();
-            return new javafx.scene.image.WritableImage(40, 40);
-        }
-        return new javafx.scene.image.WritableImage(40, 40);
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/dungeon/wall/torches/" + filename, 40, 40);
     }
 
     public static void initImages() {

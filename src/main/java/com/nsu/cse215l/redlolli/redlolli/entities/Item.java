@@ -6,8 +6,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import java.io.InputStream;
-
 /**
  * Interactive maze objects modeled as chests containing various loot types.
  * Manages visual state (open/closed) and glowing cues based on content.
@@ -29,16 +27,7 @@ public class Item extends Entity implements Collidable {
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
-        try {
-            InputStream is = Item.class.getResourceAsStream("/assets/images/sprites/" + filename);
-            if (is != null) {
-                return new Image(is, width, height, true, false);
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading Item sprite: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
     }
 
     public static void initImages() {
