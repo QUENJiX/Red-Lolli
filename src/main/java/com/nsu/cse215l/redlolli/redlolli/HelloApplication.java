@@ -171,17 +171,17 @@ public class HelloApplication extends Application {
     // ========================= GAME LIFECYCLE =========================
 
     private void startGame(int level) {
-        int savedSanity = (gsm.player != null) ? gsm.player.getSanity() : 100;
+        int savedSanity = (gsm.entityManager.getPlayer() != null) ? gsm.entityManager.getPlayer().getSanity() : 100;
         
-        gsm.currentLevel = level;
+        gsm.levelManager.setCurrentLevel(level);
         gsm.resetGameState();
         activeKeys.clear();
         pressedThisFrame.clear();
         gsm.loadLevel();
         
         // Preserve sanity if advancing to a new level (not restarting from 1)
-        if (level > 1 && gsm.player != null) {
-            gsm.player.setSanity(savedSanity);
+        if (level > 1 && gsm.entityManager.getPlayer() != null) {
+            gsm.entityManager.getPlayer().setSanity(savedSanity);
         }
         
         isPlaying = true;
@@ -241,19 +241,19 @@ public class HelloApplication extends Application {
     private void render(GraphicsContext gc) {
         // Calculate vignette intensity based on sanity (only below 25)
         double vignetteIntensity = 0;
-        if (gsm.player != null) {
-            int sanity = gsm.player.getSanity();
+        if (gsm.entityManager.getPlayer() != null) {
+            int sanity = gsm.entityManager.getPlayer().getSanity();
             if (sanity < 25) {
                 // Below 25: start vignette, intensifies as sanity decreases
                 vignetteIntensity = (25 - sanity) / 25.0; // 0.0 to 1.0
             }
         }
 
-        gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.maze, gsm.entities, gsm.paleLuna, gsm.player,
-                gsm.warningFlashTimer, gsm.lolliRevealState, gsm.currentLevel, gsm.chests, ITEM_NAMES,
+        gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.levelManager.getMaze(), gsm.entityManager.getEntities(), gsm.entityManager.getPaleLuna(), gsm.entityManager.getPlayer(),
+                gsm.warningFlashTimer, gsm.lolliRevealState, gsm.levelManager.getCurrentLevel(), gsm.entityManager.getChests(), ITEM_NAMES,
                 gsm.distractionSpellCount, gsm.hasCloneItem,
                 gsm.pulsePhaseHUD,
-                gsm.paleLuna != null && gsm.paleLuna.isHunting(),
+                gsm.entityManager.getPaleLuna() != null && gsm.entityManager.getPaleLuna().isHunting(),
                 gsm.screenShakeFrames,
                 vignetteIntensity,
                 gsm.overlays);
@@ -313,11 +313,11 @@ public class HelloApplication extends Application {
     // ========================= SCREEN TRANSITIONS =========================
 
     private void advanceLevel() {
-        if (gsm.currentLevel >= 3) {
+        if (gsm.levelManager.getCurrentLevel() >= 3) {
             triggerVictoryCutscene();
         } else {
             gsm.startingDistractions = gsm.distractionSpellCount;
-            startGame(gsm.currentLevel + 1);
+            startGame(gsm.levelManager.getCurrentLevel() + 1);
         }
     }
 
@@ -327,7 +327,7 @@ public class HelloApplication extends Application {
             gameLoop.stop();
         gsm.showingItemFound = true;
         mainWindow.setScene(SceneFactory.createItemFoundScene(
-                gsm.currentLevel,
+                gsm.levelManager.getCurrentLevel(),
                 () -> {
                     gsm.showingItemFound = false;
                     advanceLevel();
@@ -341,8 +341,8 @@ public class HelloApplication extends Application {
         deathCount++;
         gsm.soundManager.playOneShot(SoundManager.GAME_OVER, 0.85);
 
-        int lollies = gsm.currentLevel - 1;
-        int sanity = gsm.player != null ? Math.max(0, gsm.player.getSanity()) : 0;
+        int lollies = gsm.levelManager.getCurrentLevel() - 1;
+        int sanity = gsm.entityManager.getPlayer() != null ? Math.max(0, gsm.entityManager.getPlayer().getSanity()) : 0;
 
         mainWindow.setScene(SceneFactory.createDeathScene(
                 gsm.activeDeathMessage, deathCount,
@@ -392,7 +392,7 @@ public class HelloApplication extends Application {
     }
 
     private void showVictoryScreen() {
-        int sanity = gsm.player != null ? Math.max(0, gsm.player.getSanity()) : 0;
+        int sanity = gsm.entityManager.getPlayer() != null ? Math.max(0, gsm.entityManager.getPlayer().getSanity()) : 0;
         mainWindow.setScene(SceneFactory.createVictoryScene(
                 3, gsm.totalChestsCollected, gsm.totalChestsEncountered, deathCount, sanity, gsm.totalPlayTimeSeconds,
                 () -> mainWindow.setScene(createMainMenu())));

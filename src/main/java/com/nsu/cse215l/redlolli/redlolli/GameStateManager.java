@@ -4,7 +4,6 @@ import com.nsu.cse215l.redlolli.redlolli.entities.*;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.systems.SoundManager;
 import com.nsu.cse215l.redlolli.redlolli.ui.GameRenderer;
-import com.nsu.cse215l.redlolli.redlolli.ui.HUDRenderer;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
@@ -16,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.nsu.cse215l.redlolli.redlolli.systems.*;
+
 /**
  * Manages all game state and logic extracted from HelloApplication.
  * Handles entity spawning, per-frame updates, collision checks, and debug
@@ -23,25 +24,14 @@ import java.util.Set;
  */
 public class GameStateManager {
 
-    private static final String[] MAP_FILES = { "/map.csv", "/map2.csv", "/map3.csv" };
-
-    // ==================== STATS ====================
-    public int totalChestsCollected = 0;
+public int totalChestsCollected = 0;
     public int totalChestsEncountered = 0;
     public double totalPlayTimeSeconds = 0;
 
-    Player player;
-    Maze maze;
-    Monster paleLuna;
-    SerialKillerEntity serialKiller;
-    CardboardClone cloneDecoy;
+    public final EntityManager entityManager = new EntityManager();
+    public final LevelManager levelManager = new LevelManager();
+    public final CollisionSystem collisionSystem = new CollisionSystem();
 
-    final List<Entity> entities = new ArrayList<>();
-    final List<Item> chests = new ArrayList<>();
-    final List<GuardEntity> guards = new ArrayList<>();
-    final List<TorchEntity> torches = new ArrayList<>();
-
-    int currentLevel = 1;
     boolean showingItemFound = false;
     double warningFlashTimer = 0;
     double pulsePhaseHUD = 0;
@@ -75,15 +65,8 @@ public class GameStateManager {
     // ========================= LIFECYCLE =========================
 
     void resetGameState() {
-        entities.clear();
-        chests.clear();
-        guards.clear();
-        torches.clear();
+        entityManager.clear();
         overlays.clear();
-
-        paleLuna = null;
-        serialKiller = null;
-        cloneDecoy = null;
 
         showingItemFound = false;
         warningFlashTimer = 0;
@@ -92,7 +75,7 @@ public class GameStateManager {
         activeDeathMessage = "";
         lolliRecentlyCollected = false;
 
-        if (currentLevel == 1) {
+        if (levelManager.getCurrentLevel() == 1) {
             startingDistractions = 1;
             totalPlayTimeSeconds = 0;
             totalChestsCollected = 0;
@@ -114,135 +97,14 @@ public class GameStateManager {
         lastUpdateTime = 0;
 
         // Reset player sanity
-        if (player != null) {
-            player.resetSanity();
+        if (entityManager.getPlayer() != null) {
+            entityManager.getPlayer().resetSanity();
         }
     }
 
     void loadLevel() {
-        Maze.initImages();
-        Item.initImages();
-        CardboardClone.initImages();
-        GuardEntity.initImages();
-        SerialKillerEntity.initImages();
-        Player.initImages();
-        Monster.initImages();
-        TorchEntity.initImages();
-        GameRenderer.initImages();
-        HUDRenderer.initImages();
-
-        maze = new Maze(MAP_FILES[currentLevel - 1], currentLevel);
-        double spawnX = maze.getPlayerSpawnCol() * Maze.TILE_SIZE + 10;
-        double spawnY = maze.getPlayerSpawnRow() * Maze.TILE_SIZE + Maze.Y_OFFSET + 10;
-        player = new Player(spawnX, spawnY);
-        entities.add(player);
-        spawnEntities();
-    }
-
-    // ========================= SPAWNING =========================
-
-    private void spawnEntities() {
-        int[][] grid = maze.getMapGrid();
-        List<int[]> emptyChestTiles = new ArrayList<>();
-        List<int[]> lolliChestTiles = new ArrayList<>();
-        List<int[]> torchTiles = new ArrayList<>();
-        int lunaRow = -1, lunaCol = -1;
-
-        for (int row = 0; row < grid.length; row++) {
-            for (int col = 0; col < grid[row].length; col++) {
-                int tile = grid[row][col];
-                if (tile == 2) {
-                    emptyChestTiles.add(new int[] { row, col });
-                    grid[row][col] = 0;
-                } else if (tile == 3) {
-                    lolliChestTiles.add(new int[] { row, col });
-                    grid[row][col] = 0;
-                } else if (tile == 5) {
-                    lunaRow = row;
-                    lunaCol = col;
-                    grid[row][col] = 0;
-                } else if (tile == 8) {
-                    torchTiles.add(new int[] { row, col });
-                    grid[row][col] = 1; // Turn back into a wall tile for rendering/collision
-                } else if (tile == 9) {
-                    int erRow = -1, erCol = -1;
-                    List<int[]> escapeRooms = maze.getTilesOfType(6);
-                    double minDist = Double.MAX_VALUE;
-                    for (int[] er : escapeRooms) {
-                        double dist = Math.pow(er[0] - row, 2) + Math.pow(er[1] - col, 2);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            erRow = er[0];
-                            erCol = er[1];
-                        }
-                    }
-                    GuardEntity guard = null;
-                    if (currentLevel == 1) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
-                                GuardEntity.Type.BAT, erRow, erCol);
-                    } else if (currentLevel == 2) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
-                                GuardEntity.Type.COBRA, erRow, erCol);
-                    } else if (currentLevel == 3) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
-                                GuardEntity.Type.CENTIPEDE, erRow, erCol);
-                    }
-                    if (guard != null) {
-                        guards.add(guard);
-                    }
-                    grid[row][col] = 0; // Turn into floor
-                } else if (tile == 10) {
-                    if (currentLevel == 3) {
-                        serialKiller = new SerialKillerEntity(col * Maze.TILE_SIZE + 6,
-                                row * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
-                    }
-                    grid[row][col] = 0; // Turn into floor
-                }
-            }
-        }
-
-        for (int[] pos : emptyChestTiles) {
-            Item.ContentType type = Item.ContentType.EMPTY;
-            if (currentLevel == 3 && !containsContent(Item.ContentType.CLONE_DECOY)) {
-                type = Item.ContentType.CLONE_DECOY;
-            }
-            Item chest = new Item(pos[1] * Maze.TILE_SIZE + 12, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET + 12, type);
-            chests.add(chest);
-            entities.add(chest);
-        }
-        for (int[] pos : lolliChestTiles) {
-            Item chest = new Item(pos[1] * Maze.TILE_SIZE + 12, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET + 12,
-                    Item.ContentType.LOLLI);
-            chests.add(chest);
-            entities.add(chest);
-        }
-
-        totalChestsEncountered += chests.size();
-
-        for (int[] pos : torchTiles) {
-            TorchEntity torch = new TorchEntity(pos[1] * Maze.TILE_SIZE, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET);
-            torches.add(torch);
-            entities.add(torch);
-        }
-
-        if (lunaRow >= 0) {
-            paleLuna = new Monster(lunaCol * Maze.TILE_SIZE + 7.5, lunaRow * Maze.TILE_SIZE + Maze.Y_OFFSET + 7.5);
-            entities.add(paleLuna);
-        }
-
-        // Add them to entities manually in the correct order to preserve optimal
-        // Lighting BlendMode passes.
-        for (GuardEntity guard : guards) {
-            entities.add(guard);
-        }
-
-        if (serialKiller != null) {
-            entities.add(serialKiller);
-        }
-    }
-
-    private boolean containsContent(Item.ContentType type) {
-        return chests.stream().anyMatch(c -> c.getContentType() == type);
+        levelManager.loadLevel(entityManager);
+        totalChestsEncountered += entityManager.getChests().size();
     }
 
     // ========================= FRAME UPDATE =========================
@@ -297,22 +159,22 @@ public class GameStateManager {
         if (screenShakeFrames > 0)
             screenShakeFrames -= timeDelta;
 
-        if (serialKiller != null)
-            serialKiller.update();
-        for (GuardEntity guard : guards)
+        if (entityManager.getSerialKiller() != null)
+            entityManager.getSerialKiller().update();
+        for (GuardEntity guard : entityManager.getGuards())
             guard.update();
-        for (TorchEntity torch : torches)
+        for (TorchEntity torch : entityManager.getTorches())
             torch.update();
 
         // Update player's near-Luna status for sanity drain
-        if (paleLuna != null) {
-            player.updateNearLunaStatus(paleLuna.getX(), paleLuna.getY());
+        if (entityManager.getPaleLuna() != null) {
+            entityManager.getPlayer().updateNearLunaStatus(entityManager.getPaleLuna().getX(), entityManager.getPaleLuna().getY());
         }
 
-        player.update();
+        entityManager.getPlayer().update();
 
         // Check for sanity death
-        if (player.isSanityDead()) {
+        if (entityManager.getPlayer().isSanityDead()) {
             return triggerPlayerDeath("Your mind broke before she could.");
         }
 
@@ -330,18 +192,18 @@ public class GameStateManager {
         }
 
         // Movement
-        boolean sprinting = activeKeys.contains(KeyCode.SHIFT) && player.canSprint();
-        double beforeX = player.getX(), beforeY = player.getY();
+        boolean sprinting = activeKeys.contains(KeyCode.SHIFT) && entityManager.getPlayer().canSprint();
+        double beforeX = entityManager.getPlayer().getX(), beforeY = entityManager.getPlayer().getY();
         if (activeKeys.contains(KeyCode.W))
-            player.move(0, -1, maze, sprinting);
+            entityManager.getPlayer().move(0, -1, levelManager.getMaze(), sprinting);
         if (activeKeys.contains(KeyCode.S))
-            player.move(0, 1, maze, sprinting);
+            entityManager.getPlayer().move(0, 1, levelManager.getMaze(), sprinting);
         if (activeKeys.contains(KeyCode.A))
-            player.move(-1, 0, maze, sprinting);
+            entityManager.getPlayer().move(-1, 0, levelManager.getMaze(), sprinting);
         if (activeKeys.contains(KeyCode.D))
-            player.move(1, 0, maze, sprinting);
+            entityManager.getPlayer().move(1, 0, levelManager.getMaze(), sprinting);
 
-        boolean moved = Math.abs(player.getX() - beforeX) > 0.01 || Math.abs(player.getY() - beforeY) > 0.01;
+        boolean moved = Math.abs(entityManager.getPlayer().getX() - beforeX) > 0.01 || Math.abs(entityManager.getPlayer().getY() - beforeY) > 0.01;
         if (moved) {
             if (footstepCooldownFrames <= 0) {
                 soundManager.playOneShot(SoundManager.FOOTSTEP, 0.25);
@@ -354,13 +216,13 @@ public class GameStateManager {
         }
 
         // Escape room state
-        boolean inEscapeRoom = maze.isEscapeRoom(player.getHitbox());
+        boolean inEscapeRoom = levelManager.getMaze().isEscapeRoom(entityManager.getPlayer().getHitbox());
         boolean enteringEscapeRoom = !wasInEscapeRoom && inEscapeRoom;
         boolean exitingEscapeRoom = wasInEscapeRoom && !inEscapeRoom;
-        player.setInEscapeRoom(inEscapeRoom);
+        entityManager.getPlayer().setInEscapeRoom(inEscapeRoom);
 
         // Update escape room visual state (open door when player inside)
-        maze.updateEscapeRoomState(player.getX(), player.getY());
+        levelManager.getMaze().updateEscapeRoomState(entityManager.getPlayer().getX(), entityManager.getPlayer().getY());
 
         if (exitingEscapeRoom) {
             exitGraceFrames = 45;
@@ -368,13 +230,41 @@ public class GameStateManager {
         wasInEscapeRoom = inEscapeRoom;
 
         // Collision & threat checks
-        checkChestCollisions();
-        if (checkGuardThreats(inEscapeRoom, enteringEscapeRoom))
-            return true;
-        if (updateSerialKiller())
-            return true;
-        if (updatePaleLuna(inEscapeRoom, exitingEscapeRoom))
-            return true;
+        collisionSystem.checkChestCollisions(entityManager, hasCloneItem);
+        if (collisionSystem.collectedChests > 0) {
+            totalChestsCollected += collisionSystem.collectedChests;
+            soundManager.playOneShot(SoundManager.CHEST_OPEN, 0.65);
+        }
+        if (collisionSystem.lolliRecentlyCollected) {
+            lolliRecentlyCollected = true;
+            soundManager.playOneShot(SoundManager.STINGER_1, 0.8);
+            lolliRevealState = collisionSystem.lolliRevealState;
+            distractionSpellCount += collisionSystem.newDistractions;
+            return false;
+        }
+        distractionSpellCount += collisionSystem.newDistractions;
+        hasCloneItem = collisionSystem.hasCloneItem;
+
+        collisionSystem.playerDied = false;
+        collisionSystem.checkGuardThreats(entityManager, inEscapeRoom, enteringEscapeRoom, guardHitCooldownFrames);
+        if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
+
+        collisionSystem.playerDied = false;
+        collisionSystem.updateSerialKiller(entityManager, levelManager.getMaze());
+        if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
+
+        collisionSystem.playerDied = false;
+        collisionSystem.updatePaleLuna(entityManager, levelManager.getMaze(), inEscapeRoom, exitingEscapeRoom, lolliRecentlyCollected, lunaScreamCooldownFrames);
+        if (collisionSystem.playHeartbeat) {
+            warningFlashTimer = 30;
+            soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
+        }
+        if (collisionSystem.screenShake) screenShakeFrames = 15;
+        if (collisionSystem.playScream) {
+            soundManager.playOneShot(SoundManager.LUNA_SCREAM_NEARBY, 0.8);
+            lunaScreamCooldownFrames = 130;
+        }
+        if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
 
         lolliRecentlyCollected = false;
         return false;
@@ -386,129 +276,6 @@ public class GameStateManager {
      */
     boolean isLolliRevealJustFinished() {
         return lolliRevealState != null && !lolliRevealState.active;
-    }
-
-    // ========================= COLLISION / THREATS =========================
-
-    private void checkChestCollisions() {
-        for (Item chest : chests) {
-            if (chest.isCollected() || !player.getHitbox().intersects(chest.getHitbox()))
-                continue;
-            chest.collect();
-            totalChestsCollected++;
-            soundManager.playOneShot(SoundManager.CHEST_OPEN, 0.65);
-            if (chest.getContentType() == Item.ContentType.LOLLI) {
-                lolliRecentlyCollected = true;
-                soundManager.playOneShot(SoundManager.STINGER_1, 0.8);
-                lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 120);
-                distractionSpellCount += 3;
-                return;
-            }
-            if (chest.getContentType() == Item.ContentType.EMPTY) {
-                distractionSpellCount++;
-            }
-            if (chest.getContentType() == Item.ContentType.CLONE_DECOY)
-                hasCloneItem = true;
-        }
-    }
-
-    /** Returns true if player died. */
-    private boolean checkGuardThreats(boolean inEscapeRoom, boolean enteringEscapeRoom) {
-        if (guardHitCooldownFrames > 0)
-            return false;
-
-        // Player is safely inside the escape room and not actively crossing the
-        // threshold
-        if (inEscapeRoom && !enteringEscapeRoom) {
-            return false;
-        }
-
-        for (GuardEntity guard : guards) {
-            // Guard kills if not distracted and player touches the guarded room or the
-            // guard itself
-            if (!guard.isDistracted() && (guard.isPlayerOnGuardedRoom(player.getHitbox())
-                    || guard.getHitbox().intersects(player.getHitbox()))) {
-                String msg;
-                if (guard.getType() == GuardEntity.Type.BAT)
-                    msg = "The bat bit first. Luna answered instantly.";
-                else if (guard.getType() == GuardEntity.Type.COBRA)
-                    msg = "The snake strikes! No spell cast, no escape.";
-                else
-                    msg = "The centipede swarmed you... the darkness follows.";
-                return triggerPlayerDeath(msg);
-            }
-        }
-        return false;
-    }
-
-    /** Returns true if player died. */
-    private boolean updateSerialKiller() {
-        if (serialKiller == null)
-            return false;
-        if (!serialKiller.isActive()) {
-            if (distInTiles(player.getX(), player.getY(), serialKiller.getX(), serialKiller.getY()) < 8.0)
-                serialKiller.setActive(true);
-        }
-        if (!serialKiller.isActive())
-            return false;
-
-        double targetX = cloneDecoy != null ? cloneDecoy.getX() : player.getX();
-        double targetY = cloneDecoy != null ? cloneDecoy.getY() : player.getY();
-        serialKiller.updateChase(targetX, targetY, maze);
-
-        if (cloneDecoy != null) {
-            if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(cloneDecoy.getHitbox())) {
-                serialKiller.startDecoyAttack();
-            } else if (serialKiller.isAttackingDecoy() && serialKiller.getDecoyAttackFrames() <= 1) {
-                // Remove the clone right as the attack finishes
-                entities.remove(cloneDecoy);
-                cloneDecoy = null;
-            }
-        }
-
-        if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(player.getHitbox())) {
-            return triggerPlayerDeath("Steel and panic. He never stops hunting.");
-        }
-        return false;
-    }
-
-    /** Returns true if player died. */
-    private boolean updatePaleLuna(boolean inEscapeRoom, boolean exitingEscapeRoom) {
-        if (paleLuna == null)
-            return false;
-
-        Monster.State prevState = paleLuna.getState();
-        paleLuna.update(player.getX(), player.getY(), inEscapeRoom, lolliRecentlyCollected, maze);
-
-        if (exitingEscapeRoom && paleLuna.isWaitingAtDoor()) {
-            return triggerPlayerDeath("She waited at the door. You stepped out anyway.");
-        }
-        if (prevState != Monster.State.HUNTING && paleLuna.getState() == Monster.State.HUNTING) {
-            warningFlashTimer = 30;
-            screenShakeFrames = 15; // Screen shake for 15 frames when Luna starts hunting
-            soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
-        }
-        if (warningFlashTimer > 0)
-            warningFlashTimer -= timeDelta;
-        player.setBeingChased(paleLuna.isHunting());
-
-        double lunaDistTiles = distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY());
-        if (paleLuna.isHunting() && lunaDistTiles <= 3.0 && lunaScreamCooldownFrames <= 0) {
-            soundManager.playOneShot(SoundManager.LUNA_SCREAM_NEARBY, 0.8);
-            lunaScreamCooldownFrames = 130;
-        }
-        if (!inEscapeRoom && paleLuna.isHunting() && player.getHitbox().intersects(paleLuna.getHitbox())) {
-            return triggerPlayerDeath("She found your pulse before you heard her footsteps.");
-        }
-        if (!inEscapeRoom && paleLuna.isWaitingAtDoor()) {
-            boolean canSee = maze.hasLineOfSight(
-                    paleLuna.getX() + 12, paleLuna.getY() + 12,
-                    player.getX() + 10, player.getY() + 10);
-            if (canSee) {
-                return triggerPlayerDeath("She waited at the door. You stepped out anyway.");
-            }
-        }
-        return false;
     }
 
     // ========================= ACTIONS =========================
@@ -535,11 +302,11 @@ public class GameStateManager {
     void tryUseDistraction() {
         GuardEntity nearest = null;
         double best = Double.MAX_VALUE;
-        for (GuardEntity guard : guards) {
+        for (GuardEntity guard : entityManager.getGuards()) {
             if (guard.isDistracted())
                 continue;
-            double d = distInTiles(player.getX(), player.getY(), guard.getX(), guard.getY());
-            if (d < best && guard.isWithinDistractionRange(player.getX(), player.getY())) {
+            double d = distInTiles(entityManager.getPlayer().getX(), entityManager.getPlayer().getY(), guard.getX(), guard.getY());
+            if (d < best && guard.isWithinDistractionRange(entityManager.getPlayer().getX(), entityManager.getPlayer().getY())) {
                 best = d;
                 nearest = guard;
             }
@@ -553,10 +320,11 @@ public class GameStateManager {
     }
 
     void tryPlaceClone() {
-        if (!hasCloneItem || currentLevel != 3 || cloneDecoy != null)
+        if (!hasCloneItem || levelManager.getCurrentLevel() != 3 || entityManager.getCloneDecoy() != null)
             return;
-        cloneDecoy = new CardboardClone(player.getX() + 5, player.getY() + 5);
-        entities.add(cloneDecoy);
+        CardboardClone cloneDecoy = new CardboardClone(entityManager.getPlayer().getX() + 5, entityManager.getPlayer().getY() + 5);
+        entityManager.setCloneDecoy(cloneDecoy);
+        entityManager.addEntity(cloneDecoy);
         hasCloneItem = false;
         soundManager.playOneShot(SoundManager.CHEST_OPEN, 0.45);
     }
@@ -564,6 +332,10 @@ public class GameStateManager {
     // ========================= RENDERING =========================
 
     void drawDebugOverlay(GraphicsContext gc, Set<KeyCode> activeKeys) {
+        Monster paleLuna = entityManager.getPaleLuna();
+        Player player = entityManager.getPlayer();
+        Maze maze = levelManager.getMaze();
+
         double lunaDist = paleLuna == null ? 99.0
                 : distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY());
 
@@ -589,7 +361,7 @@ public class GameStateManager {
         }
         String[] lines = {
                 "DEBUG (F3)",
-                "Level=" + currentLevel + " Tile=" + tileText + " InEscape=" + player.isInEscapeRoom(),
+                "Level=" + levelManager.getCurrentLevel() + " Tile=" + tileText + " InEscape=" + player.isInEscapeRoom(),
                 "Sprint=" + activeKeys.contains(KeyCode.SHIFT),
                 "Luna=" + lunaState + " Timer=" + lunaTimer + " Nearby=" + (lunaDist <= 5.0),
                 "Spells=" + distractionSpellCount + " Clone=" + hasCloneItem,
@@ -605,9 +377,9 @@ public class GameStateManager {
     // ========================= UTILITIES =========================
 
     private void teleportLunaNearPlayer() {
-        if (paleLuna == null)
+        if (entityManager.getPaleLuna() == null)
             return;
-        paleLuna.setPosition(player.getX() + 36, player.getY());
+        entityManager.getPaleLuna().setPosition(entityManager.getPlayer().getX() + 36, entityManager.getPlayer().getY());
     }
 
     static double distInTiles(double x1, double y1, double x2, double y2) {
