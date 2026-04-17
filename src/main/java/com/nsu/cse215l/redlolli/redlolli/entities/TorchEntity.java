@@ -1,41 +1,23 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 
 /**
  * Animated torch that provides light on the map.
  */
 public class TorchEntity extends Entity {
 
-    private static Image[] torchFrames;
-    private static boolean imagesInitialized = false;
 
-    private double animationTimer = 0;
+    private long lastFrameTime = System.nanoTime();
     private int currentFrame = 1; // Frames 1-4 are lit, frame 0 is unlit
     private boolean isLit = true;
     
     private long lastUpdateTime = 0;
     private double timeDelta = 1.0;
 
-    private static Image loadSprite(String filename) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/dungeon/wall/torches/" + filename, 40, 40);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        torchFrames = new Image[5];
-        for (int i = 0; i < 5; i++) {
-            torchFrames[i] = loadSprite("torch_" + i + ".png");
-        }
-        imagesInitialized = true;
-    }
-
-    public TorchEntity(double x, double y) {
+            public TorchEntity(double x, double y) {
         super(x, y, 40); // Size can be 40
         // Randomize starting frame so multiple torches aren't synced
-        this.animationTimer = (int) (Math.random() * 10);
+        this.lastFrameTime = (int) (Math.random() * 10);
         this.currentFrame = 1 + (int) (Math.random() * 4);
     }
 
@@ -50,9 +32,9 @@ public class TorchEntity extends Entity {
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
 
-        animationTimer += timeDelta;
-        if (animationTimer >= 8) { // Change frame every 8 ticks
-            animationTimer = 0;
+        
+        if (lastFrameTime >= 8) { // Change frame every 8 ticks
+            lastFrameTime = 0;
             currentFrame++;
             if (currentFrame > 4) {
                 currentFrame = 1;
@@ -60,15 +42,7 @@ public class TorchEntity extends Entity {
         }
     }
 
-    @Override
-    public void render(GraphicsContext gc) {
-        Image img = isLit ? torchFrames[currentFrame] : torchFrames[0];
-        if (img != null) {
-            gc.drawImage(img, x, y, size, size);
-        }
-    }
-
-    public boolean isLit() {
+        public boolean isLit() {
         return isLit;
     }
 
@@ -79,5 +53,9 @@ public class TorchEntity extends Entity {
         } else if (currentFrame == 0) {
             currentFrame = 1;
         }
+    }
+
+    public int getCurrentFrame() {
+        return currentFrame;
     }
 }

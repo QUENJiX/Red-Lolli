@@ -1,5 +1,9 @@
 package com.nsu.cse215l.redlolli.redlolli.ui;
 
+import com.nsu.cse215l.redlolli.redlolli.systems.AssetManager;
+import com.nsu.cse215l.redlolli.redlolli.entities.*;
+import javafx.scene.image.Image;
+
 import com.nsu.cse215l.redlolli.redlolli.entities.Entity;
 import com.nsu.cse215l.redlolli.redlolli.entities.Item;
 import com.nsu.cse215l.redlolli.redlolli.entities.Monster;
@@ -115,9 +119,11 @@ public class GameRenderer {
         maze.renderMaze(gc);
         maze.renderOverlays(gc);
 
+        
         for (Entity e : entities) {
-            e.render(gc);
+            renderEntity(gc, e);
         }
+
 
         // Draw manual overlays (screen-relative or world-relative)
         if (overlays != null) {
@@ -250,7 +256,7 @@ public class GameRenderer {
         double cx = state.x + 8;
         double cy = state.y + 8;
 
-        double progress = 1.0 - (double) state.timer / state.duration;
+        double progress = 1.0 - (double) state.endTime / state.duration;
         double glowRadius = 20 + progress * 40;
         double pulse = Math.sin(state.phase) * 0.3 + 0.7;
 
@@ -340,18 +346,174 @@ public class GameRenderer {
     /** Animation state for the Red Lolli reveal effect. */
     public static class LolliRevealState {
         public boolean active;
-        public int timer;
-        public int duration;
+        public long endTime;
+        public long startTime;public int duration;
         public double x, y;
         public double phase;
 
-        public LolliRevealState(double x, double y, int duration) {
+        public LolliRevealState(double x, double y, long durationNs) {
             this.active = true;
-            this.timer = duration;
+            this.startTime = System.nanoTime();
+            this.endTime = this.startTime + durationNs;
             this.duration = duration;
             this.x = x;
             this.y = y;
             this.phase = 0;
+        }
+    }
+
+    private static void renderEntity(GraphicsContext gc, Entity e) {
+        double RENDER_SIZE = 40.0;
+        double x = e.getX();
+        double y = e.getY();
+        double size = e.getSize();
+        
+        AssetManager am = AssetManager.getInstance();
+
+        if (e instanceof Player) {
+            Player p = (Player) e;
+            String dir = "front";
+            if (Math.abs(p.getFacingX()) > Math.abs(p.getFacingY())) {
+                dir = p.getFacingX() > 0 ? "right" : "left";
+            } else if (p.getFacingY() != 0) {
+                dir = p.getFacingY() > 0 ? "front" : "back";
+            }
+            
+            Image img = am.getSprite("/assets/images/player/base/idle_front.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+            if (!p.isMoving()) {
+                switch(dir) {
+                    case "left": img = am.getSprite("/assets/images/player/base/idle_left.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                    case "right": img = am.getSprite("/assets/images/player/base/idle_right.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                    case "back": img = am.getSprite("/assets/images/player/base/idle_back.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                    default: img = am.getSprite("/assets/images/player/base/idle_front.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                }
+            } else {
+                int frame = (p.getAnimFrame() % 3) + 1;
+                switch(dir) {
+                    case "left": img = am.getSprite("/assets/images/player/base/walk_left_" + frame + ".png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                    case "right": img = am.getSprite("/assets/images/player/base/walk_right_" + frame + ".png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                    case "back": img = am.getSprite("/assets/images/player/base/walk_back_" + frame + ".png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                    default: img = am.getSprite("/assets/images/player/base/walk_front_" + frame + ".png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                }
+            }
+            
+            double offsetX = (RENDER_SIZE - size) / 2;
+            double offsetY = RENDER_SIZE - size;
+            if (img != null) gc.drawImage(img, x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
+            
+        } else if (e instanceof Monster) {
+            Monster m = (Monster) e;
+            double offset = (RENDER_SIZE - size) / 2;
+            double cx = x + size / 2;
+            double cy = y + size / 2;
+
+            if (m.getState() != Monster.State.DORMANT) {
+                double pulse = Math.sin(m.getPulsePhase()) * 5;
+                double baseRadius = (350.0 / 2) + pulse; 
+                int numPoints = 16;
+                double[] xPoints = new double[numPoints];
+                double[] yPoints = new double[numPoints];
+
+                for (int layer = 0; layer < 3; layer++) {
+                    for (int i = 0; i < numPoints; i++) {
+                        double angle = Math.PI * 2 * ((double) i / numPoints);
+                        double radiusJitter = 0.75 + (Math.random() * 0.45);
+                        double currentR = baseRadius * radiusJitter;
+                        if (layer == 1) currentR *= 0.65;
+                        if (layer == 2) currentR *= 0.35;
+                        xPoints[i] = cx + (Math.cos(angle) * currentR);
+                        yPoints[i] = cy + (Math.sin(angle) * currentR);
+                    }
+                    if (layer == 0) { gc.setGlobalAlpha(0.25); gc.setFill(Color.rgb(180, 20, 20)); }
+                    else if (layer == 1) { gc.setGlobalAlpha(0.45); gc.setFill(Color.rgb(220, 30, 30)); }
+                    else { gc.setGlobalAlpha(0.7); gc.setFill(Color.rgb(255, 60, 60)); }
+                    gc.fillPolygon(xPoints, yPoints, numPoints);
+                }
+                gc.setGlobalAlpha(0.6);
+                gc.setStroke(Color.rgb(40, 0, 0));
+                gc.setLineWidth(1.5);
+                double ringShift = (Math.random() - 0.5) * 8;
+                gc.strokeOval(cx - baseRadius + ringShift, cy - baseRadius - ringShift, baseRadius * 2, baseRadius * 2);
+                gc.setGlobalAlpha(1.0);
+            }
+
+            Image body = null;
+            switch(m.getState()) {
+                case DORMANT: body = am.getSprite("/assets/images/sprites/monster_dormant.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                case STALKING: body = am.getSprite(m.getFacingRight() ? "/assets/images/sprites/monster_stalking_right.png" : "/assets/images/sprites/monster_stalking.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                case HUNTING: body = am.getSprite(m.getFacingRight() ? "/assets/images/sprites/monster_hunting_right.png" : "/assets/images/sprites/monster_hunting.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+                case WAITING_AT_DOOR: body = am.getSprite("/assets/images/sprites/monster_waiting.png", (int)RENDER_SIZE, (int)RENDER_SIZE); break;
+            }
+            if (m.getState() == Monster.State.DORMANT) gc.setGlobalAlpha(0.5);
+            if (body != null) gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+            gc.setGlobalAlpha(1.0);
+
+        } else if (e instanceof CardboardClone) {
+            double offset = (RENDER_SIZE - size) / 2;
+            Image img = am.getSprite("/assets/images/sprites/cardboard_clone.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+            if (img != null) gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+            
+        } else if (e instanceof SerialKillerEntity) {
+            SerialKillerEntity sk = (SerialKillerEntity) e;
+            double RENDER_HEIGHT = 70.0;
+            Image imgToDraw = null;
+            int frameWidth = 128;
+            int maxFrames = 5;
+
+            if (!sk.isActive()) {
+                imgToDraw = sk.getFacingLeft() ? am.getSprite("/assets/images/sprites/serial_idle_left.png") : am.getSprite("/assets/images/sprites/serial_idle.png");
+                frameWidth = 40;
+                maxFrames = 1;
+            } else if (sk.getAttackingDecoy()) {
+                imgToDraw = sk.getFacingLeft() ? am.getSprite("/assets/images/sprites/serial_attack_left.png") : am.getSprite("/assets/images/sprites/serial_attack.png");
+                frameWidth = 128;
+                maxFrames = 5;
+            } else {
+                imgToDraw = sk.getFacingLeft() ? am.getSprite("/assets/images/sprites/serial_chase_left.png") : am.getSprite("/assets/images/sprites/serial_chase.png");
+                frameWidth = 128;
+                maxFrames = 5;
+            }
+
+            int currentFrame = sk.getCurrentFrame() % maxFrames;
+            double scale = RENDER_HEIGHT / 70.0;
+            double drawWidth = frameWidth * scale;
+            double offsetX = (drawWidth - size) / 2;
+            double offsetY = (RENDER_HEIGHT - size) / 2;
+
+            if (imgToDraw != null) {
+                gc.drawImage(imgToDraw, currentFrame * frameWidth, 0, frameWidth, 70, x - offsetX, y - offsetY, drawWidth, RENDER_HEIGHT);
+            }
+
+        } else if (e instanceof GuardEntity) {
+            GuardEntity ge = (GuardEntity) e;
+            double offset = (RENDER_SIZE - size) / 2;
+            Image img = null;
+            boolean dist = ge.getDistracted();
+            if (ge.getType() == GuardEntity.Type.BAT) img = am.getSprite(dist ? "/assets/images/sprites/bat_distracted.png" : "/assets/images/sprites/bat.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+            else if (ge.getType() == GuardEntity.Type.COBRA) img = am.getSprite(dist ? "/assets/images/sprites/cobra_distracted.png" : "/assets/images/sprites/cobra.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+            else img = am.getSprite(dist ? "/assets/images/sprites/centipede_distracted.png" : "/assets/images/sprites/centipede.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+            
+            if (img != null) gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+
+        } else if (e instanceof Item) {
+            Item c = (Item) e;
+            double offset = (RENDER_SIZE - size) / 2;
+            Image img = c.isCollected() ? am.getSprite("/assets/images/sprites/chest_opened.png", (int)RENDER_SIZE, (int)RENDER_SIZE) : am.getSprite("/assets/images/sprites/chest_closed.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+            if (img != null) gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+
+            if (c.isCollected() && c.getContentType() == Item.ContentType.LOLLI || c.getContentType() == Item.ContentType.CLONE_DECOY) {
+                Image glow = c.getContentType() == Item.ContentType.LOLLI ? am.getSprite("/assets/images/sprites/chest_glow_lolli.png", (int)RENDER_SIZE, (int)RENDER_SIZE) : am.getSprite("/assets/images/sprites/chest_glow_clone.png", (int)RENDER_SIZE, (int)RENDER_SIZE);
+                if (glow != null) {
+                    gc.setGlobalAlpha(0.6);
+                    gc.drawImage(glow, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+                    gc.setGlobalAlpha(1.0);
+                }
+            }
+
+        } else if (e instanceof TorchEntity) {
+            TorchEntity t = (TorchEntity) e;
+            Image img = t.isLit() ? am.getSprite("/assets/images/dungeon/wall/torches/torch_frame_" + (t.getCurrentFrame() + 1) + ".png", 40, 40) : am.getSprite("/assets/images/dungeon/wall/torches/torch_frame_1.png", 40, 40);
+            if (img != null) gc.drawImage(img, x, y, size, size);
         }
     }
 }

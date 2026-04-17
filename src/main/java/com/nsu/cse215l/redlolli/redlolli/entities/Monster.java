@@ -3,9 +3,6 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 
 /**
  * The primary antagonist entity for Level 1, "Pale Luna".
@@ -19,37 +16,9 @@ public class Monster extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
-    private static Image monsterDormant;
-    private static Image monsterStalking;
-    private static Image monsterStalkingRight;
-    private static Image monsterHunting;
-    private static Image monsterHuntingRight;
-    private static Image monsterWaiting;
-    private static boolean imagesInitialized = false;
 
-    private static Image loadSprite(String filename, int width, int height) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        // Load with larger size as requested
-        monsterDormant = loadSprite("monster_dormant.png", 50, 50);
-        monsterStalking = loadSprite("monster_stalking.png", 50, 50);
-        monsterStalkingRight = loadSprite("monster_stalking_right.png", 50, 50);
-        monsterHunting = loadSprite("monster_hunting.png", 50, 50);
-        monsterHuntingRight = loadSprite("monster_hunting_right.png", 50, 50);
-        monsterWaiting = loadSprite("monster_waiting.png", 50, 50);
-        imagesInitialized = true;
-    }
-
-    /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    // Visual render size (now 50x50 centered on the 25x25 hitbox)
+            /** Call this to force images to reload (e.g. after changing asset paths). */
+        // Visual render size (now 50x50 centered on the 25x25 hitbox)
     private static final double RENDER_SIZE = 50.0;
     private static final double AURA_SIZE = 56.0;
 
@@ -64,17 +33,14 @@ public class Monster extends Entity implements Collidable {
     private static final int HUNT_DURATION = 420;
     private static final int WAIT_DURATION = 120;
 
-    private double dormantTimer = 0;
-    private double stalkTimer = 0;
-    private double huntTimer = 0;
-    private double waitTimer = 0;
+    private long stateStartTime = System.nanoTime();
     private double pulsePhase = 0.0;
     private boolean facingRight = false;
     private long lastUpdateTime = 0;
 
     public Monster(double x, double y) {
         super(x, y, 25.0);
-        this.dormantTimer = DORMANT_DURATION;
+        this.stateStartTime = System.nanoTime();
     }
 
     /** Main AI tick evaluated every graphical frame. */
@@ -105,46 +71,42 @@ public class Monster extends Entity implements Collidable {
 
         switch (state) {
             case DORMANT -> {
-                dormantTimer -= timeDelta;
-                if (dormantTimer <= 0 || lolliRecentlyCollected) {
+                if (System.nanoTime() - stateStartTime >= DORMANT_DURATION || lolliRecentlyCollected) {
                     state = State.STALKING;
-                    stalkTimer = STALK_DURATION;
+                    stateStartTime = System.nanoTime();
                 }
             }
             case STALKING -> {
                 if (playerInEscapeRoom) {
                     positionAtDoor(playerX, playerY, maze);
                     state = State.WAITING_AT_DOOR;
-                    waitTimer = WAIT_DURATION;
+                    stateStartTime = System.nanoTime();
                     break;
                 }
 
                 pursuePlayer(playerX, playerY, maze, STALK_SPEED * timeDelta);
 
-                stalkTimer -= timeDelta;
-                if (stalkTimer <= 0) {
+                if (System.nanoTime() - stateStartTime >= STALK_DURATION) {
                     state = State.HUNTING;
-                    huntTimer = HUNT_DURATION;
+                    stateStartTime = System.nanoTime();
                 }
             }
             case HUNTING -> {
                 if (playerInEscapeRoom) {
                     positionAtDoor(playerX, playerY, maze);
                     state = State.WAITING_AT_DOOR;
-                    waitTimer = WAIT_DURATION;
+                    stateStartTime = System.nanoTime();
                     break;
                 }
 
                 pursuePlayer(playerX, playerY, maze, HUNT_SPEED * timeDelta);
 
-                huntTimer -= timeDelta;
-                if (huntTimer <= 0) {
+                if (System.nanoTime() - stateStartTime >= HUNT_DURATION) {
                     returnToDormant();
                 }
             }
             case WAITING_AT_DOOR -> {
-                waitTimer -= timeDelta;
-                if (waitTimer <= 0) {
+                if (System.nanoTime() - stateStartTime >= WAIT_DURATION) {
                     returnToDormant();
                 }
             }
@@ -153,7 +115,7 @@ public class Monster extends Entity implements Collidable {
 
     private void returnToDormant() {
         state = State.DORMANT;
-        dormantTimer = DORMANT_DURATION;
+        stateStartTime = System.nanoTime();
     }
 
     /**
@@ -212,90 +174,7 @@ public class Monster extends Entity implements Collidable {
         }
     }
 
-    @Override
-    public void render(GraphicsContext gc) {
-        double offset = (RENDER_SIZE - size) / 2;
-        double cx = x + size / 2;
-        double cy = y + size / 2;
-
-        // Aura (only when not dormant)
-        if (state != State.DORMANT) {
-            double pulse = Math.sin(pulsePhase) * 5;
-            double baseRadius = AURA_SIZE / 2 + pulse;
-
-            // Base jagged shape mimicking an organic, flickering, torch-like randomized
-            // flame
-            int numPoints = 16;
-            double[] xPoints = new double[numPoints];
-            double[] yPoints = new double[numPoints];
-
-            for (int layer = 0; layer < 3; layer++) {
-                for (int i = 0; i < numPoints; i++) {
-                    double angle = Math.PI * 2 * ((double) i / numPoints);
-                    // Apply random jitter to radius for a spiky torch effect
-                    double radiusJitter = 0.75 + (Math.random() * 0.45);
-                    double currentR = baseRadius * radiusJitter;
-
-                    if (layer == 1)
-                        currentR *= 0.65;
-                    if (layer == 2)
-                        currentR *= 0.35;
-
-                    xPoints[i] = cx + (Math.cos(angle) * currentR);
-                    yPoints[i] = cy + (Math.sin(angle) * currentR);
-                }
-
-                if (layer == 0) {
-                    gc.setGlobalAlpha(0.25);
-                    gc.setFill(Color.rgb(180, 20, 20));
-                } else if (layer == 1) {
-                    gc.setGlobalAlpha(0.45);
-                    gc.setFill(Color.rgb(220, 30, 30));
-                } else {
-                    gc.setGlobalAlpha(0.7);
-                    gc.setFill(Color.rgb(255, 60, 60));
-                }
-                gc.fillPolygon(xPoints, yPoints, numPoints);
-            }
-
-            // Erratic shuddering static rings for the terrifying aura glitch aesthetic
-            gc.setGlobalAlpha(0.6);
-            gc.setStroke(Color.rgb(40, 0, 0));
-            gc.setLineWidth(1.5);
-            double ringShift = (Math.random() - 0.5) * 8;
-            gc.strokeOval(cx - baseRadius + ringShift, cy - baseRadius - ringShift, baseRadius * 2, baseRadius * 2);
-
-            gc.setGlobalAlpha(1.0);
-        }
-
-        // Body composite
-        Image body;
-        switch (state) {
-            case DORMANT -> body = monsterDormant;
-            case STALKING -> body = facingRight ? monsterStalkingRight : monsterStalking;
-            case HUNTING -> body = facingRight ? monsterHuntingRight : monsterHunting;
-            case WAITING_AT_DOOR -> body = monsterWaiting;
-            default -> body = monsterDormant;
-        }
-
-        if (body != null) {
-            if (state == State.DORMANT) {
-                gc.setGlobalAlpha(0.5);
-                gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-                gc.setGlobalAlpha(1.0);
-            } else {
-                gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-            }
-        } else {
-            gc.setFill(Color.rgb(220, 220, 240));
-            if (state == State.DORMANT)
-                gc.setGlobalAlpha(0.5);
-            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-            gc.setGlobalAlpha(1.0);
-        }
-    }
-
-    @Override
+        @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
     }
@@ -316,19 +195,19 @@ public class Monster extends Entity implements Collidable {
         return state == State.WAITING_AT_DOOR;
     }
 
-    public int getDormantTimer() {
-        return (int) dormantTimer;
+    public int getDormantTimer() { return (int)Math.max(0, (DORMANT_DURATION - (System.nanoTime() - stateStartTime)) / 1_000_000_000.0 * 60); }
+
+    public int getStalkTimer() { return (int)Math.max(0, (STALK_DURATION - (System.nanoTime() - stateStartTime)) / 1_000_000_000.0 * 60); }
+
+    public int getHuntTimer() { return (int)Math.max(0, (HUNT_DURATION - (System.nanoTime() - stateStartTime)) / 1_000_000_000.0 * 60); }
+
+    public int getWaitTimer() { return (int)Math.max(0, (WAIT_DURATION - (System.nanoTime() - stateStartTime)) / 1_000_000_000.0 * 60); }
+
+    public boolean getFacingRight() {
+        return facingRight;
     }
 
-    public int getStalkTimer() {
-        return (int) stalkTimer;
-    }
-
-    public int getHuntTimer() {
-        return (int) huntTimer;
-    }
-
-    public int getWaitTimer() {
-        return (int) waitTimer;
+    public double getPulsePhase() {
+        return pulsePhase;
     }
 }

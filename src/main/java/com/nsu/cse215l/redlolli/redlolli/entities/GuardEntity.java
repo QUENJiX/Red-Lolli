@@ -3,9 +3,6 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 
 /**
  * Stationary environmental hazards that kill the player on contact.
@@ -21,36 +18,9 @@ public class GuardEntity extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
-    private static Image batImg;
-    private static Image batDistractedImg;
-    private static Image cobraImg;
-    private static Image cobraDistractedImg;
-    private static Image centipedeImg;
-    private static Image centipedeDistractedImg;
-    private static boolean imagesInitialized = false;
 
-    private static Image loadSprite(String filename, int width, int height) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        batImg = loadSprite("guard_bat.png", 40, 40);
-        batDistractedImg = loadSprite("guard_bat_distracted.png", 40, 40);
-        cobraImg = loadSprite("guard_cobra.png", 40, 40);
-        cobraDistractedImg = loadSprite("guard_cobra_distracted.png", 40, 40);
-        centipedeImg = loadSprite("guard_centipede.png", 40, 40);
-        centipedeDistractedImg = loadSprite("guard_centipede_distracted.png", 40, 40);
-        imagesInitialized = true;
-    }
-
-    /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    // Visual render size (40x40 centered on the 28x28 hitbox)
+            /** Call this to force images to reload (e.g. after changing asset paths). */
+        // Visual render size (40x40 centered on the 28x28 hitbox)
     private static final double RENDER_SIZE = 40.0;
 
     // ================= STATE =================
@@ -63,7 +33,8 @@ public class GuardEntity extends Entity implements Collidable {
 
     // Distraction state
     private boolean distracted = false;
-    private double distractionTimer = 0;
+    private long lastDistractedTime = 0;
+    private static final long DISTRACTION_DURATION_NS = 5 * 1_000_000_000L;
 
     // Level 1: Bat distraction duration
     private static final int BAT_DISTRACTION_DURATION = 300; // 5 seconds
@@ -93,10 +64,10 @@ public class GuardEntity extends Entity implements Collidable {
         timeDelta = dtSeconds * 60.0;
 
         if (distracted) {
-            distractionTimer -= timeDelta;
-            if (distractionTimer <= 0) {
+            
+            if (System.nanoTime() - lastDistractedTime >= DISTRACTION_DURATION_NS) {
                 distracted = false;
-                distractionTimer = 0;
+                lastDistractedTime = 0;
             }
         }
     }
@@ -104,7 +75,7 @@ public class GuardEntity extends Entity implements Collidable {
     public void distract() {
         if (!distracted) {
             distracted = true;
-            distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION : type == Type.COBRA ? COBRA_DISTRACTION_DURATION : CENTIPEDE_DISTRACTION_DURATION;
+            lastDistractedTime = type == Type.BAT ? BAT_DISTRACTION_DURATION : type == Type.COBRA ? COBRA_DISTRACTION_DURATION : CENTIPEDE_DISTRACTION_DURATION;
         }
     }
 
@@ -148,40 +119,16 @@ public class GuardEntity extends Entity implements Collidable {
 
     // ================= RENDERING =================
 
-    @Override
-    public void render(GraphicsContext gc) {
-        Image img;
-        if (type == Type.BAT) {
-            img = distracted ? batDistractedImg : batImg;
-        } else if (type == Type.COBRA) {
-            img = distracted ? cobraDistractedImg : cobraImg;
-        } else {
-            img = distracted ? centipedeDistractedImg : centipedeImg;
-        }
-        // Draw sprite centered on hitbox (hitbox 28x28, sprite 40x40)
-        double offset = (RENDER_SIZE - size) / 2;
-        if (img != null) {
-            gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-        } else {
-            Color fallback;
-            if (type == Type.BAT)
-                fallback = distracted ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60);
-            else if (type == Type.COBRA)
-                fallback = distracted ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30);
-            else
-                fallback = distracted ? Color.rgb(120, 80, 120) : Color.rgb(80, 30, 80);
-
-            gc.setFill(fallback);
-            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-        }
-    }
-
-    @Override
+        @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
     }
 
     public Type getType() {
         return type;
+    }
+
+    public boolean getDistracted() {
+        return distracted;
     }
 }

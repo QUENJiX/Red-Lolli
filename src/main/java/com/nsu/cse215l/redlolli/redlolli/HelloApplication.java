@@ -216,9 +216,9 @@ public class HelloApplication extends Application {
                     boolean died = gsm.update(activeKeys);
                     if (died) {
                         // Play death animation before transitioning to death screen
-                        if (gsm.playerIsDead && gsm.playerDeathAnimFrames > 0) {
+                        if (gsm.playerIsDead && ((gsm.playerDeathEndTime == 0 || System.nanoTime() > gsm.playerDeathEndTime) ? 0 : (gsm.playerDeathEndTime - System.nanoTime())/16_666_666L) > 0) {
                             render(gc);
-                            renderDeathAnimation(gc, gsm.playerDeathAnimFrames);
+                            renderDeathAnimation(gc, ((gsm.playerDeathEndTime == 0 || System.nanoTime() > gsm.playerDeathEndTime) ? 0 : (gsm.playerDeathEndTime - System.nanoTime())/16_666_666L));
                             return;
                         } else if (gsm.playerIsDead) {
                             triggerDeath();
@@ -250,11 +250,11 @@ public class HelloApplication extends Application {
         }
 
         gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.levelManager.getMaze(), gsm.entityManager.getEntities(), gsm.entityManager.getPaleLuna(), gsm.entityManager.getPlayer(),
-                gsm.warningFlashTimer, gsm.lolliRevealState, gsm.levelManager.getCurrentLevel(), gsm.entityManager.getChests(), ITEM_NAMES,
+                gsm.warningFlashEndTime, gsm.lolliRevealState, gsm.levelManager.getCurrentLevel(), gsm.entityManager.getChests(), ITEM_NAMES,
                 gsm.distractionSpellCount, gsm.hasCloneItem,
                 gsm.pulsePhaseHUD,
                 gsm.entityManager.getPaleLuna() != null && gsm.entityManager.getPaleLuna().isHunting(),
-                gsm.screenShakeFrames,
+                gsm.screenShakeEndTime,
                 vignetteIntensity,
                 gsm.overlays);
         if (showDebugOverlay)

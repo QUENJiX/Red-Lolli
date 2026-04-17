@@ -3,9 +3,6 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 
 /**
  * User-controlled character with movement, stamina, and contextual rendering.
@@ -15,47 +12,9 @@ public class Player extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
-    private static Image idleFrontImg, idleBackImg, idleLeftImg, idleRightImg;
-    private static Image[] walkLeftImgs, walkRightImgs, walkBackImgs, walkFrontImgs;
-    private static boolean imagesInitialized = false;
 
-    private static Image loadSprite(String filename, int width, int height) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        idleFrontImg = loadSprite("idle_front.png", 32, 32);
-        idleBackImg = loadSprite("idle_back.png", 32, 32);
-        idleLeftImg = loadSprite("idle_left.png", 32, 32);
-        idleRightImg = loadSprite("idle_right.png", 32, 32);
-
-        walkBackImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkBackImgs[i - 1] = loadSprite("walk_back_" + i + ".png", 28, 28);
-
-        walkFrontImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkFrontImgs[i - 1] = loadSprite("walk_front_" + i + ".png", 28, 28);
-
-        walkLeftImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkLeftImgs[i - 1] = loadSprite("walk_left_" + i + ".png", 28, 28);
-
-        walkRightImgs = new Image[3];
-        for (int i = 1; i <= 3; i++)
-            walkRightImgs[i - 1] = loadSprite("walk_right_" + i + ".png", 28, 28);
-
-        imagesInitialized = true;
-    }
-
-    /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    // Visual render size
+            /** Call this to force images to reload (e.g. after changing asset paths). */
+        // Visual render size
     private static final double RENDER_SIZE = 32.0;
 
     // ================= LOGIC =================
@@ -69,8 +28,9 @@ public class Player extends Entity implements Collidable {
     private static final int EXHAUSTED_FRAMES = 180;
 
     private boolean isInEscapeRoom = false;
-    private double staminaFrames = MAX_STAMINA_FRAMES;
-    private double exhaustedFrames = 0;
+    private long staminaNanos = (long)(MAX_STAMINA_FRAMES / 60.0 * 1_000_000_000L);
+    private static final long MAX_STAMINA_NANOS = (long)(MAX_STAMINA_FRAMES / 60.0 * 1_000_000_000L);
+    private long exhaustedEndTime = 0;
     private double facingX = 1; // start facing right
     private double facingY = 0;
 
@@ -81,13 +41,13 @@ public class Player extends Entity implements Collidable {
     private static final int ESCAPE_ROOM_RECOVERY_INTERVAL = 60; // +1 sanity per second in escape room
     private static final int NEAR_LUNA_DISTANCE = 150; // pixels threshold for "near Luna"
     private int sanity = MAX_SANITY;
-    private double sanityDrainCounter = 0;
+    private long lastSanityDrainTime = System.nanoTime();
     private boolean isNearLuna = false;
     private boolean sanityDead = false; // true when sanity hits 0
 
     // Animation state
     private int animFrame = 0;
-    private double animTimer = 0;
+    private long lastAnimTime = System.nanoTime();
     private boolean isMoving = false;
     private boolean movedThisFrame = false;
 
@@ -106,19 +66,14 @@ public class Player extends Entity implements Collidable {
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
 
-        if (exhaustedFrames > 0) {
-            exhaustedFrames -= timeDelta;
+        if (System.nanoTime() >= exhaustedEndTime) {
         }
 
         if (movedThisFrame) {
-            animTimer += timeDelta;
-            if (animTimer > 10) {
-                animFrame++;
-                animTimer = 0;
-            }
+            if(System.nanoTime() - lastAnimTime > 166_666_666L) { animFrame++; lastAnimTime = System.nanoTime(); }
         } else {
             animFrame = 0;
-            animTimer = 0;
+            lastAnimTime = System.nanoTime();
         }
 
         isMoving = movedThisFrame;
@@ -133,19 +88,14 @@ public class Player extends Entity implements Collidable {
 
         if (isInEscapeRoom) {
             // Recovery in escape rooms: +1 per second (60 frames)
-            sanityDrainCounter += timeDelta;
-            if (sanityDrainCounter >= ESCAPE_ROOM_RECOVERY_INTERVAL && sanity < MAX_SANITY) {
-                sanity++;
-                sanityDrainCounter = 0;
-            }
+            if(System.nanoTime() - lastSanityDrainTime >= (ESCAPE_ROOM_RECOVERY_INTERVAL / 60.0 * 1_000_000_000L) && sanity < MAX_SANITY) { sanity++; lastSanityDrainTime += (long)(ESCAPE_ROOM_RECOVERY_INTERVAL / 60.0 * 1_000_000_000L); }
         } else {
             // Passive drain: 1 per 5 seconds (300 frames)
             // Faster when near Luna: 1 per 2 seconds (120 frames)
-            sanityDrainCounter += timeDelta;
             int drainInterval = isNearLuna ? NEAR_LUNA_DRAIN_INTERVAL : PASSIVE_DRAIN_INTERVAL;
-            if (sanityDrainCounter >= drainInterval) {
+            if (lastSanityDrainTime >= drainInterval) {
                 sanity--;
-                sanityDrainCounter = 0;
+                lastSanityDrainTime = System.nanoTime();
                 if (sanity <= 0) {
                     sanity = 0;
                     sanityDead = true;
@@ -175,81 +125,16 @@ public class Player extends Entity implements Collidable {
         }
 
         // Drain when sprinting + moving + not exhausted; recover when idle/walking
-        if (sprinting && exhaustedFrames == 0 && staminaFrames > 0 && (dx != 0 || dy != 0)) {
-            staminaFrames -= timeDelta;
-            if (staminaFrames <= 0) {
-                staminaFrames = 0;
-                exhaustedFrames = EXHAUSTED_FRAMES;
-            }
-        } else if (!sprinting && exhaustedFrames == 0 && staminaFrames < MAX_STAMINA_FRAMES) {
-            staminaFrames += 0.5 * timeDelta; // slow recovery
-            if (staminaFrames > MAX_STAMINA_FRAMES) {
-                staminaFrames = MAX_STAMINA_FRAMES;
-            }
+        if (sprinting && exhaustedEndTime == 0 && staminaNanos > 0 && (dx != 0 || dy != 0)) {
+            staminaNanos -= (long)(timeDelta / 60.0 * 1_000_000_000L);
+            if(staminaNanos <= 0) { staminaNanos = 0; exhaustedEndTime = System.nanoTime() + (long)(EXHAUSTED_FRAMES / 60.0 * 1_000_000_000L); }
+        } else if (!sprinting && exhaustedEndTime == 0 && staminaNanos < MAX_STAMINA_NANOS) {
+            staminaNanos += (long)(0.5 * timeDelta / 60.0 * 1_000_000_000L);
+            if(staminaNanos > MAX_STAMINA_NANOS) { staminaNanos = MAX_STAMINA_NANOS; }
         }
     }
 
-    @Override
-    public void render(GraphicsContext gc) {
-        String dir = "front";
-        if (Math.abs(facingX) > Math.abs(facingY)) {
-            dir = facingX > 0 ? "right" : "left";
-        } else if (facingY != 0) {
-            dir = facingY > 0 ? "front" : "back";
-        }
-
-        Image img = idleFrontImg;
-        if (!isMoving) {
-            switch (dir) {
-                case "left":
-                    img = idleLeftImg;
-                    break;
-                case "right":
-                    img = idleRightImg;
-                    break;
-                case "back":
-                    img = idleBackImg;
-                    break;
-                default:
-                    img = idleFrontImg;
-                    break;
-            }
-        } else {
-            switch (dir) {
-                case "left":
-                    if (walkLeftImgs != null && walkLeftImgs.length > 0)
-                        img = walkLeftImgs[animFrame % walkLeftImgs.length];
-                    break;
-                case "right":
-                    if (walkRightImgs != null && walkRightImgs.length > 0)
-                        img = walkRightImgs[animFrame % walkRightImgs.length];
-                    break;
-                case "back":
-                    if (walkBackImgs != null && walkBackImgs.length > 0)
-                        img = walkBackImgs[animFrame % walkBackImgs.length];
-                    break;
-                case "front":
-                    if (walkFrontImgs != null && walkFrontImgs.length > 0)
-                        img = walkFrontImgs[animFrame % walkFrontImgs.length];
-                    else
-                        img = idleFrontImg;
-                    break;
-            }
-        }
-
-        // Draw sprite horizontally centered, but vertically aligned at the bottom
-        // so legs don't clip into walls below the hitbox.
-        double offsetX = (RENDER_SIZE - size) / 2;
-        double offsetY = (RENDER_SIZE - size); // Shift up so bottom of sprite aligns with bottom of hitbox
-        if (img != null) {
-            gc.drawImage(img, x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
-        } else {
-            gc.setFill(Color.rgb(100, 149, 237));
-            gc.fillOval(x - offsetX, y - offsetY, RENDER_SIZE, RENDER_SIZE);
-        }
-    }
-
-    @Override
+        @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
     }
@@ -266,17 +151,11 @@ public class Player extends Entity implements Collidable {
         this.isInEscapeRoom = inEscapeRoom;
     }
 
-    public boolean isExhausted() {
-        return exhaustedFrames > 0;
-    }
+    public boolean isExhausted() { return exhaustedEndTime > System.nanoTime(); }
 
-    public boolean canSprint() {
-        return staminaFrames > 0 && exhaustedFrames == 0;
-    }
+    public boolean canSprint() { return staminaNanos > 0 && exhaustedEndTime <= System.nanoTime(); }
 
-    public double getStaminaPercent() {
-        return (double) staminaFrames / MAX_STAMINA_FRAMES;
-    }
+    public double getStaminaPercent() { return (double) staminaNanos / MAX_STAMINA_NANOS; }
 
     public double getFacingX() {
         return facingX;
@@ -313,7 +192,7 @@ public class Player extends Entity implements Collidable {
     /** Resets sanity to full (used when loading new level). */
     public void resetSanity() {
         this.sanity = MAX_SANITY;
-        this.sanityDrainCounter = 0;
+        this.lastSanityDrainTime = System.nanoTime();
         this.isNearLuna = false;
         this.sanityDead = false;
     }
@@ -326,5 +205,13 @@ public class Player extends Entity implements Collidable {
             return BASE_SPEED * SPRINT_MULTIPLIER;
         }
         return BASE_SPEED;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
+    }
+
+    public int getAnimFrame() {
+        return animFrame;
     }
 }

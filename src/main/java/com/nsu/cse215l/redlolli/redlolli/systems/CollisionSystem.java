@@ -36,7 +36,7 @@ public class CollisionSystem {
             playChestOpen = true;
             if (chest.getContentType() == Item.ContentType.LOLLI) {
                 lolliRecentlyCollected = true;
-                lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 120);
+                lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 2_000_000_000L);
                 newDistractions += 3;
                 return;
             }
@@ -49,8 +49,8 @@ public class CollisionSystem {
         }
     }
 
-    public void checkGuardThreats(EntityManager entityManager, boolean inEscapeRoom, boolean enteringEscapeRoom, double guardHitCooldownFrames) {
-        if (guardHitCooldownFrames > 0)
+    public void checkGuardThreats(EntityManager entityManager, boolean inEscapeRoom, boolean enteringEscapeRoom, boolean isGuardHitOnCooldown) {
+        if (isGuardHitOnCooldown)
             return;
 
         if (inEscapeRoom && !enteringEscapeRoom) {
@@ -107,7 +107,7 @@ public class CollisionSystem {
         }
     }
 
-    public void updatePaleLuna(EntityManager entityManager, Maze maze, boolean inEscapeRoom, boolean exitingEscapeRoom, boolean lolliRecentlyCollected, double lunaScreamCooldownFrames) {
+    public void updatePaleLuna(EntityManager entityManager, Maze maze, boolean inEscapeRoom, boolean exitingEscapeRoom, boolean lolliRecentlyCollected, boolean isLunaScreamOnCooldown) {
         Monster paleLuna = entityManager.getPaleLuna();
         Player player = entityManager.getPlayer();
         
@@ -134,7 +134,7 @@ public class CollisionSystem {
         player.setBeingChased(paleLuna.isHunting());
 
         double lunaDistTiles = distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY());
-        if (paleLuna.isHunting() && lunaDistTiles <= 3.0 && lunaScreamCooldownFrames <= 0) {
+        if (paleLuna.isHunting() && lunaDistTiles <= 3.0 && !isLunaScreamOnCooldown) {
             playScream = true;
         }
         
