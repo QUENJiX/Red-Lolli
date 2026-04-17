@@ -61,6 +61,14 @@ public class SceneFactory {
         return flow;
     }
 
+    public static void animateFadeIn(javafx.scene.Node node, double durationSeconds) {
+        node.setOpacity(0);
+        javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(durationSeconds), node);
+        ft.setFromValue(0);
+        ft.setToValue(1);
+        ft.play();
+    }
+
     public static void animateTyping(Text textNode, String fullString) {
         textNode.setText("");
         javafx.animation.AnimationTimer timer = new javafx.animation.AnimationTimer() {
@@ -121,7 +129,7 @@ public class SceneFactory {
         Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
         layout.getChildren().add(poemText);
         if (isLunaOrKiller) {
-            animateTyping(poemText, poemStr);
+            animateFadeIn(poemText, 3.0);
         }
 
         // Dynamic death message (not baked into composite)
@@ -175,7 +183,7 @@ public class SceneFactory {
         String poemStr = "pale luna smiles wide,\nthe ground is soft,\npale luna smiles wide,\nthere is a hole,\npale luna smiles wide,\ntie her up with rope,\ncongratulations! you have escaped from pale luna";
         Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
         layout.getChildren().add(poemText);
-        animateTyping(poemText, poemStr);
+        animateFadeIn(poemText, 3.0);
 
         Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png",
                 "/assets/images/ui/btn_main_menu_pressed.png");
