@@ -340,8 +340,13 @@ public class HelloApplication extends Application {
             gameLoop.stop();
         deathCount++;
         gsm.soundManager.playOneShot(SoundManager.GAME_OVER, 0.85);
+
+        int lollies = gsm.currentLevel - 1;
+        int sanity = gsm.player != null ? Math.max(0, gsm.player.getSanity()) : 0;
+
         mainWindow.setScene(SceneFactory.createDeathScene(
                 gsm.activeDeathMessage, deathCount,
+                lollies, gsm.totalChestsCollected, gsm.totalChestsEncountered, sanity, gsm.totalPlayTimeSeconds,
                 this::playIntroAndStart,
                 () -> mainWindow.setScene(createMainMenu())));
     }
@@ -387,7 +392,9 @@ public class HelloApplication extends Application {
     }
 
     private void showVictoryScreen() {
+        int sanity = gsm.player != null ? Math.max(0, gsm.player.getSanity()) : 0;
         mainWindow.setScene(SceneFactory.createVictoryScene(
+                3, gsm.totalChestsCollected, gsm.totalChestsEncountered, deathCount, sanity, gsm.totalPlayTimeSeconds,
                 () -> mainWindow.setScene(createMainMenu())));
     }
 }

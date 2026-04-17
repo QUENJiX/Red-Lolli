@@ -95,6 +95,7 @@ public class SceneFactory {
 
     /** Creates the death screen scene. */
     public static Scene createDeathScene(String activeDeathMessage, int deathCount,
+            int lollies, int boxes, int totalBoxes, int sanity, double timeSec,
             Runnable onRestart, Runnable onMainMenu) {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
@@ -110,10 +111,11 @@ public class SceneFactory {
             root.getChildren().add(bg);
         }
 
-        VBox layout = newBlackVBox(14);
+        VBox layout = newBlackVBox(10);
+        layout.setTranslateY(-10); // Shift everything up a bit naturally
 
         // "YOU DIED" text
-        Text titleText = styledText("YOU DIED", "Serif", 72, Color.RED);
+        Text titleText = styledText("YOU DIED", "Serif", 64, Color.RED);
         layout.getChildren().add(titleText);
 
         // Poem text
@@ -126,7 +128,7 @@ public class SceneFactory {
                 ? "pale luna smiles wide,\nthere is no escape,\npale luna smiles wide,\nno more lollies to take,\npale luna smiles wide,\nnow you are dead"
                 : "She found you in the dark.\nNow your soul is hers to keep.\nForever lost in the maze.";
 
-        Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
+        Text poemText = styledText(poemStr, "Serif", 20, Color.LIGHTGRAY);
         layout.getChildren().add(poemText);
         if (isLunaOrKiller) {
             animateFadeIn(poemText, 3.0);
@@ -134,12 +136,16 @@ public class SceneFactory {
 
         // Dynamic death message (not baked into composite)
         if (activeDeathMessage != null && !activeDeathMessage.isBlank()) {
-            layout.getChildren().add(styledText(activeDeathMessage, "Serif", 18, Color.rgb(190, 130, 130)));
+            layout.getChildren().add(styledText(activeDeathMessage, "Serif", 16, Color.rgb(190, 130, 130)));
         }
         if (deathCount >= 5) {
-            layout.getChildren().add(styledText("You keep coming back. She likes that.", "Serif", 18,
+            layout.getChildren().add(styledText("You keep coming back. She likes that.", "Serif", 16,
                     Color.rgb(200, 70, 70)));
         }
+
+        // Stats Box
+        VBox statsBox = createStatsBox(lollies, boxes, totalBoxes, deathCount, sanity, timeSec);
+        layout.getChildren().addAll(new Text(""), statsBox);
 
         Button restartBtn = createIconButton("/assets/images/ui/icon_restart.png", "/assets/images/ui/btn_restart.png",
                 "/assets/images/ui/btn_restart_pressed.png");
@@ -151,6 +157,7 @@ public class SceneFactory {
         javafx.scene.layout.HBox btnContainer = new javafx.scene.layout.HBox(40);
         btnContainer.setAlignment(Pos.CENTER);
         btnContainer.getChildren().addAll(restartBtn, menuBtn);
+        btnContainer.setTranslateY(15); // Shift buttons down a bit
 
         layout.getChildren().addAll(new Text(""), btnContainer);
         root.getChildren().add(layout);
@@ -158,7 +165,8 @@ public class SceneFactory {
     }
 
     /** Creates the victory screen scene. */
-    public static Scene createVictoryScene(Runnable onMainMenu) {
+    public static Scene createVictoryScene(int lollies, int boxes, int totalBoxes,
+            int deathCount, int sanity, double timeSec, Runnable onMainMenu) {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
         root.setStyle("-fx-background-color: black;");
@@ -173,22 +181,29 @@ public class SceneFactory {
             root.getChildren().add(bg);
         }
 
-        VBox layout = newBlackVBox(14);
+        VBox layout = newBlackVBox(10);
+        layout.setTranslateY(-10); // Shift everything up a bit
 
         // "YOU ESCAPED" title text
-        Text titleText = styledText("YOU ESCAPED", "Serif", 72, Color.RED);
+        Text titleText = styledText("YOU ESCAPED", "Serif", 64, Color.RED);
         layout.getChildren().add(titleText);
 
         // Poem text
         String poemStr = "pale luna smiles wide,\nthe ground is soft,\npale luna smiles wide,\nthere is a hole,\npale luna smiles wide,\ntie her up with rope,\ncongratulations! you have escaped from pale luna";
-        Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
+        Text poemText = styledText(poemStr, "Serif", 20, Color.LIGHTGRAY);
         layout.getChildren().add(poemText);
         animateFadeIn(poemText, 3.0);
+
+        // Stats Box
+        VBox statsBox = createStatsBox(lollies, boxes, totalBoxes, deathCount, sanity, timeSec);
+        layout.getChildren().addAll(new Text(""), statsBox);
 
         Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png",
                 "/assets/images/ui/btn_main_menu_pressed.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
-        layout.getChildren().add(menuBtn);
+        menuBtn.setTranslateY(15); // Shift buttons down a bit
+
+        layout.getChildren().addAll(new Text(""), menuBtn);
         root.getChildren().add(layout);
         return new Scene(root, WIDTH, HEIGHT);
     }
@@ -347,6 +362,27 @@ public class SceneFactory {
     }
 
     // ========================= PRIVATE HELPERS =========================
+
+    private static VBox createStatsBox(int lollies, int boxes, int totalBoxes, int deathCount, int sanity, double timeSec) {
+        VBox statsBox = newBlackVBox(8);
+        statsBox.setStyle("-fx-border-color: #7a1010; -fx-border-width: 2; -fx-border-radius: 10; "
+                + "-fx-background-color: rgba(20, 0, 0, 0.7); -fx-background-radius: 10; "
+                + "-fx-padding: 15 40 15 40;");
+        statsBox.setMaxWidth(450);
+
+        int min = (int) (timeSec / 60);
+        int sec = (int) (timeSec % 60);
+        String timeStr = min > 0 ? (min + " min " + sec + " sec") : (sec + " sec");
+
+        statsBox.getChildren().addAll(
+                styledText("Red Lolli Collected: " + lollies + "/3", "Serif", 22, Color.LIGHTCORAL),
+                styledText("Chest Box Collected: " + boxes + "/" + totalBoxes, "Serif", 22, Color.LIGHTCORAL),
+                styledText("Death Count: " + deathCount, "Serif", 22, Color.LIGHTCORAL),
+                styledText("Sanity Remained: " + sanity + "%", "Serif", 22, Color.LIGHTCORAL),
+                styledText("Time: " + timeStr, "Serif", 22, Color.LIGHTCORAL)
+        );
+        return statsBox;
+    }
 
     private static VBox newBlackVBox(int spacing) {
         VBox layout = new VBox(spacing);

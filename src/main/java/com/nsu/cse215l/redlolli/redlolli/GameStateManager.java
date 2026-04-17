@@ -25,6 +25,11 @@ public class GameStateManager {
 
     private static final String[] MAP_FILES = { "/map.csv", "/map2.csv", "/map3.csv" };
 
+    // ==================== STATS ====================
+    public int totalChestsCollected = 0;
+    public int totalChestsEncountered = 0;
+    public double totalPlayTimeSeconds = 0;
+
     Player player;
     Maze maze;
     Monster paleLuna;
@@ -89,6 +94,9 @@ public class GameStateManager {
 
         if (currentLevel == 1) {
             startingDistractions = 1;
+            totalPlayTimeSeconds = 0;
+            totalChestsCollected = 0;
+            totalChestsEncountered = 0;
         }
 
         distractionSpellCount = startingDistractions;
@@ -209,6 +217,8 @@ public class GameStateManager {
             entities.add(chest);
         }
 
+        totalChestsEncountered += chests.size();
+
         for (int[] pos : torchTiles) {
             TorchEntity torch = new TorchEntity(pos[1] * Maze.TILE_SIZE, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET);
             torches.add(torch);
@@ -265,6 +275,8 @@ public class GameStateManager {
             }
             return true;
         }
+
+        totalPlayTimeSeconds += dtSeconds;
 
         if (lolliRevealState != null && lolliRevealState.active) {
             lolliRevealState.timer -= timeDelta;
@@ -383,6 +395,7 @@ public class GameStateManager {
             if (chest.isCollected() || !player.getHitbox().intersects(chest.getHitbox()))
                 continue;
             chest.collect();
+            totalChestsCollected++;
             soundManager.playOneShot(SoundManager.CHEST_OPEN, 0.65);
             if (chest.getContentType() == Item.ContentType.LOLLI) {
                 lolliRecentlyCollected = true;
