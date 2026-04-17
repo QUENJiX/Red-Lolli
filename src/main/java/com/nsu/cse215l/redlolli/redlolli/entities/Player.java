@@ -85,8 +85,8 @@ public class Player extends Entity implements Collidable {
 
     // Sanity system
     private static final int MAX_SANITY = 100;
-    private static final int PASSIVE_DRAIN_INTERVAL = 60; // 1 sanity per 5 seconds (300 frames)
-    private static final int NEAR_LUNA_DRAIN_INTERVAL = 120; // 1 sanity per 2 seconds when near Luna
+    private static final int PASSIVE_DRAIN_INTERVAL = 60; // 1 sanity per second
+    private static final int NEAR_LUNA_DRAIN_INTERVAL = 30; // 2 sanity per second when near Luna
     private static final int ESCAPE_ROOM_RECOVERY_INTERVAL = 60; // +1 sanity per second in escape room
     private static final int NEAR_LUNA_DISTANCE = 150; // pixels threshold for "near Luna"
     private int sanity = MAX_SANITY;
