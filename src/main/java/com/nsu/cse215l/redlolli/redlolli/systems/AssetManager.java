@@ -33,8 +33,7 @@ public class AssetManager {
                 return img;
             }
         } catch (Exception e) {
-            System.err.println("AssetManager Error loading sprite '" + path + "': " + e.getMessage());
-            e.printStackTrace();
+            // Ignored - fallback placeholder will be created
         }
         // Fallback placeholder
         Image placeholder = new WritableImage(expectedWidth > 0 ? expectedWidth : 32, expectedHeight > 0 ? expectedHeight : 32);
@@ -55,8 +54,7 @@ public class AssetManager {
                 return img;
             }
         } catch (Exception e) {
-            System.err.println("AssetManager Error loading sprite '" + path + "': " + e.getMessage());
-            e.printStackTrace();
+            // Ignored - fallback placeholder will be created
         }
         // Fallback placeholder
         Image placeholder = new WritableImage(32, 32);

@@ -35,8 +35,7 @@ public class SoundManager {
             clip.play();
 
         } catch (Exception e) {
-            System.err.println("Error playing one shot sound '" + resourcePath + "': " + e.getMessage());
-            e.printStackTrace();
+            // Ignored - silent failure model for missing sounds
         }
     }
 
@@ -52,8 +51,7 @@ public class SoundManager {
                 currentMusic.play();
             }
         } catch (Exception e) {
-            System.err.println("Error playing music '" + resourcePath + "': " + e.getMessage());
-            e.printStackTrace();
+            // Ignored - silent failure model for missing music
         }
     }
 

@@ -93,7 +93,7 @@ public class Maze {
         try {
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) {
-                System.err.println("Map file not found: " + path + ". Loading fallback map.");
+                // Map file not found: Loading fallback map.
                 mapGrid = new int[][] {
                         { 1, 1, 1, 1, 1, 1 },
                         { 1, 0, 0, 0, 2, 1 },
@@ -131,7 +131,6 @@ public class Maze {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             mapGrid = new int[][] { { 1, 1, 1 }, { 1, 0, 1 }, { 1, 1, 1 } };
         }
     }

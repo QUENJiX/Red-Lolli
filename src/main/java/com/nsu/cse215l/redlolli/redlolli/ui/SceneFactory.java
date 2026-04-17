@@ -357,8 +357,7 @@ public class SceneFactory {
             if (url != null)
                 return new Image(url.toExternalForm());
         } catch (Exception e) {
-            System.err.println("Error initializing SceneFactory assets: " + e.getMessage());
-            e.printStackTrace();
+            // Ignored - fallback handling returns null
         }
         return null;
     }
