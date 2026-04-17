@@ -68,6 +68,14 @@ public class GameRenderer {
     private static Image centipedeImg;
     private static Image centipedeDistractedImg;
 
+    // Maze Tiles
+    private static Image[][] borderWallImg = new Image[3][4];
+    private static Image[][] innerWallImg = new Image[3][4];
+    private static Image[][] floorAImg = new Image[3][3];
+    private static Image[][] floorBImg = new Image[3][3];
+    private static Image[] escapeRoomImg = new Image[2];
+    private static Image[] escapeRoomOpenImg = new Image[2];
+
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -131,6 +139,63 @@ public class GameRenderer {
         cobraDistractedImg = loadSprite("sprites/guard_cobra_distracted.png", 40, 40);
         centipedeImg = loadSprite("sprites/guard_centipede.png", 40, 40);
         centipedeDistractedImg = loadSprite("sprites/guard_centipede_distracted.png", 40, 40);
+
+        String dc = "dungeon/";
+        // Border Walls
+        borderWallImg[0][0] = loadSprite(dc + "wall/wall_vines_0.png", 40, 40);
+        borderWallImg[0][1] = loadSprite(dc + "wall/wall_vines_1.png", 40, 40);
+        borderWallImg[0][2] = loadSprite(dc + "wall/wall_vines_2.png", 40, 40);
+        borderWallImg[0][3] = loadSprite(dc + "wall/wall_vines_3.png", 40, 40);
+        borderWallImg[1][0] = loadSprite(dc + "wall/brick_brown_4.png", 40, 40);
+        borderWallImg[1][1] = loadSprite(dc + "wall/brick_brown_5.png", 40, 40);
+        borderWallImg[1][2] = loadSprite(dc + "wall/brick_brown_6.png", 40, 40);
+        borderWallImg[1][3] = loadSprite(dc + "wall/brick_brown_7.png", 40, 40);
+        borderWallImg[2][0] = loadSprite(dc + "wall/brick_dark_3.png", 40, 40);
+        borderWallImg[2][1] = loadSprite(dc + "wall/brick_dark_4.png", 40, 40);
+        borderWallImg[2][2] = loadSprite(dc + "wall/brick_dark_5.png", 40, 40);
+        borderWallImg[2][3] = loadSprite(dc + "wall/brick_dark_6.png", 40, 40);
+
+        // Inner Walls
+        innerWallImg[0][0] = loadSprite(dc + "wall/wall_vines_4.png", 40, 40);
+        innerWallImg[0][1] = loadSprite(dc + "wall/wall_vines_5.png", 40, 40);
+        innerWallImg[0][2] = loadSprite(dc + "wall/wall_vines_6.png", 40, 40);
+        innerWallImg[0][3] = loadSprite(dc + "wall/brick_brown-vines_1.png", 40, 40);
+        innerWallImg[1][0] = loadSprite(dc + "wall/brick_brown_0.png", 40, 40);
+        innerWallImg[1][1] = loadSprite(dc + "wall/brick_brown_1.png", 40, 40);
+        innerWallImg[1][2] = loadSprite(dc + "wall/brick_brown_2.png", 40, 40);
+        innerWallImg[1][3] = loadSprite(dc + "wall/brick_brown_3.png", 40, 40);
+        innerWallImg[2][0] = loadSprite(dc + "wall/brick_dark_0.png", 40, 40);
+        innerWallImg[2][1] = loadSprite(dc + "wall/brick_dark_1.png", 40, 40);
+        innerWallImg[2][2] = loadSprite(dc + "wall/brick_dark_2.png", 40, 40);
+        innerWallImg[2][3] = loadSprite(dc + "wall/brick_dark_3.png", 40, 40);
+
+        // Floors
+        floorAImg[0][0] = loadSprite(dc + "floor/lair_0_new.png", 40, 40);
+        floorAImg[0][1] = loadSprite(dc + "floor/lair_1_new.png", 40, 40);
+        floorAImg[0][2] = loadSprite(dc + "floor/lair_2_new.png", 40, 40);
+        floorBImg[0][0] = loadSprite(dc + "floor/lair_3_new.png", 40, 40);
+        floorBImg[0][1] = loadSprite(dc + "floor/lair_4.png", 40, 40);
+        floorBImg[0][2] = loadSprite(dc + "floor/lair_5.png", 40, 40);
+        
+        floorAImg[1][0] = loadSprite(dc + "floor/pebble_brown_0_new.png", 40, 40);
+        floorAImg[1][1] = loadSprite(dc + "floor/pebble_brown_1_new.png", 40, 40);
+        floorAImg[1][2] = loadSprite(dc + "floor/pebble_brown_2_new.png", 40, 40);
+        floorBImg[1][0] = loadSprite(dc + "floor/pebble_brown_3_new.png", 40, 40);
+        floorBImg[1][1] = loadSprite(dc + "floor/pebble_brown_4_new.png", 40, 40);
+        floorBImg[1][2] = loadSprite(dc + "floor/pebble_brown_5_new.png", 40, 40);
+        
+        floorAImg[2][0] = loadSprite(dc + "floor/grey_dirt_0_new.png", 40, 40);
+        floorAImg[2][1] = loadSprite(dc + "floor/grey_dirt_1_new.png", 40, 40);
+        floorAImg[2][2] = loadSprite(dc + "floor/grey_dirt_2_new.png", 40, 40);
+        floorBImg[2][0] = loadSprite(dc + "floor/grey_dirt_b_0.png", 40, 40);
+        floorBImg[2][1] = loadSprite(dc + "floor/grey_dirt_b_1.png", 40, 40);
+        floorBImg[2][2] = loadSprite(dc + "floor/grey_dirt_b_2.png", 40, 40);
+
+        // Escape Rooms
+        escapeRoomImg[0] = loadSprite(dc + "doors/runed_door.png", 40, 40);
+        escapeRoomImg[1] = loadSprite(dc + "doors/sealed_door.png", 40, 40);
+        escapeRoomOpenImg[0] = loadSprite(dc + "gateways/escape_hatch_up.png", 40, 40);
+        escapeRoomOpenImg[1] = loadSprite(dc + "gateways/escape_hatch_up.png", 40, 40);
 
         imagesInitialized = true;
     }
@@ -360,6 +425,69 @@ public class GameRenderer {
         }
     }
 
+    private static int variantIndex(int row, int col, int maxVariants) {
+        return Math.abs(row * 31 + col * 17) % maxVariants;
+    }
+
+    private static void drawMazeTile(GraphicsContext gc, Image img, double x, double y) {
+        if (img != null) {
+            gc.drawImage(img, x, y, Maze.TILE_SIZE, Maze.TILE_SIZE);
+        } else {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(x, y, Maze.TILE_SIZE, Maze.TILE_SIZE);
+        }
+    }
+
+    private static void renderMaze(GraphicsContext gc, Maze maze) {
+        int[][] mapGrid = maze.getMapGrid();
+        if (mapGrid == null)
+            return;
+
+        int maxRow = mapGrid.length - 1;
+        int maxCol = mapGrid[0].length - 1;
+        int ti = Math.min(maze.getLevelTheme() - 1, 2);
+
+        for (int row = 0; row < mapGrid.length; row++) {
+            for (int col = 0; col < mapGrid[row].length; col++) {
+                double tileX = col * Maze.TILE_SIZE;
+                double tileY = row * Maze.TILE_SIZE + Maze.Y_OFFSET;
+
+                int tile = mapGrid[row][col];
+                boolean isBorder = (row == 0 || row == maxRow || col == 0 || col == maxCol);
+
+                if (tile == 6) {
+                    // === ESCAPE ROOM ===
+                    boolean isOpen = maze.isEscapeRoomOpen(row, col);
+                    if (isOpen) {
+                        int fi = variantIndex(row, col, 3);
+                        Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
+                        drawMazeTile(gc, floorImg, tileX, tileY);
+                        Image openImg = escapeRoomOpenImg[maze.getLevelTheme() == 3 ? 1 : 0];
+                        if (openImg != null) {
+                            drawMazeTile(gc, openImg, tileX, tileY);
+                        }
+                    } else {
+                        Image doorImg = escapeRoomImg[maze.getLevelTheme() == 3 ? 1 : 0];
+                        drawMazeTile(gc, doorImg, tileX, tileY);
+                    }
+                } else if (tile == 1) {
+                    // === WALL ===
+                    int vi = variantIndex(row, col, 4);
+                    if (isBorder) {
+                        drawMazeTile(gc, borderWallImg[ti][vi], tileX, tileY);
+                    } else {
+                        drawMazeTile(gc, innerWallImg[ti][vi], tileX, tileY);
+                    }
+                } else {
+                    // === FLOOR ===
+                    int fi = variantIndex(row, col, 3);
+                    Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
+                    drawMazeTile(gc, floorImg, tileX, tileY);
+                }
+            }
+        }
+    }
+
     /** Represents a manual image overlay that can be placed anywhere on screen. */
     public static class Overlay {
         public Image image;
@@ -418,8 +546,7 @@ public class GameRenderer {
 
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        maze.renderMaze(gc);
-        maze.renderOverlays(gc);
+        renderMaze(gc, maze);
 
         for (Entity e : entities) {
             if (e instanceof TorchEntity) {

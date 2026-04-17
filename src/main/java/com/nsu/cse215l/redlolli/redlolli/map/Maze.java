@@ -1,9 +1,6 @@
 package com.nsu.cse215l.redlolli.redlolli.map;
 
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -28,131 +25,12 @@ public class Maze {
     private int playerSpawnCol = 1;
     private int levelTheme = 1;
 
-    // ================= IMAGE ASSETS =================
-
-    // 2D arrays: [theme][variant] — themes are 0-based indices (0=level1, 1=level2,
-    // 2=level3)
-    private static Image[][] borderWallImg = new Image[3][4]; // 4 variants per theme
-    private static Image[][] innerWallImg = new Image[3][4]; // 4 variants per theme
-    private static Image[][] floorAImg = new Image[3][3]; // 3 variants per theme
-    private static Image[][] floorBImg = new Image[3][3]; // 3 variants per theme
-    private static Image[] escapeRoomImg = new Image[2]; // 0=green door (lvl 1-2), 1=red door (lvl 3)
-    private static Image[] escapeRoomOpenImg = new Image[2]; // open door versions
+    public int getLevelTheme() {
+        return levelTheme;
+    }
 
     // Instance state for escape room tracking
     private boolean[] escapeRoomOpen;
-
-    private static boolean imagesInitialized = false;
-
-    /** Loads from /assets/images/dungeon/ — 32x32 upscaled to target size. */
-    private static Image loadDcssTile(String dcPath, int width, int height) {
-        try {
-            InputStream is = Maze.class.getResourceAsStream(dcPath);
-            if (is != null) {
-                return new Image(is, width, height, true, false);
-            }
-        } catch (Exception e) {
-            System.err.println("Error initializing Maze assets: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        String dc = "/assets/images/dungeon/";
-
-        // === THEME 1 — Level 1 ===
-        borderWallImg[0][0] = loadDcssTile(dc + "wall/wall_vines_0.png", 40, 40);
-        borderWallImg[0][1] = loadDcssTile(dc + "wall/wall_vines_1.png", 40, 40);
-        borderWallImg[0][2] = loadDcssTile(dc + "wall/wall_vines_2.png", 40, 40);
-        borderWallImg[0][3] = loadDcssTile(dc + "wall/wall_vines_3.png", 40, 40);
-
-        innerWallImg[0][0] = loadDcssTile(dc + "wall/wall_vines_4.png", 40, 40);
-        innerWallImg[0][1] = loadDcssTile(dc + "wall/wall_vines_5.png", 40, 40);
-        innerWallImg[0][2] = loadDcssTile(dc + "wall/wall_vines_6.png", 40, 40);
-        innerWallImg[0][3] = loadDcssTile(dc + "wall/brick_brown-vines_1.png", 40, 40);
-
-        floorAImg[0][0] = loadDcssTile(dc + "floor/lair_0_new.png", 40, 40);
-        floorAImg[0][1] = loadDcssTile(dc + "floor/lair_1_new.png", 40, 40);
-        floorAImg[0][2] = loadDcssTile(dc + "floor/lair_2_new.png", 40, 40);
-
-        floorBImg[0][0] = loadDcssTile(dc + "floor/lair_3_new.png", 40, 40);
-        floorBImg[0][1] = loadDcssTile(dc + "floor/lair_4.png", 40, 40);
-        floorBImg[0][2] = loadDcssTile(dc + "floor/lair_5.png", 40, 40);
-
-        // === THEME 2 — Level 2 ===
-        borderWallImg[1][0] = loadDcssTile(dc + "wall/brick_brown_4.png", 40, 40);
-        borderWallImg[1][1] = loadDcssTile(dc + "wall/brick_brown_5.png", 40, 40);
-        borderWallImg[1][2] = loadDcssTile(dc + "wall/brick_brown_6.png", 40, 40);
-        borderWallImg[1][3] = loadDcssTile(dc + "wall/brick_brown_7.png", 40, 40);
-
-        innerWallImg[1][0] = loadDcssTile(dc + "wall/brick_brown_0.png", 40, 40);
-        innerWallImg[1][1] = loadDcssTile(dc + "wall/brick_brown_1.png", 40, 40);
-        innerWallImg[1][2] = loadDcssTile(dc + "wall/brick_brown_2.png", 40, 40);
-        innerWallImg[1][3] = loadDcssTile(dc + "wall/brick_brown_3.png", 40, 40);
-
-        floorAImg[1][0] = loadDcssTile(dc + "floor/pebble_brown_0_new.png", 40, 40);
-        floorAImg[1][1] = loadDcssTile(dc + "floor/pebble_brown_1_new.png", 40, 40);
-        floorAImg[1][2] = loadDcssTile(dc + "floor/pebble_brown_2_new.png", 40, 40);
-
-        floorBImg[1][0] = loadDcssTile(dc + "floor/pebble_brown_3_new.png", 40, 40);
-        floorBImg[1][1] = loadDcssTile(dc + "floor/pebble_brown_4_new.png", 40, 40);
-        floorBImg[1][2] = loadDcssTile(dc + "floor/pebble_brown_5_new.png", 40, 40);
-
-        // === THEME 3 — Level 3 ===
-        borderWallImg[2][0] = loadDcssTile(dc + "wall/brick_dark_3.png", 40, 40);
-        borderWallImg[2][1] = loadDcssTile(dc + "wall/brick_dark_4.png", 40, 40);
-        borderWallImg[2][2] = loadDcssTile(dc + "wall/brick_dark_5.png", 40, 40);
-        borderWallImg[2][3] = loadDcssTile(dc + "wall/brick_dark_6.png", 40, 40);
-
-        innerWallImg[2][0] = loadDcssTile(dc + "wall/brick_dark_0.png", 40, 40);
-        innerWallImg[2][1] = loadDcssTile(dc + "wall/brick_dark_1.png", 40, 40);
-        innerWallImg[2][2] = loadDcssTile(dc + "wall/brick_dark_2.png", 40, 40);
-        innerWallImg[2][3] = loadDcssTile(dc + "wall/brick_dark_3.png", 40, 40);
-
-        floorAImg[2][0] = loadDcssTile(dc + "floor/grey_dirt_0_new.png", 40, 40);
-        floorAImg[2][1] = loadDcssTile(dc + "floor/grey_dirt_1_new.png", 40, 40);
-        floorAImg[2][2] = loadDcssTile(dc + "floor/grey_dirt_2_new.png", 40, 40);
-
-        floorBImg[2][0] = loadDcssTile(dc + "floor/grey_dirt_b_0.png", 40, 40);
-        floorBImg[2][1] = loadDcssTile(dc + "floor/grey_dirt_b_1.png", 40, 40);
-        floorBImg[2][2] = loadDcssTile(dc + "floor/grey_dirt_b_2.png", 40, 40);
-
-        // === ESCAPE ROOMS ===
-        escapeRoomImg[0] = loadDcssTile(dc + "doors/runed_door.png", 40, 40);
-        escapeRoomImg[1] = loadDcssTile(dc + "doors/sealed_door.png", 40, 40);
-        escapeRoomOpenImg[0] = loadDcssTile(dc + "gateways/escape_hatch_up.png", 40, 40);
-        escapeRoomOpenImg[1] = loadDcssTile(dc + "gateways/escape_hatch_up.png", 40, 40);
-
-        imagesInitialized = true;
-    }
-
-    /**
-     * Call this to force all maze tile images to reload (e.g. after changing asset
-     * filenames in code).
-     */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    private void drawTile(GraphicsContext gc, Image img, double x, double y) {
-        if (img != null) {
-            gc.drawImage(img, x, y, TILE_SIZE, TILE_SIZE);
-        } else {
-            gc.setFill(Color.MAGENTA);
-            gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        }
-    }
-
-    /** Deterministic variant index based on tile position. */
-    private static int variantIndex(int row, int col, int maxVariants) {
-        return Math.abs(row * 31 + col * 17) % maxVariants;
-    }
-
-    // ================= ESCAPE ROOM STATE =================
-
     /**
      * Updates which escape rooms are "open" based on player position. Call every
      * frame.
@@ -184,7 +62,7 @@ public class Maze {
      * Returns true if the escape room at (row, col) is currently open (player
      * inside).
      */
-    private boolean isEscapeRoomOpen(int row, int col) {
+    public boolean isEscapeRoomOpen(int row, int col) {
         if (escapeRoomOpen == null)
             return false;
         List<int[]> rooms = getTilesOfType(6);
@@ -256,102 +134,6 @@ public class Maze {
             e.printStackTrace();
             mapGrid = new int[][] { { 1, 1, 1 }, { 1, 0, 1 }, { 1, 1, 1 } };
         }
-    }
-
-    // ================= RENDERING =================
-
-    public void renderMaze(GraphicsContext gc) {
-        if (mapGrid == null)
-            return;
-
-        int maxRow = mapGrid.length - 1;
-        int maxCol = mapGrid[0].length - 1;
-        int ti = Math.min(levelTheme - 1, 2);
-
-        for (int row = 0; row < mapGrid.length; row++) {
-            for (int col = 0; col < mapGrid[row].length; col++) {
-                double tileX = col * TILE_SIZE;
-                double tileY = row * TILE_SIZE + Y_OFFSET;
-
-                int tile = mapGrid[row][col];
-                boolean isBorder = (row == 0 || row == maxRow || col == 0 || col == maxCol);
-
-                if (tile == 6) {
-                    // === ESCAPE ROOM ===
-                    boolean isOpen = isEscapeRoomOpen(row, col);
-                    if (isOpen) {
-                        // Player entered: show an open room/floor tile instead of a door
-                        int fi = variantIndex(row, col, 3);
-                        Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
-                        drawTile(gc, floorImg, tileX, tileY);
-                        // Overlay the open escape room image (open door/escape hatch) on top
-                        Image openImg = escapeRoomOpenImg[levelTheme == 3 ? 1 : 0];
-                        if (openImg != null) {
-                            drawTile(gc, openImg, tileX, tileY);
-                        }
-                    } else {
-                        // Not entered yet: show the closed door
-                        Image doorImg = escapeRoomImg[levelTheme == 3 ? 1 : 0];
-                        drawTile(gc, doorImg, tileX, tileY);
-                    }
-                } else if (tile == 1) {
-                    // === WALL ===
-                    int vi = variantIndex(row, col, 4);
-                    if (isBorder) {
-                        drawTile(gc, borderWallImg[ti][vi], tileX, tileY);
-                    } else {
-                        drawTile(gc, innerWallImg[ti][vi], tileX, tileY);
-                    }
-                } else {
-                    // === FLOOR ===
-                    int fi = variantIndex(row, col, 3);
-                    Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
-                    drawTile(gc, floorImg, tileX, tileY);
-                }
-            }
-        }
-    }
-
-    /**
-     * Called automatically after tiles render. Fill your placeSprite() calls below.
-     */
-    public void renderOverlays(GraphicsContext gc) {
-        // ================= YOUR OVERLAYS =================
-        // Load once, then call placeSprite each frame:
-        //
-        // Image blood = new
-        // Image(getClass().getResourceAsStream("/assets/images/sprites/blood_splat.png"));
-        // placeSprite(gc, blood, 5, 3, 40, 40, 0.5);
-        // placeSprite(gc, blood, 12, 7, 40, 40, 0.3);
-        // ================================================
-    }
-
-    // ================= MANUAL OVERLAY HELPER =================
-
-    /**
-     * Places any image at a specific grid tile (col, row) on the maze.
-     *
-     * Example — blood splat at col 5, row 3, drawn at 40x40, 50% opacity:
-     * Image blood = new
-     * Image(getClass().getResourceAsStream("/assets/images/sprites/blood_splat.png"));
-     * maze.placeSprite(gc, blood, 5, 3, 40, 40, 0.5);
-     *
-     * Example — mold patch at col 10, row 7, upscaled to 48x48:
-     * Image mold = new
-     * Image(getClass().getResourceAsStream("/assets/images/sprites/mold.png"));
-     * maze.placeSprite(gc, mold, 10, 7, 48, 48, 0.7);
-     *
-     * Call this after maze.renderMaze(gc) and before HUD rendering.
-     */
-    public void placeSprite(GraphicsContext gc, Image image, int col, int row, double width, double height,
-            double alpha) {
-        if (image == null)
-            return;
-        double x = col * TILE_SIZE;
-        double y = row * TILE_SIZE + Y_OFFSET;
-        gc.setGlobalAlpha(alpha);
-        gc.drawImage(image, x, y, width, height);
-        gc.setGlobalAlpha(1.0);
     }
 
     // ================= COLLISION & QUERIES =================
