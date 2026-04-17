@@ -35,10 +35,11 @@ public class GameRenderer {
     // ================= IMAGE ASSETS =================
 
     private static Image lunaFlashImg;
+    private static Image[] torchFrames;
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/" + filename, width, height);
     }
 
     /**
@@ -48,7 +49,13 @@ public class GameRenderer {
     public static void initImages() {
         if (imagesInitialized)
             return;
-        lunaFlashImg = loadSprite("luna_flash.png", 500, 500); // Scaled larger
+        lunaFlashImg = loadSprite("sprites/luna_flash.png", 500, 500); // Scaled larger
+        
+        torchFrames = new Image[5];
+        for (int i = 0; i < 5; i++) {
+            torchFrames[i] = loadSprite("dungeon/wall/torches/torch_" + i + ".png", 40, 40);
+        }
+        
         imagesInitialized = true;
     }
 
@@ -116,7 +123,15 @@ public class GameRenderer {
         maze.renderOverlays(gc);
 
         for (Entity e : entities) {
-            e.render(gc);
+            if (e instanceof TorchEntity) {
+                TorchEntity t = (TorchEntity) e;
+                Image img = t.isLit() ? torchFrames[t.getCurrentFrame()] : torchFrames[0];
+                if (img != null) {
+                    gc.drawImage(img, t.getX(), t.getY(), t.getSize(), t.getSize());
+                }
+            } else {
+                e.render(gc);
+            }
         }
 
         // Draw manual overlays (screen-relative or world-relative)

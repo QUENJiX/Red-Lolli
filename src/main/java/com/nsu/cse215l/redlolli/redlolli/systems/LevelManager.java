@@ -31,7 +31,6 @@ public class LevelManager {
         SerialKillerEntity.initImages();
         Player.initImages();
         Monster.initImages();
-        TorchEntity.initImages();
         GameRenderer.initImages();
         HUDRenderer.initImages();
 

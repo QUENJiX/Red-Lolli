@@ -20,7 +20,8 @@ public abstract class Entity {
 
     public abstract void update();
 
-    public abstract void render(GraphicsContext gc);
+    // TODO: Deprecate - Being moved to RenderSystem
+    public void render(GraphicsContext gc) {}
 
     public double getX() {
         return x;

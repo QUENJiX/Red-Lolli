@@ -1,15 +1,10 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-
 /**
  * Animated torch that provides light on the map.
+ * This entity has been fully DECOUPLED from JavaFX.
  */
 public class TorchEntity extends Entity {
-
-    private static Image[] torchFrames;
-    private static boolean imagesInitialized = false;
 
     private double animationTimer = 0;
     private int currentFrame = 1; // Frames 1-4 are lit, frame 0 is unlit
@@ -17,20 +12,6 @@ public class TorchEntity extends Entity {
     
     private long lastUpdateTime = 0;
     private double timeDelta = 1.0;
-
-    private static Image loadSprite(String filename) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/dungeon/wall/torches/" + filename, 40, 40);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        torchFrames = new Image[5];
-        for (int i = 0; i < 5; i++) {
-            torchFrames[i] = loadSprite("torch_" + i + ".png");
-        }
-        imagesInitialized = true;
-    }
 
     public TorchEntity(double x, double y) {
         super(x, y, 40); // Size can be 40
@@ -60,12 +41,12 @@ public class TorchEntity extends Entity {
         }
     }
 
-    @Override
-    public void render(GraphicsContext gc) {
-        Image img = isLit ? torchFrames[currentFrame] : torchFrames[0];
-        if (img != null) {
-            gc.drawImage(img, x, y, size, size);
-        }
+    public double getSize() {
+        return size;
+    }
+
+    public int getCurrentFrame() {
+        return currentFrame;
     }
 
     public boolean isLit() {
