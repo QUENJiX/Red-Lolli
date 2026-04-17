@@ -34,7 +34,9 @@ public class SoundManager {
             clip.setVolume(Math.max(0, Math.min(1, volume)));
             clip.play();
 
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error playing one shot sound '" + resourcePath + "': " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -49,7 +51,9 @@ public class SoundManager {
                 currentMusic = new MediaPlayer(media);
                 currentMusic.play();
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error playing music '" + resourcePath + "': " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

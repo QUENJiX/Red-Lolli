@@ -387,24 +387,24 @@ public class Maze {
 
         double cx = (hitbox.getMinX() + hitbox.getMaxX()) / 2;
         double cy = (hitbox.getMinY() + hitbox.getMaxY()) / 2;
-
-        double[][] points = {
-                { cx, cy },
-                { hitbox.getMinX() + 2, cy },
-                { hitbox.getMaxX() - 2, cy },
-                { cx, hitbox.getMinY() + 2 },
-                { cx, hitbox.getMaxY() - 2 }
-        };
-
-        for (double[] p : points) {
-            int col = (int) (p[0] / TILE_SIZE);
-            int row = (int) ((p[1] - Y_OFFSET) / TILE_SIZE);
-            if (row >= 0 && row < mapGrid.length && col >= 0 && col < mapGrid[0].length
-                    && mapGrid[row][col] == 6) {
-                return true;
-            }
+        
+        // Removed dynamic array instantiation to prevent GC churn
+        if (isPointEscapeRoom(cx, cy) ||
+            isPointEscapeRoom(hitbox.getMinX() + 2, cy) ||
+            isPointEscapeRoom(hitbox.getMaxX() - 2, cy) ||
+            isPointEscapeRoom(cx, hitbox.getMinY() + 2) ||
+            isPointEscapeRoom(cx, hitbox.getMaxY() - 2)) {
+            return true;
         }
+
         return false;
+    }
+
+    private boolean isPointEscapeRoom(double px, double py) {
+        int col = (int) (px / TILE_SIZE);
+        int row = (int) ((py - Y_OFFSET) / TILE_SIZE);
+        return row >= 0 && row < mapGrid.length && col >= 0 && col < mapGrid[0].length
+                && mapGrid[row][col] == 6;
     }
 
     /**

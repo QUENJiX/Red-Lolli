@@ -31,9 +31,12 @@ public class SerialKillerEntity extends Entity implements Collidable {
             if (is != null) {
                 return new Image(is); // Load at native resolution for slicing
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error loading SerialKiller sprite '" + filename + "': " + e.getMessage());
+            e.printStackTrace();
+            return new javafx.scene.image.WritableImage(32, 32);
         }
-        return null;
+        return new javafx.scene.image.WritableImage(32, 32);
     }
 
     public static void initImages() {

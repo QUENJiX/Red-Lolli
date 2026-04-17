@@ -27,9 +27,12 @@ public class Player extends Entity implements Collidable {
             if (is != null) {
                 return new Image(is, width, height, true, false);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error loading Player sprite '" + filename + "': " + e.getMessage());
+            e.printStackTrace();
+            return new javafx.scene.image.WritableImage(width > 0 ? width : 32, height > 0 ? height : 32);
         }
-        return null;
+        return new javafx.scene.image.WritableImage(width > 0 ? width : 32, height > 0 ? height : 32);
     }
 
     public static void initImages() {
