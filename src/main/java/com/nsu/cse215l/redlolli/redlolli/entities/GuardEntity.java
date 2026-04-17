@@ -2,7 +2,7 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
-import javafx.geometry.Rectangle2D;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
  * Stationary environmental hazards that kill the player on contact.
@@ -73,7 +73,7 @@ public class GuardEntity extends Entity implements Collidable {
 
     // ================= SHARED =================
 
-    public boolean isPlayerOnGuardedRoom(Rectangle2D playerHitbox) {
+    public boolean isPlayerOnGuardedRoom(Hitbox2D playerHitbox) {
         double cx = (playerHitbox.getMinX() + playerHitbox.getMaxX()) / 2;
         double cy = (playerHitbox.getMinY() + playerHitbox.getMaxY()) / 2;
 
@@ -109,16 +109,9 @@ public class GuardEntity extends Entity implements Collidable {
         return distanceToPlayerInTiles(playerX, playerY) <= 3.0; // Both share same range
     }
 
-    // ================= RENDERING =================
-
     @Override
-    public void render(javafx.scene.canvas.GraphicsContext gc) {
-        // Domain model has no view layer logic
-    }
-
-    @Override
-    public Rectangle2D getHitbox() {
-        return new Rectangle2D(x, y, size, size);
+    public Hitbox2D getHitbox() {
+        return new Hitbox2D(x, y, size, size);
     }
 
     public Type getType() {

@@ -1,7 +1,7 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
-import javafx.geometry.Rectangle2D;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
  * Interactive maze objects modeled as chests containing various loot types.
@@ -33,8 +33,8 @@ public class Item extends Entity implements Collidable {
     }
 
     @Override
-    public Rectangle2D getHitbox() {
-        return new Rectangle2D(x, y, size, size);
+    public Hitbox2D getHitbox() {
+        return new Hitbox2D(x, y, size, size);
     }
 
     public boolean isCollected() {

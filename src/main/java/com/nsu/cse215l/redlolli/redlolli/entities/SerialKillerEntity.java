@@ -2,51 +2,13 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
  * Persistent antagonist in Level 3 using continuous BFS pathfinding.
  * Features unique logic to interact with CardboardClone decoys.
  */
 public class SerialKillerEntity extends Entity implements Collidable {
-
-    // ================= IMAGE ASSETS =================
-
-    private static Image idleImg;
-    private static Image idleLeftImg;
-    private static Image chaseImg;
-    private static Image chaseLeftImg;
-    private static Image attackImg;
-    private static Image attackLeftImg;
-    private static boolean imagesInitialized = false;
-
-    private static Image loadSprite(String filename) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        idleImg = loadSprite("killer_idle_right.png");
-        idleLeftImg = loadSprite("killer_idle_left.png");
-        chaseImg = loadSprite("killer_chase_right.png");
-        chaseLeftImg = loadSprite("killer_chase_left.png");
-        attackImg = loadSprite("killer_attack_right.png");
-        attackLeftImg = loadSprite("killer_attack_left.png");
-        imagesInitialized = true;
-    }
-
-    /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    // Height of the killer in pixels. Width is calculated automatically to keep
-    // aspect ratio.
-    private static final double RENDER_HEIGHT = 48.0;
 
     private static final double SPEED = 1.75;
 
@@ -167,52 +129,8 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     @Override
-    public void render(GraphicsContext gc) {
-        Image imgToDraw;
-        int frameWidth = 128;
-        int maxFrames = 5;
-
-        if (!active) {
-            imgToDraw = facingLeft ? idleLeftImg : idleImg;
-            frameWidth = 40; // Idle is now just a single 40 width image
-            maxFrames = 1;
-        } else if (attackingDecoy) {
-            imgToDraw = facingLeft ? attackLeftImg : attackImg;
-            frameWidth = 128; // 640 width / 5 frames
-            maxFrames = 5;
-        } else {
-            imgToDraw = facingLeft ? chaseLeftImg : chaseImg;
-            frameWidth = 128; // 640 width / 5 frames
-            maxFrames = 5;
-        }
-
-        // Safety check to prevent IndexOutOfBoundsException during state transitions
-        if (currentFrame >= maxFrames) {
-            currentFrame = 0;
-        }
-
-        // Calculate aspect-correct width based on the active animation frame
-        double scale = RENDER_HEIGHT / 70.0;
-        double drawWidth = frameWidth * scale;
-
-        // Draw centered (hitbox 24x24)
-        double offsetX = (drawWidth - size) / 2;
-        double offsetY = (RENDER_HEIGHT - size) / 2;
-
-        if (imgToDraw != null) {
-            int sourceX = currentFrame * frameWidth;
-            gc.drawImage(imgToDraw,
-                    sourceX, 0, frameWidth, 70, // Source slice dimensions updated to 70 height
-                    x - offsetX, y - offsetY, drawWidth, RENDER_HEIGHT); // Destination bounding box
-        } else {
-            gc.setFill(active ? Color.rgb(180, 20, 20) : Color.rgb(80, 40, 40));
-            gc.fillOval(x - offsetX, y - offsetY, RENDER_HEIGHT, RENDER_HEIGHT);
-        }
-    }
-
-    @Override
-    public Rectangle2D getHitbox() {
-        return new Rectangle2D(x, y, size, size);
+    public Hitbox2D getHitbox() {
+        return new Hitbox2D(x, y, size, size);
     }
 
     public boolean isActive() {

@@ -1,7 +1,7 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
-import javafx.geometry.Rectangle2D;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /** A stationary decoy entity that distracts wandering threats. 
  * This entity has been fully DECOUPLED from JavaFX image rendering.
@@ -17,8 +17,8 @@ public class CardboardClone extends Entity implements Collidable {
     }
 
     @Override
-    public Rectangle2D getHitbox() {
-        return new Rectangle2D(x, y, size, size);
+    public Hitbox2D getHitbox() {
+        return new Hitbox2D(x, y, size, size);
     }
 
     public double getSize() {

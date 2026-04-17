@@ -595,8 +595,6 @@ public class GameRenderer {
                 renderPlayer(gc, (Player) e);
             } else if (e instanceof com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity) {
                 renderGuardEntity(gc, (com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity) e);
-            } else {
-                e.render(gc);
             }
         }
 

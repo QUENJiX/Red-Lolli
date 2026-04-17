@@ -1,6 +1,6 @@
 package com.nsu.cse215l.redlolli.redlolli.map;
 
-import javafx.geometry.Rectangle2D;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -139,7 +139,7 @@ public class Maze {
     // ================= COLLISION & QUERIES =================
 
     /** Returns true if the projected hitbox overlaps any wall tile. */
-    public boolean isWallCollision(Rectangle2D nextHitbox) {
+    public boolean isWallCollision(Hitbox2D nextHitbox) {
         if (mapGrid == null)
             return false;
 
@@ -165,7 +165,7 @@ public class Maze {
      * Returns true if any part of the hitbox overlaps an escape-room tile
      * (multi-point check).
      */
-    public boolean isEscapeRoom(Rectangle2D hitbox) {
+    public boolean isEscapeRoom(Hitbox2D hitbox) {
         if (mapGrid == null)
             return false;
 
@@ -195,7 +195,7 @@ public class Maze {
      * Returns the nearest safe-room doorway tile adjacent to this safe room, or
      * null.
      */
-    public int[] findSafeRoomDoor(Rectangle2D hitbox) {
+    public int[] findSafeRoomDoor(Hitbox2D hitbox) {
         if (mapGrid == null)
             return null;
 

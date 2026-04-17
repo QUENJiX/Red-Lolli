@@ -2,7 +2,7 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
-import javafx.geometry.Rectangle2D;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
  * User-controlled character with movement, stamina, and contextual rendering.
@@ -113,7 +113,7 @@ public class Player extends Entity implements Collidable {
         double nextX = this.x + (dx * speed);
         double nextY = this.y + (dy * speed);
 
-        Rectangle2D nextHitbox = new Rectangle2D(nextX, nextY, size, size);
+        Hitbox2D nextHitbox = new Hitbox2D(nextX, nextY, size, size);
 
         if (!maze.isWallCollision(nextHitbox)) {
             this.x = nextX;
@@ -141,11 +141,6 @@ public class Player extends Entity implements Collidable {
         }
     }
 
-    @Override
-    public void render(javafx.scene.canvas.GraphicsContext gc) {
-        // Domain model has no view layer logic
-    }
-
     public boolean isMoving() {
         return isMoving;
     }
@@ -155,8 +150,8 @@ public class Player extends Entity implements Collidable {
     }
 
     @Override
-    public Rectangle2D getHitbox() {
-        return new Rectangle2D(x, y, size, size);
+    public Hitbox2D getHitbox() {
+        return new Hitbox2D(x, y, size, size);
     }
 
     public void setBeingChased(boolean chased) {

@@ -1,10 +1,8 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
-import javafx.scene.canvas.GraphicsContext;
-
 /**
  * Abstract base class for all interactive game objects, enforcing a standard
- * update/render cycle.
+ * update cycle.
  */
 public abstract class Entity {
 
@@ -19,9 +17,6 @@ public abstract class Entity {
     }
 
     public abstract void update();
-
-    // TODO: Deprecate - Being moved to RenderSystem
-    public void render(GraphicsContext gc) {}
 
     public double getX() {
         return x;

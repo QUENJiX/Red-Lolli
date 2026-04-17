@@ -2,7 +2,7 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
-import javafx.geometry.Rectangle2D;
+import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
  * The primary antagonist entity for Level 1, "Pale Luna".
@@ -175,8 +175,8 @@ public class Monster extends Entity implements Collidable {
     }
 
     @Override
-    public Rectangle2D getHitbox() {
-        return new Rectangle2D(x, y, size, size);
+    public Hitbox2D getHitbox() {
+        return new Hitbox2D(x, y, size, size);
     }
 
     public State getState() {
