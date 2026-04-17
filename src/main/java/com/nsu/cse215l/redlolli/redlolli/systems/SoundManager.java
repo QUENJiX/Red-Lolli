@@ -35,7 +35,8 @@ public class SoundManager {
             clip.play();
 
         } catch (Exception e) {
-            // Ignored - silent failure model for missing sounds
+            com.nsu.cse215l.redlolli.redlolli.core.GameLogger.getLogger()
+                .log(java.util.logging.Level.WARNING, "Failed to play sound: " + resourcePath, e);
         }
     }
 
@@ -51,7 +52,8 @@ public class SoundManager {
                 currentMusic.play();
             }
         } catch (Exception e) {
-            // Ignored - silent failure model for missing music
+            com.nsu.cse215l.redlolli.redlolli.core.GameLogger.getLogger()
+                .log(java.util.logging.Level.WARNING, "Failed to play music: " + resourcePath, e);
         }
     }
 

@@ -131,6 +131,8 @@ public class Maze {
             }
 
         } catch (Exception e) {
+            com.nsu.cse215l.redlolli.redlolli.core.GameLogger.getLogger()
+                .log(java.util.logging.Level.SEVERE, "Failed loading or parsing map file: " + path, e);
             mapGrid = new int[][] { { 1, 1, 1 }, { 1, 0, 1 }, { 1, 1, 1 } };
         }
     }

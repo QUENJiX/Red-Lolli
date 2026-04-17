@@ -1,5 +1,7 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
+import com.nsu.cse215l.redlolli.redlolli.core.GameEventBus;
+
 /**
  * Abstract base class for all interactive game objects, enforcing a standard
  * update cycle.
@@ -17,6 +19,23 @@ public abstract class Entity {
     }
 
     public abstract void update();
+
+    /**
+     * Optional event-bus publish strategy for polymorphic collisions.
+     * Fires a system-wide collision event without requiring strict
+     * instanceof checks on the receiver end.
+     */
+    public void publishCollision(Entity other) {
+        GameEventBus.getInstance().publishCollision(this, other);
+    }
+    
+    /**
+     * Direct method variant for deeper polymorphism allowing entities
+     * to react to physical contacts without an EventBus if needed.
+     */
+    public void onCollide(Entity other) {
+        publishCollision(other);
+    }
 
     public double getX() {
         return x;
