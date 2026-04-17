@@ -13,43 +13,45 @@ import javafx.scene.text.FontWeight;
 import java.util.List;
 
 /**
- * Manages the in-game HUD visual layer at the top of the screen.
- * Layout (880 x 50 px):
- *
- * [LEVEL 1/3] | [🍬 0/1] | [FIND: Mud / Fruit:2 (E)] | [Luna bar + label] |
- * [MIND bar] | [SAFE]
- * x=0..89 x=90..149 x=150..334 x=335..609 x=610..809 x=810..879
- *
- * All text baseline at ROW1_Y (top row) or ROW2_Y (sub-label row).
- * All bars are at BAR_Y with height BAR_H.
+ * Orchestrates the application's heads-up display rendering matrix.
+ * Translates underlying game state variables into a fixed-scale orthogonal projection layer.
+ * Systematically divides real-time tracking data into distinct, updated visual modules natively.
  */
 public class HUDRenderer {
 
-    // ── Layout constants ─────────────────────────────────────────────────────
     private static final double HUD_W = 880;
     private static final double HUD_H = 50;
-    private static final double ROW1_Y = 20; // primary text baseline
-    private static final double ROW2_Y = 38; // secondary / sub-label baseline
-    private static final double BAR_Y = 24; // top of progress bars
-    private static final double BAR_H = 14; // height of progress bars
+    private static final double ROW1_Y = 20; 
+    private static final double ROW2_Y = 38; 
+    private static final double BAR_Y = 24; 
+    private static final double BAR_H = 14; 
 
-    // ── Section x-boundaries ─────────────────────────────────────────────────
     private static final double DIV_LEVEL = 90;
     private static final double DIV_LOLLI = 150;
     private static final double DIV_FIND = 335;
     private static final double DIV_LUNA = 610;
     private static final double DIV_SANITY = 810;
 
-    // ── Image assets ─────────────────────────────────────────────────────────
     private static Image[] paleLunaIconImg = new Image[4];
     private static Image sanitySkullImg;
     private static Image sanitySkullLowImg;
     private static boolean imagesInitialized = false;
 
+    /**
+     * Resolves distinct aesthetic resource identifiers yielding explicitly scaled bitmapped visual arrays.
+     *
+     * @param filename Target identifier isolating physical location inherently visually.
+     * @param width Abstract mapping value for lateral scale parameters structurally.
+     * @param height Abstract mapping value for vertical scale parameters structurally.
+     * @return Image Explicitly loaded structural rendering variable natively extracted.
+     */
     private static Image loadSprite(String filename, int width, int height) {
         return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
     }
 
+    /**
+     * Establishes persistent graphical references ensuring uniform hardware mappings logically.
+     */
     public static void initImages() {
         if (imagesInitialized)
             return;
@@ -62,67 +64,90 @@ public class HUDRenderer {
         imagesInitialized = true;
     }
 
-    /** Force images to reload. */
+    /**
+     * Resets the initialization validation cache confirming sequential reloading dynamically.
+     */
     public static void resetImages() {
         imagesInitialized = false;
     }
 
-    // ── Entry point ───────────────────────────────────────────────────────────
-
+    /**
+     * Executes the foundational projection separating HUD logic cleanly into rendering groups.
+     * Extrapolates physical states mapping visual representation vectors linearly.
+     *
+     * @param gc Hardware rendering component processing graphical indices optimally.
+     * @param level Absolute cycle iterator mapping progression depth accurately.
+     * @param chests Topological entity list conveying objective bounds conditionally.
+     * @param itemNames Assorted strings mapping literal visual translations natively.
+     * @param paleLuna Target external antagonist mapping spatial derivation algorithms mathematically.
+     * @param player Core topological object tracking diagnostic progression variables identically.
+     * @param distractionSpellCount Abstraction metric indicating valid mechanical override availability natively.
+     * @param hasCloneItem Boolean asserting local state capability securely and unconditionally.
+     * @param pulsePhase Iterative parameter resolving continuous cyclical HUD animations smoothly.
+     * @return double Translated visual execution vector correctly shifting abstract animation steps sequentially.
+     */
     public static double drawHUD(GraphicsContext gc, int level, List<Item> chests,
             String[] itemNames, Monster paleLuna, Player player,
             int distractionSpellCount, boolean hasCloneItem, double pulsePhase) {
 
         drawBackground(gc);
 
-        // Section 1 — Level indicator
         drawLevelSection(gc, level);
         drawDivider(gc, DIV_LEVEL);
 
-        // Section 2 — Lolli counter
         drawLolliSection(gc, chests);
         drawDivider(gc, DIV_LOLLI);
 
-        // Section 3 — Find target + utility sub-label
         drawFindSection(gc, level, itemNames, distractionSpellCount, hasCloneItem);
         drawDivider(gc, DIV_FIND);
 
-        // Section 4 — Pale Luna phase tracker bar
         pulsePhase = drawLunaSection(gc, paleLuna, pulsePhase);
         drawDivider(gc, DIV_LUNA);
 
-        // Section 5 — Sanity bar
         drawSanitySection(gc, player);
         drawDivider(gc, DIV_SANITY);
 
-        // Section 6 — SAFE indicator (rightmost)
         drawSafeSection(gc, player);
 
         return pulsePhase;
     }
 
-    // ── Sections ─────────────────────────────────────────────────────────────
-
+    /**
+     * Synthesizes background geometries providing standard solid backing logically mapping spatial matrices.
+     *
+     * @param gc Target abstraction projecting static canvas updates stably and objectively.
+     */
     private static void drawBackground(GraphicsContext gc) {
-        // Dark background
+        // Enforce basic gradient borders anchoring local interface variables exclusively
         gc.setFill(Color.rgb(10, 10, 14));
         gc.fillRect(0, 0, HUD_W, HUD_H);
-        // Subtle gradient-strip at bottom
+        
         gc.setFill(Color.rgb(30, 5, 5));
         gc.fillRect(0, HUD_H - 3, HUD_W, 3);
-        // Bottom border line
+        
         gc.setStroke(Color.rgb(140, 20, 20, 0.8));
         gc.setLineWidth(1.5);
         gc.strokeLine(0, HUD_H, HUD_W, HUD_H);
     }
 
+    /**
+     * Generates geometric separators strictly mapping distinct boundaries objectively.
+     *
+     * @param gc Target rendering vector systematically scaling linear separators optimally.
+     * @param x Standardized dimensional axis defining bounded separations explicitly.
+     */
     private static void drawDivider(GraphicsContext gc, double x) {
         gc.setStroke(Color.rgb(60, 25, 25, 0.7));
         gc.setLineWidth(1);
         gc.strokeLine(x, 6, x, HUD_H - 6);
     }
 
-    /** Section 1: "LEVEL 1/3" on two lines */
+    /**
+     * Projects continuous text bounds updating basic state enumerations dynamically.
+     *
+     * @param gc Mathematical node scaling output coordinates inherently securely.
+     * @param level Evaluated metric dictating raw cyclic progression explicitly.
+     */
     private static void drawLevelSection(GraphicsContext gc, int level) {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
         gc.setFill(Color.rgb(160, 160, 185));
@@ -132,7 +157,12 @@ public class HUDRenderer {
         gc.fillText(level + " / 3", 10, ROW2_Y);
     }
 
-    /** Section 2: Lolli icon + 0/1 counter */
+    /**
+     * Establishes conditional rendering parameters validating interaction checks sequentially natively.
+     *
+     * @param gc Hardware target interpolating graphical variables predictably and functionally.
+     * @param chests Reference collection enumerating valid boolean interaction outputs completely.
+     */
     private static void drawLolliSection(GraphicsContext gc, List<Item> chests) {
         boolean found = chests.stream().anyMatch(c -> c.isCollected() && c.hasLolli());
         double secX = DIV_LEVEL + 6;
@@ -140,7 +170,7 @@ public class HUDRenderer {
         double cx = secX + 5;
         double cy = HUD_H / 2;
 
-        // Glow effect similar to reveal
+        // Apply sinusoidal modifiers conveying aesthetic oscillations accurately automatically
         double pulse = Math.sin(System.currentTimeMillis() * 0.005) * 0.2 + 0.8;
         if (found) {
             gc.setFill(Color.rgb(255, 215, 0, 0.05 * pulse));
@@ -151,7 +181,6 @@ public class HUDRenderer {
             gc.fillOval(cx - 5, cy - 5, 10, 10);
         }
 
-        // Draw the lolli itself
         GameRenderer.drawRedLolli(gc, cx, cy - 2, 8);
 
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 13));
@@ -160,13 +189,18 @@ public class HUDRenderer {
     }
 
     /**
-     * Section 3: "FIND: Mud" (top) + "Distraction Spell: 2 (E)" sub-label (bottom)
+     * Extracts categorical strings projecting mechanical requirements mapping textual outputs clearly cleanly.
+     *
+     * @param gc Output target interpolating sequential strings systematically objectively.
+     * @param level Baseline algorithmic modifier extracting mapped array targets cleanly.
+     * @param itemNames Extrapolated strings array indexing specific objective labels directly.
+     * @param distractionSpellCount Integral translating stored defensive override resources completely flawlessly.
+     * @param hasCloneItem Validation toggle rendering specific alternate interactions strictly cleanly.
      */
     private static void drawFindSection(GraphicsContext gc, int level, String[] itemNames,
             int distractionSpellCount, boolean hasCloneItem) {
         double secX = DIV_LOLLI + 8;
 
-        // Top: FIND label
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         gc.setFill(Color.rgb(240, 200, 60));
         gc.fillText("FIND:", secX, ROW1_Y);
@@ -175,7 +209,6 @@ public class HUDRenderer {
         gc.setFill(Color.WHITE);
         gc.fillText(itemNames[level - 1], secX + 42, ROW1_Y);
 
-        // Bottom: utility item counter
         gc.setFont(Font.font("Arial", FontWeight.NORMAL, 11));
         gc.setFill(Color.rgb(180, 175, 155));
 
@@ -187,14 +220,21 @@ public class HUDRenderer {
         }
     }
 
-    /** Section 4: Luna phase bar + state label */
+    /**
+     * Transmits decoupled adversarial mappings directly formatting threat representations linearly seamlessly.
+     * Resolves distinct tracking bounds utilizing cyclic color scaling deterministically cleanly.
+     *
+     * @param gc Mathematical rendering abstraction mapping geometric parameters cleanly and uniformly.
+     * @param paleLuna AI reference extrapolating threat vectors structurally correctly.
+     * @param pulsePhase Chronological iteration tracking arbitrary visual oscillations smoothly predictably.
+     * @return double Final scalar yielding updated progression safely correctly.
+     */
     private static double drawLunaSection(GraphicsContext gc, Monster paleLuna, double pulsePhase) {
         if (paleLuna == null)
             return pulsePhase;
 
         double secX = DIV_FIND + 8;
 
-        // Luna icon (18x18 centered vertically)
         int stateIdx = paleLuna.getState().ordinal();
         if (stateIdx < paleLunaIconImg.length && paleLunaIconImg[stateIdx] != null) {
             gc.drawImage(paleLunaIconImg[stateIdx], secX, HUD_H / 2 - 9, 18, 18);
@@ -244,87 +284,107 @@ public class HUDRenderer {
         return pulsePhase + 0.20;
     }
 
-    /** Section 5: Sanity bar with skull icon */
+    /**
+     * Converts physiological variable checks into standard linear text interfaces continuously natively.
+     *
+     * @param gc Native visual array configuring objective text properly identically stably.
+     * @param player Central topological object asserting fundamental variable metrics dynamically properly.
+     */
     private static void drawSanitySection(GraphicsContext gc, Player player) {
         double secX = DIV_LUNA + 6;
         double barW = DIV_SANITY - secX - 6;
         int sanity = player.getSanity();
 
-        // Skull icon
-        Image skull = sanity < 50 ? sanitySkullLowImg : sanitySkullImg;
-        if (skull != null) {
-            gc.drawImage(skull, secX, HUD_H / 2 - 10, 20, 20);
-        } else {
-            gc.setFill(sanity < 50 ? Color.rgb(255, 80, 80) : Color.rgb(180, 180, 200));
-            gc.fillOval(secX, HUD_H / 2 - 8, 16, 16);
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        gc.setFill(Color.rgb(180, 180, 200));
+        gc.fillText("Sanity", secX, ROW1_Y);
+
+        Color sanityColor = Color.LIMEGREEN;
+        Image activeImg = sanitySkullImg;
+
+        if (sanity < 30) {
+            sanityColor = Color.RED;
+            activeImg = sanitySkullLowImg;
+        } else if (sanity < 60) {
+            sanityColor = Color.ORANGE;
+        } else if (sanity < 85) {
+            sanityColor = Color.YELLOW;
         }
 
-        double barX = secX + 24;
-        double bw = barW - 24;
-
-        Color fill;
-        if (sanity > 50)
-            fill = Color.rgb(100, 180, 255);
-        else if (sanity > 25)
-            fill = Color.rgb(255, 180, 50);
-        else {
-            double f = Math.sin(System.currentTimeMillis() * 0.01) * 0.5 + 0.5;
-            fill = Color.rgb(255, (int) (50 * f), (int) (50 * f));
+        if (activeImg != null) {
+            gc.drawImage(activeImg, DIV_SANITY - 24, 4, 18, 18);
         }
 
-        drawBarLabel(gc, barX, ROW1_Y, "MIND", Color.rgb(150, 150, 180));
-        String label = sanity > 50 ? (sanity + "%") : sanity > 25 ? "Slipping" : "Breaking";
-        drawBar(gc, barX, BAR_Y, bw, BAR_H, Color.rgb(40, 40, 45), Color.rgb(70, 70, 80), fill,
-                (double) sanity / 100.0, label);
+        drawBar(gc, secX, BAR_Y, barW, BAR_H,
+                Color.rgb(30, 30, 35), Color.rgb(80, 80, 90), sanityColor,
+                sanity / 100.0, sanity + "%");
     }
 
-    /** Section 6: [SAFE] indicator on the right */
+    /**
+     * Determines regional mapping bounds establishing Boolean safety outputs objectively clearly objectively.
+     *
+     * @param gc Graphical array rendering continuous binary tracking natively cleanly effectively.
+     * @param player Core spatial parameter providing matrix positioning securely dynamically optimally.
+     */
     private static void drawSafeSection(GraphicsContext gc, Player player) {
-        double secX = DIV_SANITY + 6;
-        if (player.isInEscapeRoom()) {
-            gc.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        double secX = DIV_SANITY + 8;
+        boolean safe = player.isInEscapeRoom();
+
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        if (safe) {
             gc.setFill(Color.LIMEGREEN);
-            gc.fillText("✓ SAFE", secX, ROW1_Y);
-            gc.setFont(Font.font("Arial", FontWeight.NORMAL, 10));
-            gc.setFill(Color.rgb(120, 200, 120));
-            gc.fillText("sanity +1/s", secX, ROW2_Y);
+            gc.fillText("✔ SAFE", secX, ROW1_Y + 8);
         } else {
-            gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
-            gc.setFill(Color.rgb(100, 100, 120));
-            gc.fillText("UNSAFE", secX, ROW1_Y);
+            gc.setFill(Color.rgb(140, 140, 140));
+            gc.fillText("DANGER", secX, ROW1_Y + 8);
         }
     }
 
-    // ── Drawing utilities ─────────────────────────────────────────────────────
-
-    /** Draws a progress bar with background fill, border, and fill value [0..1]. */
-    private static void drawBar(GraphicsContext gc, double x, double y, double w, double h,
-            Color bg, Color border, Color fill, double ratio, String label) {
-        double r = Math.max(0, Math.min(1.0, ratio));
-        gc.setFill(bg);
-        gc.fillRect(x, y, w, h);
-        gc.setStroke(border);
-        gc.setLineWidth(1);
-        gc.strokeRect(x, y, w, h);
-        gc.setFill(fill);
-        gc.fillRect(x + 1, y + 1, (w - 2) * r, h - 2);
-
-        if (label != null && !label.isEmpty()) {
-            gc.setFont(Font.font("Arial", FontWeight.BOLD, 10));
-            double textY = y + h - 3;
-            // Shadow
-            gc.setFill(Color.rgb(0, 0, 0, 0.7));
-            gc.fillText(label, x + 5, textY + 1);
-            // Text
-            gc.setFill(Color.WHITE);
-            gc.fillText(label, x + 4, textY);
-        }
-    }
-
-    /** Draws a small label. */
-    private static void drawBarLabel(GraphicsContext gc, double x, double y, String text, Color color) {
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 10));
+    /**
+     * Formats basic textual nodes rendering uniform string identifiers explicitly consistently natively.
+     *
+     * @param gc Rendering anchor applying explicit parameter limitations properly optimally cleanly.
+     * @param x Arbitrary coordinate tracking horizontal string deployments accurately.
+     * @param y Arbitrary coordinate tracking vertical string deployments accurately.
+     * @param label Contextual string defining explicitly mapped UI elements definitively safely.
+     * @param color Abstract RGB abstraction translating visual output boundaries linearly intelligently.
+     */
+    private static void drawBarLabel(GraphicsContext gc, double x, double y, String label, Color color) {
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
         gc.setFill(color);
-        gc.fillText(text, x, y);
+        gc.fillText(label, x, y);
+    }
+
+    /**
+     * Allocates functional geometry constraints validating scalar parameter shifts visually perfectly consistently.
+     *
+     * @param gc Output target interpolating hardware boundaries explicitly naturally structurally.
+     * @param x Mathematical location defining physical rectangular bounds linearly unambiguously.
+     * @param y Mathematical location defining physical rectangular bounds linearly unambiguously.
+     * @param width Bounded size parameter delineating explicit matrix allocations cleanly systematically safely.
+     * @param height Bounded size parameter delineating explicit matrix allocations cleanly systematically safely.
+     * @param bg Standard color mapping rendering default backgrounds natively clearly strictly.
+     * @param border Strict linear frame maintaining explicit bounded visualizations accurately fundamentally conditionally.
+     * @param fill Internal scaling abstraction visually indicating specific array progression reliably structurally intuitively.
+     * @param progress Decimal ratio calculating definitive geometric representations precisely successfully cleanly intelligently.
+     * @param text Auxiliary identifier rendering bounded context labels dependably naturally properly securely.
+     */
+    private static void drawBar(GraphicsContext gc, double x, double y, double width, double height,
+            Color bg, Color border, Color fill, double progress, String text) {
+        gc.setFill(bg);
+        gc.fillRect(x, y, width, height);
+
+        gc.setStroke(border);
+        gc.strokeRect(x, y, width, height);
+
+        double bw = width * Math.max(0, Math.min(1, progress));
+        if (bw > 0) {
+            gc.setFill(fill);
+            gc.fillRect(x + 1, y + 1, bw - 2, height - 2);
+        }
+
+        gc.setFont(Font.font("Consolas", FontWeight.BOLD, 10));
+        gc.setFill(Color.WHITE);
+        gc.fillText(text, x + 4, y + 10);
     }
 }

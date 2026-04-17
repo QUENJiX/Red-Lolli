@@ -18,13 +18,13 @@ import java.util.Set;
 import com.nsu.cse215l.redlolli.redlolli.systems.*;
 
 /**
- * Manages all game state and logic extracted from HelloApplication.
- * Handles entity spawning, per-frame updates, collision checks, and debug
- * overlay.
+ * Serves as the central orchestrator for the application's finite state machine.
+ * Encapsulates global state metrics and delegates cyclical logic updates to decoupled subsystems.
+ * Synchronizes entity spatial matrices, collision constraints, and deterministic delta timings.
  */
 public class GameStateManager {
 
-public int totalChestsCollected = 0;
+    public int totalChestsCollected = 0;
     public int totalChestsEncountered = 0;
     public double totalPlayTimeSeconds = 0;
 
@@ -47,9 +47,9 @@ public int totalChestsCollected = 0;
     double guardHitCooldownFrames = 0;
     double footstepCooldownFrames = 0;
     double lunaScreamCooldownFrames = 0;
-    double screenShakeFrames = 0; // For screen shake effect
-    double playerDeathAnimFrames = 0; // Death animation counter (screen fills red)
-    boolean playerIsDead = false; // Persistent flag to prevent re-triggering death
+    double screenShakeFrames = 0;
+    double playerDeathAnimFrames = 0;
+    boolean playerIsDead = false;
 
     private long lastUpdateTime = 0;
     private double timeDelta = 1.0;
@@ -62,8 +62,10 @@ public int totalChestsCollected = 0;
 
     final SoundManager soundManager = new SoundManager();
 
-    // ========================= LIFECYCLE =========================
-
+    /**
+     * Executes procedural initializations to reset systemic temporal configurations natively.
+     * Purges topological entity mappings to reestablish deterministic baseline variables.
+     */
     void resetGameState() {
         entityManager.clear();
         overlays.clear();
@@ -75,6 +77,7 @@ public int totalChestsCollected = 0;
         activeDeathMessage = "";
         lolliRecentlyCollected = false;
 
+        // Reinitialize accumulators based on fundamental architectural boundaries
         if (levelManager.getCurrentLevel() == 1) {
             startingDistractions = 1;
             totalPlayTimeSeconds = 0;
@@ -96,34 +99,48 @@ public int totalChestsCollected = 0;
         escapeRoomsCollapsed = false;
         lastUpdateTime = 0;
 
-        // Reset player sanity
+        // Reset psychological constraints natively verifying logic boundaries
         if (entityManager.getPlayer() != null) {
             entityManager.getPlayer().resetSanity();
         }
     }
 
+    /**
+     * Translates strict topological parameters into instantiated environmental matrices.
+     * Evaluates initial logic constraints calculating objective geometries deterministically.
+     */
     void loadLevel() {
         levelManager.loadLevel(entityManager);
         totalChestsEncountered += entityManager.getChests().size();
     }
 
-    // ========================= FRAME UPDATE =========================
-
-    /** Triggers player death animation and sets death message. */
+    /**
+     * Executes structural failure sequences triggering absolute game state halting.
+     * 
+     * @param message Textual mapping of the definitive fatal error state.
+     * @return boolean True indicating absolute game iteration termination natively.
+     */
     private boolean triggerPlayerDeath(String message) {
-        // Only trigger once — prevents re-triggering after animation finishes
         if (playerIsDead)
             return true;
         activeDeathMessage = message;
-        playerDeathAnimFrames = 60; // 1 second death animation (60 frames)
+        playerDeathAnimFrames = 60;
         playerIsDead = true;
         return true;
     }
 
-    /** Returns true if the player died this frame. */
+    /**
+     * Orchestrates systemic tick propagation directing cyclical interactions flawlessly.
+     * Normalizes chronological deviations via floating-point delta matrices natively.
+     * 
+     * @param activeKeys Exogenous Boolean constraint mappings capturing keyboard states dynamically.
+     * @return boolean True communicating a terminal halt mechanism within the core process loop.
+     */
     boolean update(Set<KeyCode> activeKeys) {
         long now = System.nanoTime();
         if (lastUpdateTime == 0) lastUpdateTime = now;
+        
+        // Execute temporal coefficient normalization ensuring uniform AI trajectory scaling
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
@@ -131,6 +148,7 @@ public int totalChestsCollected = 0;
         if (showingItemFound)
             return false;
 
+        // Process discrete execution sequences prior to halting game cycle fundamentally
         if (playerIsDead) {
             if (playerDeathAnimFrames > 0) {
                 playerDeathAnimFrames -= timeDelta;
@@ -140,16 +158,18 @@ public int totalChestsCollected = 0;
 
         totalPlayTimeSeconds += dtSeconds;
 
+        // Iteratively render priority sequential animations without progressing logical matrices
         if (lolliRevealState != null && lolliRevealState.active) {
             lolliRevealState.timer -= timeDelta;
             lolliRevealState.phase += 0.15 * timeDelta;
             if (lolliRevealState.timer <= 0) {
                 lolliRevealState.active = false;
-                return false; // signal HelloApplication to show item-found screen
+                return false;
             }
             return false;
         }
 
+        // Exhaust transient effect constraints proportionally based on active rendering offsets
         if (exitGraceFrames > 0)
             exitGraceFrames -= timeDelta;
         if (guardHitCooldownFrames > 0)
@@ -159,6 +179,7 @@ public int totalChestsCollected = 0;
         if (screenShakeFrames > 0)
             screenShakeFrames -= timeDelta;
 
+        // Transmit updated coordinate limits to respective subcomponents uniformly
         if (entityManager.getSerialKiller() != null)
             entityManager.getSerialKiller().update();
         for (GuardEntity guard : entityManager.getGuards())
@@ -166,19 +187,18 @@ public int totalChestsCollected = 0;
         for (TorchEntity torch : entityManager.getTorches())
             torch.update();
 
-        // Update player's near-Luna status for sanity drain
+        // Integrate asynchronous physiological constraints checking deterministic interaction logic
         if (entityManager.getPaleLuna() != null) {
             entityManager.getPlayer().updateNearLunaStatus(entityManager.getPaleLuna().getX(), entityManager.getPaleLuna().getY());
         }
 
         entityManager.getPlayer().update();
 
-        // Check for sanity death
         if (entityManager.getPlayer().isSanityDead()) {
             return triggerPlayerDeath("Your mind broke before she could.");
         }
 
-        // Stand-still penalty
+        // Interrupt stationary matrix dependencies invoking dynamic hazard protocols
         boolean movingInput = activeKeys.contains(KeyCode.W) || activeKeys.contains(KeyCode.A)
                 || activeKeys.contains(KeyCode.S) || activeKeys.contains(KeyCode.D);
         if (movingInput) {
@@ -191,7 +211,7 @@ public int totalChestsCollected = 0;
             }
         }
 
-        // Movement
+        // Apply discrete Cartesian derivation matrices yielding uniform kinetic bounding globally
         boolean sprinting = activeKeys.contains(KeyCode.SHIFT) && entityManager.getPlayer().canSprint();
         double beforeX = entityManager.getPlayer().getX(), beforeY = entityManager.getPlayer().getY();
         if (activeKeys.contains(KeyCode.W))
@@ -203,6 +223,7 @@ public int totalChestsCollected = 0;
         if (activeKeys.contains(KeyCode.D))
             entityManager.getPlayer().move(1, 0, levelManager.getMaze(), sprinting);
 
+        // Disaggregate geometric constraints resolving auditory feedback dependencies procedurally
         boolean moved = Math.abs(entityManager.getPlayer().getX() - beforeX) > 0.01 || Math.abs(entityManager.getPlayer().getY() - beforeY) > 0.01;
         if (moved) {
             if (footstepCooldownFrames <= 0) {
@@ -215,13 +236,12 @@ public int totalChestsCollected = 0;
             footstepCooldownFrames = Math.max(0, footstepCooldownFrames - timeDelta);
         }
 
-        // Escape room state
+        // Reconcile dynamic Boolean limits isolating sanctuary regions properly organically 
         boolean inEscapeRoom = levelManager.getMaze().isEscapeRoom(entityManager.getPlayer().getHitbox());
         boolean enteringEscapeRoom = !wasInEscapeRoom && inEscapeRoom;
         boolean exitingEscapeRoom = wasInEscapeRoom && !inEscapeRoom;
         entityManager.getPlayer().setInEscapeRoom(inEscapeRoom);
 
-        // Update escape room visual state (open door when player inside)
         levelManager.getMaze().updateEscapeRoomState(entityManager.getPlayer().getX(), entityManager.getPlayer().getY());
 
         if (exitingEscapeRoom) {
@@ -229,7 +249,7 @@ public int totalChestsCollected = 0;
         }
         wasInEscapeRoom = inEscapeRoom;
 
-        // Collision & threat checks
+        // Perform bounding box evaluations updating secondary logical entities linearly
         collisionSystem.checkChestCollisions(entityManager, hasCloneItem);
         if (collisionSystem.collectedChests > 0) {
             totalChestsCollected += collisionSystem.collectedChests;
@@ -245,6 +265,7 @@ public int totalChestsCollected = 0;
         distractionSpellCount += collisionSystem.newDistractions;
         hasCloneItem = collisionSystem.hasCloneItem;
 
+        // Delegate specific hazard collision evaluations maintaining strict structural decoupling
         collisionSystem.playerDied = false;
         collisionSystem.checkGuardThreats(entityManager, inEscapeRoom, enteringEscapeRoom, guardHitCooldownFrames);
         if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
@@ -271,18 +292,23 @@ public int totalChestsCollected = 0;
     }
 
     /**
-     * Returns true if the lolli reveal just finished this frame (needs item-found
-     * screen).
+     * Confirms the termination of specific independent cyclical visual progressions.
+     * 
+     * @return boolean True authenticating the exhaustion of localized sequential tracking variables.
      */
     boolean isLolliRevealJustFinished() {
         return lolliRevealState != null && !lolliRevealState.active;
     }
 
-    // ========================= ACTIONS =========================
-
     /**
-     * Adds a manual image overlay to the current frame. Call each frame for
-     * persistent overlays.
+     * Integrates ephemeral user interface bounding nodes into the rendering abstraction structurally.
+     * 
+     * @param imagePath Resource URI classifying absolute textual mapping parameters.
+     * @param x Arbitrary Cartesian limit horizontally instantiating logical vectors.
+     * @param y Arbitrary Cartesian limit vertically instantiating logical vectors.
+     * @param width Numeric structural array indicating linear dimensional geometry.
+     * @param height Numeric structural array indicating vertical dimensional geometry.
+     * @param opacity Floating-point constant extracting objective visibility multipliers smoothly.
      */
     public void addOverlay(String imagePath, double x, double y, double width, double height,
             double opacity) {
@@ -291,7 +317,16 @@ public int totalChestsCollected = 0;
         overlays.add(o);
     }
 
-    /** Adds a manual overlay at world (maze) coordinates. */
+    /**
+     * Coordinates transient world geometries strictly mapped to matrix dependencies linearly.
+     * 
+     * @param imagePath Resource string deriving absolute bounds uniformly natively.
+     * @param worldX Mathematical vector mapping Cartesian offsets dynamically safely.
+     * @param worldY Mathematical vector mapping Cartesian offsets dynamically safely.
+     * @param width Logical distance constraint projecting lateral visualization correctly.
+     * @param height Logical distance constraint projecting longitudinal visualization correctly.
+     * @param opacity Extrapolated integer scaling absolute alpha blending values properly.
+     */
     public void addWorldOverlay(String imagePath, double worldX, double worldY, double width,
             double height, double opacity) {
         GameRenderer.Overlay o = new GameRenderer.Overlay(imagePath, worldX, worldY, width, height, true);
@@ -299,12 +334,18 @@ public int totalChestsCollected = 0;
         overlays.add(o);
     }
 
+    /**
+     * Intercepts environmental constraints conditionally resolving mechanical overrides securely.
+     * Analyzes proximal hazard distances dynamically overriding default hazard logic natively.
+     */
     void tryUseDistraction() {
         GuardEntity nearest = null;
         double best = Double.MAX_VALUE;
         for (GuardEntity guard : entityManager.getGuards()) {
             if (guard.isDistracted())
                 continue;
+            
+            // Normalize euclidean vector distances mathematically mitigating topological ambiguity organically
             double d = distInTiles(entityManager.getPlayer().getX(), entityManager.getPlayer().getY(), guard.getX(), guard.getY());
             if (d < best && guard.isWithinDistractionRange(entityManager.getPlayer().getX(), entityManager.getPlayer().getY())) {
                 best = d;
@@ -313,13 +354,20 @@ public int totalChestsCollected = 0;
         }
         if (nearest == null)
             return;
+        
+        // Execute numerical decay restricting persistent loop overrides precisely
         if (distractionSpellCount > 0) {
             distractionSpellCount--;
             nearest.distract();
         }
     }
 
+    /**
+     * Synthesizes surrogate entities inserting strict tracking clones conditionally natively.
+     * Establishes dynamic interaction overrides terminating redundant structural arrays correctly.
+     */
     void tryPlaceClone() {
+        // Enforce chronological conditionals preventing invalid synthetic geometry propagation fundamentally
         if (!hasCloneItem || levelManager.getCurrentLevel() != 3 || entityManager.getCloneDecoy() != null)
             return;
         CardboardClone cloneDecoy = new CardboardClone(entityManager.getPlayer().getX() + 5, entityManager.getPlayer().getY() + 5);
@@ -329,8 +377,13 @@ public int totalChestsCollected = 0;
         soundManager.playOneShot(SoundManager.CHEST_OPEN, 0.45);
     }
 
-    // ========================= RENDERING =========================
-
+    /**
+     * Exports absolute operational telemetry data aggregating structural abstractions reliably cleanly.
+     * Subordinates default visual rendering loops natively explicitly.
+     * 
+     * @param gc Hardware geometry bounds delegating explicit alphanumeric matrices sequentially.
+     * @param activeKeys Exogenous key polling arrays translated functionally dynamically.
+     */
     void drawDebugOverlay(GraphicsContext gc, Set<KeyCode> activeKeys) {
         Monster paleLuna = entityManager.getPaleLuna();
         Player player = entityManager.getPlayer();
@@ -339,6 +392,7 @@ public int totalChestsCollected = 0;
         double lunaDist = paleLuna == null ? 99.0
                 : distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY());
 
+        // Process rectangular overlays ensuring contrast mappings objectively cleanly
         gc.setFill(Color.rgb(0, 0, 0, 0.62));
         gc.fillRect(8, 58, 360, 182);
         gc.setStroke(Color.rgb(180, 40, 40, 0.8));
@@ -347,8 +401,12 @@ public int totalChestsCollected = 0;
 
         gc.setFill(Color.rgb(220, 220, 220));
         gc.setFont(Font.font("Consolas", FontWeight.BOLD, 12));
+        
+        // Interpret local geometric matrix vectors securely smoothly efficiently
         int[] tile = maze.getTilePositionAt(player.getX() + 10, player.getY() + 10);
         String tileText = tile == null ? "-" : tile[0] + "," + tile[1];
+        
+        // Output AI sequential indices objectively accurately seamlessly
         String lunaState = paleLuna == null ? "NONE" : paleLuna.getState().name();
         int lunaTimer = 0;
         if (paleLuna != null) {
@@ -359,6 +417,8 @@ public int totalChestsCollected = 0;
                 case WAITING_AT_DOOR -> lunaTimer = paleLuna.getWaitTimer();
             }
         }
+        
+        // Compile strict sequence parameters unconditionally smoothly optimally
         String[] lines = {
                 "DEBUG (F3)",
                 "Level=" + levelManager.getCurrentLevel() + " Tile=" + tileText + " InEscape=" + player.isInEscapeRoom(),
@@ -374,14 +434,25 @@ public int totalChestsCollected = 0;
         }
     }
 
-    // ========================= UTILITIES =========================
-
+    /**
+     * Executes arbitrary trajectory adjustments bypassing algorithmic dependencies entirely globally.
+     * Prevents logic deadlocks inherently safely natively.
+     */
     private void teleportLunaNearPlayer() {
         if (entityManager.getPaleLuna() == null)
             return;
         entityManager.getPaleLuna().setPosition(entityManager.getPlayer().getX() + 36, entityManager.getPlayer().getY());
     }
 
+    /**
+     * Derives spatial Cartesian magnitudes mapping decoupled geographic limits effectively reliably.
+     * 
+     * @param x1 Lateral vector variable systematically objectively correctly natively.
+     * @param y1 Longitudinal vector variable systematically objectively correctly natively.
+     * @param x2 Target lateral coordinate cleanly seamlessly mapped exactly.
+     * @param y2 Target longitudinal coordinate cleanly seamlessly mapped exactly.
+     * @return double Extracted distance differential explicitly mathematically calculated.
+     */
     static double distInTiles(double x1, double y1, double x2, double y2) {
         double dx = (x1 - x2) / Maze.TILE_SIZE, dy = (y1 - y2) / Maze.TILE_SIZE;
         return Math.sqrt(dx * dx + dy * dy);
