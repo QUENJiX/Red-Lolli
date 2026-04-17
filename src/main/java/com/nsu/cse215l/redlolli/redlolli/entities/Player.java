@@ -33,29 +33,36 @@ public class Player extends Entity implements Collidable {
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         idleFrontImg = loadSprite("idle_front.png", 32, 32);
         idleBackImg = loadSprite("idle_back.png", 32, 32);
         idleLeftImg = loadSprite("idle_left.png", 32, 32);
         idleRightImg = loadSprite("idle_right.png", 32, 32);
-        
+
         walkBackImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkBackImgs[i-1] = loadSprite("walk_back_" + i + ".png", 28, 28);
-        
+        for (int i = 1; i <= 3; i++)
+            walkBackImgs[i - 1] = loadSprite("walk_back_" + i + ".png", 28, 28);
+
         walkFrontImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkFrontImgs[i-1] = loadSprite("walk_front_" + i + ".png", 28, 28);
-        
+        for (int i = 1; i <= 3; i++)
+            walkFrontImgs[i - 1] = loadSprite("walk_front_" + i + ".png", 28, 28);
+
         walkLeftImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkLeftImgs[i-1] = loadSprite("walk_left_" + i + ".png", 28, 28);
-        
+        for (int i = 1; i <= 3; i++)
+            walkLeftImgs[i - 1] = loadSprite("walk_left_" + i + ".png", 28, 28);
+
         walkRightImgs = new Image[3];
-        for (int i=1; i<=3; i++) walkRightImgs[i-1] = loadSprite("walk_right_" + i + ".png", 28, 28);
+        for (int i = 1; i <= 3; i++)
+            walkRightImgs[i - 1] = loadSprite("walk_right_" + i + ".png", 28, 28);
 
         imagesInitialized = true;
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() { imagesInitialized = false; }
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
     // Visual render size
     private static final double RENDER_SIZE = 32.0;
@@ -78,7 +85,7 @@ public class Player extends Entity implements Collidable {
 
     // Sanity system
     private static final int MAX_SANITY = 100;
-    private static final int PASSIVE_DRAIN_INTERVAL = 60; // 1 sanity per 5 seconds (300 frames) 
+    private static final int PASSIVE_DRAIN_INTERVAL = 60; // 1 sanity per 5 seconds (300 frames)
     private static final int NEAR_LUNA_DRAIN_INTERVAL = 120; // 1 sanity per 2 seconds when near Luna
     private static final int ESCAPE_ROOM_RECOVERY_INTERVAL = 60; // +1 sanity per second in escape room
     private static final int NEAR_LUNA_DISTANCE = 150; // pixels threshold for "near Luna"
@@ -113,7 +120,7 @@ public class Player extends Entity implements Collidable {
             animFrame = 0;
             animTimer = 0;
         }
-        
+
         isMoving = movedThisFrame;
         movedThisFrame = false; // Reset for the next frame
 
@@ -190,10 +197,18 @@ public class Player extends Entity implements Collidable {
         Image img = idleFrontImg;
         if (!isMoving) {
             switch (dir) {
-                case "left": img = idleLeftImg; break;
-                case "right": img = idleRightImg; break;
-                case "back": img = idleBackImg; break;
-                default: img = idleFrontImg; break;
+                case "left":
+                    img = idleLeftImg;
+                    break;
+                case "right":
+                    img = idleRightImg;
+                    break;
+                case "back":
+                    img = idleBackImg;
+                    break;
+                default:
+                    img = idleFrontImg;
+                    break;
             }
         } else {
             switch (dir) {
@@ -212,7 +227,7 @@ public class Player extends Entity implements Collidable {
                 case "front":
                     if (walkFrontImgs != null && walkFrontImgs.length > 0)
                         img = walkFrontImgs[animFrame % walkFrontImgs.length];
-                    else 
+                    else
                         img = idleFrontImg;
                     break;
             }

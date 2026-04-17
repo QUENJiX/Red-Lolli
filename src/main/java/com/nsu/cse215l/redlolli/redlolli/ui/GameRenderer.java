@@ -205,17 +205,18 @@ public class GameRenderer {
 
         // Vignette overlay (darkens screen edges, intensifies with low sanity)
         if (vignetteIntensity > 0 || isLunaHunting) {
-            double effVignette = Math.max(vignetteIntensity, isLunaHunting ? 0.3 + (Math.sin(System.currentTimeMillis() / 150.0) * 0.15) : 0);
+            double effVignette = Math.max(vignetteIntensity,
+                    isLunaHunting ? 0.3 + (Math.sin(System.currentTimeMillis() / 150.0) * 0.15) : 0);
             drawVignetteOverlay(gc, effVignette);
         }
-        
+
         // Add hunting panic overrides
         if (isLunaHunting) {
             // Heartbeat red pulsing
             double pulse = Math.abs(Math.sin(System.currentTimeMillis() / 200.0));
             gc.setFill(Color.rgb(180, 0, 0, 0.05 + (0.05 * pulse)));
             gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            
+
             // Random horizontal glitch slices
             if (Math.random() < 0.25) {
                 gc.setFill(Color.rgb(0, 0, 0, 0.4));
@@ -223,7 +224,7 @@ public class GameRenderer {
                 double glitchHeight = Math.random() * 8 + 2;
                 gc.fillRect(0, glitchY, SCREEN_WIDTH, glitchHeight);
             }
-            
+
             // Chromatic aberration simulation
             if (Math.random() < 0.05) {
                 gc.setGlobalBlendMode(BlendMode.DIFFERENCE);

@@ -92,12 +92,12 @@ public class HelloApplication extends Application {
 
         // Buttons using SceneFactory's new image swapping logic
         javafx.scene.control.Button newGameBtn = SceneFactory.createIconButton(
-                "/assets/images/ui/icon_play.png", 
-                "/assets/images/ui/btn_new_game.png", 
+                "/assets/images/ui/icon_play.png",
+                "/assets/images/ui/btn_new_game.png",
                 "/assets/images/ui/btn_new_game_pressed.png");
         javafx.scene.control.Button exitBtn = SceneFactory.createIconButton(
-                "/assets/images/ui/icon_exit.png", 
-                "/assets/images/ui/btn_exit.png", 
+                "/assets/images/ui/icon_exit.png",
+                "/assets/images/ui/btn_exit.png",
                 "/assets/images/ui/btn_exit_pressed.png");
         newGameBtn.setOnAction(e -> playIntroAndStart());
         exitBtn.setOnAction(e -> System.exit(0));
@@ -136,13 +136,13 @@ public class HelloApplication extends Application {
         timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(11.5), e -> {
             scene.setOnKeyPressed(null);
             gsm.soundManager.stopMusic();
-            
+
             root.getChildren().clear();
             javafx.scene.text.Text loadingText = new javafx.scene.text.Text("LOADING...");
             loadingText.setFill(Color.WHITE);
             loadingText.setFont(javafx.scene.text.Font.font("Serif", 30));
             root.getChildren().add(loadingText);
-            
+
             javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(50));
             pt.setOnFinished(evt -> startGame(1));
             pt.play();
@@ -154,13 +154,13 @@ public class HelloApplication extends Application {
                 scene.setOnKeyPressed(null);
                 timeline.stop();
                 gsm.soundManager.stopMusic();
-                
+
                 root.getChildren().clear();
                 javafx.scene.text.Text loadingText = new javafx.scene.text.Text("LOADING...");
                 loadingText.setFill(Color.WHITE);
                 loadingText.setFont(javafx.scene.text.Font.font("Serif", 30));
                 root.getChildren().add(loadingText);
-                
+
                 javafx.animation.PauseTransition pt = new javafx.animation.PauseTransition(Duration.millis(50));
                 pt.setOnFinished(evt -> startGame(1));
                 pt.play();
@@ -253,7 +253,10 @@ public class HelloApplication extends Application {
             gsm.drawDebugOverlay(gc, activeKeys);
     }
 
-    /** Renders the player death animation - screen fills red closing in a circle with flashes and jitters. */
+    /**
+     * Renders the player death animation - screen fills red closing in a circle
+     * with flashes and jitters.
+     */
     private void renderDeathAnimation(GraphicsContext gc, int framesRemaining) {
         double progress = 1.0 - (double) framesRemaining / 60.0; // 0.0 to 1.0 over 60 frames
 
@@ -271,7 +274,7 @@ public class HelloApplication extends Application {
         double centerY = 365.0 + jitterY;
 
         // Flashes randomness
-        boolean isFlash = progress > 0.2 && Math.random() < 0.2; 
+        boolean isFlash = progress > 0.2 && Math.random() < 0.2;
 
         double centerAlpha = progress > 0.5 ? Math.min(1.0, (progress - 0.5) * 2.0) : 0.0;
         Color centerColor = Color.rgb(0, 0, 0, centerAlpha);
@@ -287,8 +290,7 @@ public class HelloApplication extends Application {
                 new javafx.scene.paint.Stop(0.0, centerColor),
                 new javafx.scene.paint.Stop(innerRatio, centerColor),
                 new javafx.scene.paint.Stop(outerRatio, bloodRed),
-                new javafx.scene.paint.Stop(1.0, bloodRed)
-        );
+                new javafx.scene.paint.Stop(1.0, bloodRed));
 
         gc.setFill(gradient);
         gc.fillRect(0, 0, 880, 730);

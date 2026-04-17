@@ -43,7 +43,8 @@ public class GuardEntity extends Entity implements Collidable {
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         batImg = loadSprite("guard_bat.png", 40, 40);
         batDistractedImg = loadSprite("guard_bat_distracted.png", 40, 40);
         cobraImg = loadSprite("guard_cobra.png", 40, 40);
@@ -54,7 +55,9 @@ public class GuardEntity extends Entity implements Collidable {
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() { imagesInitialized = false; }
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
     // Visual render size (40x40 centered on the 28x28 hitbox)
     private static final double RENDER_SIZE = 40.0;
@@ -157,10 +160,13 @@ public class GuardEntity extends Entity implements Collidable {
             gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         } else {
             Color fallback;
-            if (type == Type.BAT) fallback = distracted ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60);
-            else if (type == Type.COBRA) fallback = distracted ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30);
-            else fallback = distracted ? Color.rgb(120, 80, 120) : Color.rgb(80, 30, 80);
-            
+            if (type == Type.BAT)
+                fallback = distracted ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60);
+            else if (type == Type.COBRA)
+                fallback = distracted ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30);
+            else
+                fallback = distracted ? Color.rgb(120, 80, 120) : Color.rgb(80, 30, 80);
+
             gc.setFill(fallback);
             gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         }

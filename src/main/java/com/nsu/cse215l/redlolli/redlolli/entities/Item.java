@@ -40,7 +40,8 @@ public class Item extends Entity implements Collidable {
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         chestClosedImg = loadSprite("chest_closed.png", 32, 32);
         chestOpenedImg = loadSprite("chest_open.png", 32, 32);
         chestGlowLolli = loadSprite("chest_glow_lolli.png", 32, 32);
@@ -49,7 +50,9 @@ public class Item extends Entity implements Collidable {
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() { imagesInitialized = false; }
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
     // Visual render size (32x32 centered on the 16x16 hitbox)
     private static final double RENDER_SIZE = 32.0;

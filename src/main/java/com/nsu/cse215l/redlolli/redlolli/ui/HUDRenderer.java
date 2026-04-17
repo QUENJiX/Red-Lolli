@@ -17,8 +17,9 @@ import java.util.List;
  * Manages the in-game HUD visual layer at the top of the screen.
  * Layout (880 x 50 px):
  *
- *  [LEVEL 1/3] | [🍬 0/1] | [FIND: Mud / Fruit:2 (E)] | [Luna bar + label] | [MIND bar] | [SAFE]
- *   x=0..89      x=90..149   x=150..334                   x=335..609           x=610..809   x=810..879
+ * [LEVEL 1/3] | [🍬 0/1] | [FIND: Mud / Fruit:2 (E)] | [Luna bar + label] |
+ * [MIND bar] | [SAFE]
+ * x=0..89 x=90..149 x=150..334 x=335..609 x=610..809 x=810..879
  *
  * All text baseline at ROW1_Y (top row) or ROW2_Y (sub-label row).
  * All bars are at BAR_Y with height BAR_H.
@@ -26,18 +27,18 @@ import java.util.List;
 public class HUDRenderer {
 
     // ── Layout constants ─────────────────────────────────────────────────────
-    private static final double HUD_W    = 880;
-    private static final double HUD_H    = 50;
-    private static final double ROW1_Y   = 20;   // primary text baseline
-    private static final double ROW2_Y   = 38;   // secondary / sub-label baseline
-    private static final double BAR_Y    = 24;   // top of progress bars
-    private static final double BAR_H    = 14;   // height of progress bars
+    private static final double HUD_W = 880;
+    private static final double HUD_H = 50;
+    private static final double ROW1_Y = 20; // primary text baseline
+    private static final double ROW2_Y = 38; // secondary / sub-label baseline
+    private static final double BAR_Y = 24; // top of progress bars
+    private static final double BAR_H = 14; // height of progress bars
 
     // ── Section x-boundaries ─────────────────────────────────────────────────
-    private static final double DIV_LEVEL  =  90;
-    private static final double DIV_LOLLI  = 150;
-    private static final double DIV_FIND   = 335;
-    private static final double DIV_LUNA   = 610;
+    private static final double DIV_LEVEL = 90;
+    private static final double DIV_LOLLI = 150;
+    private static final double DIV_FIND = 335;
+    private static final double DIV_LUNA = 610;
     private static final double DIV_SANITY = 810;
 
     // ── Image assets ─────────────────────────────────────────────────────────
@@ -49,24 +50,29 @@ public class HUDRenderer {
     private static Image loadSprite(String filename, int width, int height) {
         try {
             InputStream is = HUDRenderer.class.getResourceAsStream("/assets/images/sprites/" + filename);
-            if (is != null) return new Image(is, width, height, true, false);
-        } catch (Exception ignored) {}
+            if (is != null)
+                return new Image(is, width, height, true, false);
+        } catch (Exception ignored) {
+        }
         return null;
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
-        paleLunaIconImg[0]  = loadSprite("monster_dormant.png",   18, 18);
-        paleLunaIconImg[1]  = loadSprite("monster_stalking.png",  18, 18);
-        paleLunaIconImg[2]  = loadSprite("monster_hunting.png",   18, 18);
-        paleLunaIconImg[3]  = loadSprite("monster_waiting.png",   18, 18);
-        sanitySkullImg      = loadSprite("sanity_skull.png",      20, 20);
-        sanitySkullLowImg   = loadSprite("sanity_skull_2.png",    20, 20);
+        if (imagesInitialized)
+            return;
+        paleLunaIconImg[0] = loadSprite("monster_dormant.png", 18, 18);
+        paleLunaIconImg[1] = loadSprite("monster_stalking.png", 18, 18);
+        paleLunaIconImg[2] = loadSprite("monster_hunting.png", 18, 18);
+        paleLunaIconImg[3] = loadSprite("monster_waiting.png", 18, 18);
+        sanitySkullImg = loadSprite("sanity_skull.png", 20, 20);
+        sanitySkullLowImg = loadSprite("sanity_skull_2.png", 20, 20);
         imagesInitialized = true;
     }
 
     /** Force images to reload. */
-    public static void resetImages() { imagesInitialized = false; }
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
     // ── Entry point ───────────────────────────────────────────────────────────
 
@@ -140,7 +146,7 @@ public class HUDRenderer {
 
         double cx = secX + 5;
         double cy = HUD_H / 2;
-        
+
         // Glow effect similar to reveal
         double pulse = Math.sin(System.currentTimeMillis() * 0.005) * 0.2 + 0.8;
         if (found) {
@@ -151,7 +157,7 @@ public class HUDRenderer {
             gc.setFill(Color.rgb(255, 230, 100, 0.2 * pulse));
             gc.fillOval(cx - 5, cy - 5, 10, 10);
         }
-        
+
         // Draw the lolli itself
         GameRenderer.drawRedLolli(gc, cx, cy - 2, 8);
 
@@ -160,7 +166,9 @@ public class HUDRenderer {
         gc.fillText((found ? "1" : "0") + "/1", secX + 14, HUD_H / 2 + 5);
     }
 
-    /** Section 3: "FIND: Mud" (top) + "Distraction Spell: 2 (E)" sub-label (bottom) */
+    /**
+     * Section 3: "FIND: Mud" (top) + "Distraction Spell: 2 (E)" sub-label (bottom)
+     */
     private static void drawFindSection(GraphicsContext gc, int level, String[] itemNames,
             int distractionSpellCount, boolean hasCloneItem) {
         double secX = DIV_LOLLI + 8;
@@ -177,7 +185,7 @@ public class HUDRenderer {
         // Bottom: utility item counter
         gc.setFont(Font.font("Arial", FontWeight.NORMAL, 11));
         gc.setFill(Color.rgb(180, 175, 155));
-        
+
         if (level == 3 && hasCloneItem) {
             gc.setFill(Color.rgb(200, 200, 120));
             gc.fillText("👧 Clone ready  [C] to place", secX, ROW2_Y);
@@ -188,9 +196,10 @@ public class HUDRenderer {
 
     /** Section 4: Luna phase bar + state label */
     private static double drawLunaSection(GraphicsContext gc, Monster paleLuna, double pulsePhase) {
-        if (paleLuna == null) return pulsePhase;
+        if (paleLuna == null)
+            return pulsePhase;
 
-        double secX  = DIV_FIND + 8;
+        double secX = DIV_FIND + 8;
 
         // Luna icon (18x18 centered vertically)
         int stateIdx = paleLuna.getState().ordinal();
@@ -204,14 +213,14 @@ public class HUDRenderer {
             case DORMANT -> {
                 int sLeft = paleLuna.getDormantTimer() / 60;
                 Color tc = sLeft > 10 ? Color.LIMEGREEN
-                         : sLeft > 6  ? Color.YELLOW
-                         : sLeft > 3  ? Color.ORANGE
-                         : Color.rgb(255, (int)(50 * (Math.sin(pulsePhase) * 0.5 + 0.5)),
-                                         (int)(50 * (Math.sin(pulsePhase) * 0.5 + 0.5)));
+                        : sLeft > 6 ? Color.YELLOW
+                                : sLeft > 3 ? Color.ORANGE
+                                        : Color.rgb(255, (int) (50 * (Math.sin(pulsePhase) * 0.5 + 0.5)),
+                                                (int) (50 * (Math.sin(pulsePhase) * 0.5 + 0.5)));
                 drawBarLabel(gc, barX, ROW1_Y, "Pale Luna", Color.rgb(160, 160, 180));
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         Color.rgb(40, 40, 45), Color.rgb(70, 70, 80), tc,
-                        (double)paleLuna.getDormantTimer() / 900.0, "Sleeps " + sLeft + "s");
+                        (double) paleLuna.getDormantTimer() / 900.0, "Sleeps " + sLeft + "s");
             }
             case STALKING -> {
                 double flash = Math.sin(pulsePhase * 1.7) * 0.5 + 0.5;
@@ -219,24 +228,24 @@ public class HUDRenderer {
                 drawBarLabel(gc, barX, ROW1_Y, "Pale Luna", Color.rgb(220, 100, 100));
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         Color.rgb(60, 15, 15, 0.5 + flash * 0.3), Color.rgb(120, 30, 30), barFill,
-                        (double)paleLuna.getStalkTimer() / 480.0, "She watches...");
+                        (double) paleLuna.getStalkTimer() / 480.0, "She watches...");
                 pulsePhase += 0.24;
             }
             case HUNTING -> {
                 double cf = Math.sin(pulsePhase * 2) * 0.5 + 0.5;
                 int sLeft = paleLuna.getHuntTimer() / 60;
-                Color bg = Color.rgb(255, (int)(30 * cf), (int)(30 * cf));
+                Color bg = Color.rgb(255, (int) (30 * cf), (int) (30 * cf));
                 drawBarLabel(gc, barX, ROW1_Y, "⚠ HUNTING", Color.rgb(255, 80, 80));
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         bg, Color.rgb(100, 0, 0), Color.rgb(220, 40, 40),
-                        (double)paleLuna.getHuntTimer() / 360.0, "RUN!  " + sLeft + "s left");
+                        (double) paleLuna.getHuntTimer() / 360.0, "RUN!  " + sLeft + "s left");
                 pulsePhase += 0.30;
             }
             case WAITING_AT_DOOR -> {
                 drawBarLabel(gc, barX, ROW1_Y, "At the door", Color.ORANGE);
                 drawBar(gc, barX, BAR_Y, barW, BAR_H,
                         Color.rgb(80, 40, 0), Color.rgb(140, 80, 0), Color.ORANGE,
-                        (double)paleLuna.getWaitTimer() / 180.0, paleLuna.getWaitTimer() / 60 + "s...");
+                        (double) paleLuna.getWaitTimer() / 180.0, paleLuna.getWaitTimer() / 60 + "s...");
             }
         }
         return pulsePhase + 0.20;
@@ -258,20 +267,22 @@ public class HUDRenderer {
         }
 
         double barX = secX + 24;
-        double bw   = barW - 24;
+        double bw = barW - 24;
 
         Color fill;
-        if (sanity > 50)      fill = Color.rgb(100, 180, 255);
-        else if (sanity > 25) fill = Color.rgb(255, 180, 50);
+        if (sanity > 50)
+            fill = Color.rgb(100, 180, 255);
+        else if (sanity > 25)
+            fill = Color.rgb(255, 180, 50);
         else {
             double f = Math.sin(System.currentTimeMillis() * 0.01) * 0.5 + 0.5;
-            fill = Color.rgb(255, (int)(50 * f), (int)(50 * f));
+            fill = Color.rgb(255, (int) (50 * f), (int) (50 * f));
         }
 
         drawBarLabel(gc, barX, ROW1_Y, "MIND", Color.rgb(150, 150, 180));
         String label = sanity > 50 ? (sanity + "%") : sanity > 25 ? "Slipping" : "Breaking";
         drawBar(gc, barX, BAR_Y, bw, BAR_H, Color.rgb(40, 40, 45), Color.rgb(70, 70, 80), fill,
-                (double)sanity / 100.0, label);
+                (double) sanity / 100.0, label);
     }
 
     /** Section 6: [SAFE] indicator on the right */

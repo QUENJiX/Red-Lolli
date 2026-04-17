@@ -158,19 +158,22 @@ public class GameStateManager {
                     double minDist = Double.MAX_VALUE;
                     for (int[] er : escapeRooms) {
                         double dist = Math.pow(er[0] - row, 2) + Math.pow(er[1] - col, 2);
-                        if (dist < minDist) { 
-                            minDist = dist; 
-                            erRow = er[0]; 
-                            erCol = er[1]; 
+                        if (dist < minDist) {
+                            minDist = dist;
+                            erRow = er[0];
+                            erCol = er[1];
                         }
                     }
                     GuardEntity guard = null;
                     if (currentLevel == 1) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.BAT, erRow, erCol);
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
+                                GuardEntity.Type.BAT, erRow, erCol);
                     } else if (currentLevel == 2) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.COBRA, erRow, erCol);
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
+                                GuardEntity.Type.COBRA, erRow, erCol);
                     } else if (currentLevel == 3) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.CENTIPEDE, erRow, erCol);
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
+                                GuardEntity.Type.CENTIPEDE, erRow, erCol);
                     }
                     if (guard != null) {
                         guards.add(guard);
@@ -178,7 +181,8 @@ public class GameStateManager {
                     grid[row][col] = 0; // Turn into floor
                 } else if (tile == 10) {
                     if (currentLevel == 3) {
-                        serialKiller = new SerialKillerEntity(col * Maze.TILE_SIZE + 6, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
+                        serialKiller = new SerialKillerEntity(col * Maze.TILE_SIZE + 6,
+                                row * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
                     }
                     grid[row][col] = 0; // Turn into floor
                 }
@@ -200,7 +204,7 @@ public class GameStateManager {
             chests.add(chest);
             entities.add(chest);
         }
-        
+
         for (int[] pos : torchTiles) {
             TorchEntity torch = new TorchEntity(pos[1] * Maze.TILE_SIZE, pos[0] * Maze.TILE_SIZE + Maze.Y_OFFSET);
             torches.add(torch);
@@ -212,11 +216,12 @@ public class GameStateManager {
             entities.add(paleLuna);
         }
 
-        // Add them to entities manually in the correct order to preserve optimal Lighting BlendMode passes.
+        // Add them to entities manually in the correct order to preserve optimal
+        // Lighting BlendMode passes.
         for (GuardEntity guard : guards) {
             entities.add(guard);
         }
-        
+
         if (serialKiller != null) {
             entities.add(serialKiller);
         }
@@ -243,7 +248,7 @@ public class GameStateManager {
     boolean update(Set<KeyCode> activeKeys) {
         if (showingItemFound)
             return false;
-            
+
         if (playerIsDead) {
             if (playerDeathAnimFrames > 0) {
                 playerDeathAnimFrames--;
@@ -386,19 +391,25 @@ public class GameStateManager {
     private boolean checkGuardThreats(boolean inEscapeRoom, boolean enteringEscapeRoom) {
         if (guardHitCooldownFrames > 0)
             return false;
-            
-        // Player is safely inside the escape room and not actively crossing the threshold
+
+        // Player is safely inside the escape room and not actively crossing the
+        // threshold
         if (inEscapeRoom && !enteringEscapeRoom) {
             return false;
         }
-        
+
         for (GuardEntity guard : guards) {
-            // Guard kills if not distracted and player touches the guarded room or the guard itself
-            if (!guard.isDistracted() && (guard.isPlayerOnGuardedRoom(player.getHitbox()) || guard.getHitbox().intersects(player.getHitbox()))) {
+            // Guard kills if not distracted and player touches the guarded room or the
+            // guard itself
+            if (!guard.isDistracted() && (guard.isPlayerOnGuardedRoom(player.getHitbox())
+                    || guard.getHitbox().intersects(player.getHitbox()))) {
                 String msg;
-                if (guard.getType() == GuardEntity.Type.BAT) msg = "The bat bit first. Luna answered instantly.";
-                else if (guard.getType() == GuardEntity.Type.COBRA) msg = "The snake strikes! No spell cast, no escape.";
-                else msg = "The centipede swarmed you... the darkness follows.";
+                if (guard.getType() == GuardEntity.Type.BAT)
+                    msg = "The bat bit first. Luna answered instantly.";
+                else if (guard.getType() == GuardEntity.Type.COBRA)
+                    msg = "The snake strikes! No spell cast, no escape.";
+                else
+                    msg = "The centipede swarmed you... the darkness follows.";
                 return triggerPlayerDeath(msg);
             }
         }

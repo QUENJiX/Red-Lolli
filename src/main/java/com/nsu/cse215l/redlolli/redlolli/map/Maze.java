@@ -56,7 +56,6 @@ public class Maze {
         return null;
     }
 
-
     public static void initImages() {
         if (imagesInitialized)
             return;
@@ -128,8 +127,13 @@ public class Maze {
         imagesInitialized = true;
     }
 
-    /** Call this to force all maze tile images to reload (e.g. after changing asset filenames in code). */
-    public static void resetImages() { imagesInitialized = false; }
+    /**
+     * Call this to force all maze tile images to reload (e.g. after changing asset
+     * filenames in code).
+     */
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
     private void drawTile(GraphicsContext gc, Image img, double x, double y) {
         if (img != null) {
@@ -306,14 +310,17 @@ public class Maze {
         }
     }
 
-    /** Called automatically after tiles render. Fill your placeSprite() calls below. */
+    /**
+     * Called automatically after tiles render. Fill your placeSprite() calls below.
+     */
     public void renderOverlays(GraphicsContext gc) {
         // ================= YOUR OVERLAYS =================
         // Load once, then call placeSprite each frame:
         //
-        //   Image blood = new Image(getClass().getResourceAsStream("/assets/images/sprites/blood_splat.png"));
-        //   placeSprite(gc, blood, 5, 3, 40, 40, 0.5);
-        //   placeSprite(gc, blood, 12, 7, 40, 40, 0.3);
+        // Image blood = new
+        // Image(getClass().getResourceAsStream("/assets/images/sprites/blood_splat.png"));
+        // placeSprite(gc, blood, 5, 3, 40, 40, 0.5);
+        // placeSprite(gc, blood, 12, 7, 40, 40, 0.3);
         // ================================================
     }
 
@@ -323,12 +330,14 @@ public class Maze {
      * Places any image at a specific grid tile (col, row) on the maze.
      *
      * Example — blood splat at col 5, row 3, drawn at 40x40, 50% opacity:
-     *   Image blood = new Image(getClass().getResourceAsStream("/assets/images/sprites/blood_splat.png"));
-     *   maze.placeSprite(gc, blood, 5, 3, 40, 40, 0.5);
+     * Image blood = new
+     * Image(getClass().getResourceAsStream("/assets/images/sprites/blood_splat.png"));
+     * maze.placeSprite(gc, blood, 5, 3, 40, 40, 0.5);
      *
      * Example — mold patch at col 10, row 7, upscaled to 48x48:
-     *   Image mold = new Image(getClass().getResourceAsStream("/assets/images/sprites/mold.png"));
-     *   maze.placeSprite(gc, mold, 10, 7, 48, 48, 0.7);
+     * Image mold = new
+     * Image(getClass().getResourceAsStream("/assets/images/sprites/mold.png"));
+     * maze.placeSprite(gc, mold, 10, 7, 48, 48, 0.7);
      *
      * Call this after maze.renderMaze(gc) and before HUD rendering.
      */
@@ -446,11 +455,11 @@ public class Maze {
 
         int rows = mapGrid.length;
         int cols = mapGrid[0].length;
-        
+
         if (startR < 0 || startR >= rows || startC < 0 || startC >= cols) {
             return null;
         }
-        
+
         boolean[][] visited = new boolean[rows][cols];
         Queue<Node> queue = new LinkedList<>();
 

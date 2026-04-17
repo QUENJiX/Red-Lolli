@@ -37,7 +37,8 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         idleImg = loadSprite("killer_idle_right.png");
         idleLeftImg = loadSprite("killer_idle_left.png");
         chaseImg = loadSprite("killer_chase_right.png");
@@ -48,9 +49,12 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() { imagesInitialized = false; }
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
-    // Height of the killer in pixels. Width is calculated automatically to keep aspect ratio.
+    // Height of the killer in pixels. Width is calculated automatically to keep
+    // aspect ratio.
     private static final double RENDER_HEIGHT = 48.0;
 
     private static final double SPEED = 1.75;
@@ -77,13 +81,13 @@ public class SerialKillerEntity extends Entity implements Collidable {
                 attackingDecoy = false;
             }
         }
-        
+
         // Animation logic
         frameTick++;
         if (frameTick >= ticksPerFrame) {
             frameTick = 0;
             currentFrame++;
-            int maxFrames = (!active) ? 1 : 5; 
+            int maxFrames = (!active) ? 1 : 5;
             if (currentFrame >= maxFrames) {
                 currentFrame = 0;
             }
@@ -118,13 +122,16 @@ public class SerialKillerEntity extends Entity implements Collidable {
         double dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist > 0.0) {
-            if (dx < -0.1) facingLeft = true;
-            else if (dx > 0.1) facingLeft = false;
+            if (dx < -0.1)
+                facingLeft = true;
+            else if (dx > 0.1)
+                facingLeft = false;
 
             double move = Math.min(SPEED, dist);
-            
-            // True grid movement to prevent floating-point overshoot jitter and diagonal wall clipping
-            if (Math.abs(dx) >= Math.abs(dy)) { 
+
+            // True grid movement to prevent floating-point overshoot jitter and diagonal
+            // wall clipping
+            if (Math.abs(dx) >= Math.abs(dy)) {
                 // Primary movement is horizontal
                 if (Math.abs(dx) <= move) {
                     x += dx;
@@ -161,7 +168,7 @@ public class SerialKillerEntity extends Entity implements Collidable {
     @Override
     public void render(GraphicsContext gc) {
         Image imgToDraw;
-        int frameWidth = 128; 
+        int frameWidth = 128;
         int maxFrames = 5;
 
         if (!active) {
@@ -186,15 +193,15 @@ public class SerialKillerEntity extends Entity implements Collidable {
         // Calculate aspect-correct width based on the active animation frame
         double scale = RENDER_HEIGHT / 70.0;
         double drawWidth = frameWidth * scale;
-        
+
         // Draw centered (hitbox 24x24)
         double offsetX = (drawWidth - size) / 2;
         double offsetY = (RENDER_HEIGHT - size) / 2;
 
         if (imgToDraw != null) {
             int sourceX = currentFrame * frameWidth;
-            gc.drawImage(imgToDraw, 
-                    sourceX, 0, frameWidth, 70,                        // Source slice dimensions updated to 70 height
+            gc.drawImage(imgToDraw,
+                    sourceX, 0, frameWidth, 70, // Source slice dimensions updated to 70 height
                     x - offsetX, y - offsetY, drawWidth, RENDER_HEIGHT); // Destination bounding box
         } else {
             gc.setFill(active ? Color.rgb(180, 20, 20) : Color.rgb(80, 40, 40));

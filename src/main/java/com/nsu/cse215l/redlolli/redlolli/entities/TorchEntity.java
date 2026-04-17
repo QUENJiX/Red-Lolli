@@ -14,7 +14,7 @@ public class TorchEntity extends Entity {
     private static boolean imagesInitialized = false;
 
     private int animationTimer = 0;
-    private int currentFrame = 1; // Frames 1-4 are lit, frame 0 is unlit 
+    private int currentFrame = 1; // Frames 1-4 are lit, frame 0 is unlit
     private boolean isLit = true;
 
     private static Image loadSprite(String filename) {
@@ -22,7 +22,7 @@ public class TorchEntity extends Entity {
             InputStream is = TorchEntity.class.getResourceAsStream("/assets/images/dungeon/wall/torches/" + filename);
             if (is != null) {
                 // Resize to 40x40 to fit nicely on wall tiles
-                return new Image(is, 40, 40, true, false); 
+                return new Image(is, 40, 40, true, false);
             }
         } catch (Exception ignored) {
         }
@@ -30,7 +30,8 @@ public class TorchEntity extends Entity {
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         torchFrames = new Image[5];
         for (int i = 0; i < 5; i++) {
             torchFrames[i] = loadSprite("torch_" + i + ".png");
@@ -47,8 +48,9 @@ public class TorchEntity extends Entity {
 
     @Override
     public void update() {
-        if (!isLit) return;
-        
+        if (!isLit)
+            return;
+
         animationTimer++;
         if (animationTimer >= 8) { // Change frame every 8 ticks
             animationTimer = 0;

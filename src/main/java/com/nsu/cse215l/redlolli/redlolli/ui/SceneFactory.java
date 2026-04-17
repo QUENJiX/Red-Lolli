@@ -13,7 +13,8 @@ import javafx.scene.text.Text;
 import java.net.URL;
 
 /**
- * Factory for building the game's static UI scenes (death, victory, item-found).
+ * Factory for building the game's static UI scenes (death, victory,
+ * item-found).
  * Provides shared button styling and resource loading utilities.
  */
 public class SceneFactory {
@@ -30,7 +31,8 @@ public class SceneFactory {
     private static boolean uiImagesInitialized = false;
 
     public static void initUIImages() {
-        if (uiImagesInitialized) return;
+        if (uiImagesInitialized)
+            return;
         menuBackgroundImg = tryLoadImage("/assets/images/ui/menu_background.png");
         itemBgImg[0] = tryLoadImage("/assets/images/ui/item_bg_1.png");
         itemBgImg[1] = tryLoadImage("/assets/images/ui/item_bg_2.png");
@@ -42,7 +44,7 @@ public class SceneFactory {
 
     // ========================= MENUS & CUTSCENES =========================
     // Moving text generation methods here instead of image getters.
-    
+
     public static Image getMenuBackgroundImg() {
         return menuBackgroundImg;
     }
@@ -50,7 +52,7 @@ public class SceneFactory {
     public static Text getMenuTitleText() {
         return styledText("RED LOLLI", "Serif", 72, Color.RED);
     }
-    
+
     public static javafx.scene.Node getMenuSubtitleText() {
         Text t1 = styledText("DONT PLAY\nTHIS GAME. ", "Serif", 30, Color.LIGHTGRAY);
         Text t2 = styledText("SHE GETS OUT.", "Serif", 30, Color.RED);
@@ -64,6 +66,7 @@ public class SceneFactory {
         javafx.animation.AnimationTimer timer = new javafx.animation.AnimationTimer() {
             private long lastUpdate = 0;
             private int charIndex = 0;
+
             @Override
             public void handle(long now) {
                 if (now - lastUpdate >= 40_000_000L) { // 40ms per char
@@ -107,13 +110,13 @@ public class SceneFactory {
 
         // Poem text
         boolean isLunaOrKiller = activeDeathMessage != null &&
-            (!activeDeathMessage.contains("bat bit first") &&
-             !activeDeathMessage.contains("snake was still hungry") &&
-             !activeDeathMessage.contains("mind broke"));
-             
-        String poemStr = isLunaOrKiller ? 
-            "pale luna smiles wide,\nthere is no escape,\npale luna smiles wide,\nno more lollies to take,\npale luna smiles wide,\nnow you are dead" :
-            "She found you in the dark.\nNow your soul is hers to keep.\nForever lost in the maze.";
+                (!activeDeathMessage.contains("bat bit first") &&
+                        !activeDeathMessage.contains("snake was still hungry") &&
+                        !activeDeathMessage.contains("mind broke"));
+
+        String poemStr = isLunaOrKiller
+                ? "pale luna smiles wide,\nthere is no escape,\npale luna smiles wide,\nno more lollies to take,\npale luna smiles wide,\nnow you are dead"
+                : "She found you in the dark.\nNow your soul is hers to keep.\nForever lost in the maze.";
 
         Text poemText = styledText(poemStr, "Serif", 24, Color.LIGHTGRAY);
         layout.getChildren().add(poemText);
@@ -130,9 +133,11 @@ public class SceneFactory {
                     Color.rgb(200, 70, 70)));
         }
 
-        Button restartBtn = createIconButton("/assets/images/ui/icon_restart.png", "/assets/images/ui/btn_restart.png", "/assets/images/ui/btn_restart_pressed.png");
+        Button restartBtn = createIconButton("/assets/images/ui/icon_restart.png", "/assets/images/ui/btn_restart.png",
+                "/assets/images/ui/btn_restart_pressed.png");
         restartBtn.setOnAction(e -> onRestart.run());
-        Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png", "/assets/images/ui/btn_main_menu_pressed.png");
+        Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png",
+                "/assets/images/ui/btn_main_menu_pressed.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
 
         javafx.scene.layout.HBox btnContainer = new javafx.scene.layout.HBox(40);
@@ -172,7 +177,8 @@ public class SceneFactory {
         layout.getChildren().add(poemText);
         animateTyping(poemText, poemStr);
 
-        Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png", "/assets/images/ui/btn_main_menu_pressed.png");
+        Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png",
+                "/assets/images/ui/btn_main_menu_pressed.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
         layout.getChildren().add(menuBtn);
         root.getChildren().add(layout);
@@ -184,7 +190,7 @@ public class SceneFactory {
         initUIImages();
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
         root.setStyle("-fx-background-color: black;");
-        
+
         int idx = Math.min(level - 1, 2);
 
         // Background
@@ -209,9 +215,9 @@ public class SceneFactory {
 
         // Description text
         String[] itemDescs = {
-            "\"The earth was soft that night. Too soft. Like it was waiting for her.\"",
-            "\"The blade bit into the ground. Each scoop made a sound like breathing.\"",
-            "\"She didn't struggle. Not at the end. Her eyes were wide open. Smiling.\""
+                "\"The earth was soft that night. Too soft. Like it was waiting for her.\"",
+                "\"The blade bit into the ground. Each scoop made a sound like breathing.\"",
+                "\"She didn't struggle. Not at the end. Her eyes were wide open. Smiling.\""
         };
         layout.getChildren().add(styledText(itemDescs[idx], "Serif", 24, Color.LIGHTGRAY));
 
@@ -222,7 +228,7 @@ public class SceneFactory {
                 "/assets/images/ui/btn_now"
         };
         String[] btnLabels = { "HERE.", "USE", "NOW" };
-        
+
         Button continueBtn = createTextButton(btnLabels[idx], btnPaths[idx] + ".png", btnPaths[idx] + "_pressed.png");
         continueBtn.setOnAction(e -> onContinue.run());
 
@@ -254,7 +260,7 @@ public class SceneFactory {
                 iconView = new ImageView(iconImg);
                 iconView.setPreserveRatio(true);
                 // Adjust icon size to make it smaller
-                iconView.setFitWidth(40); 
+                iconView.setFitWidth(40);
                 iconView.setFitHeight(40);
                 iconView.setTranslateY(-8); // Visually center it on the unpressed button face
                 graphic.getChildren().add(iconView);
@@ -266,11 +272,13 @@ public class SceneFactory {
         final ImageView finalIconView = iconView;
         btn.setOnMousePressed(e -> {
             bgView.setImage(pressedBg);
-            if (finalIconView != null) finalIconView.setTranslateY(0); // Moves down when pressed
+            if (finalIconView != null)
+                finalIconView.setTranslateY(0); // Moves down when pressed
         });
         btn.setOnMouseReleased(e -> {
             bgView.setImage(normalBg);
-            if (finalIconView != null) finalIconView.setTranslateY(-8);
+            if (finalIconView != null)
+                finalIconView.setTranslateY(-8);
         });
 
         return btn;
@@ -305,11 +313,13 @@ public class SceneFactory {
         final Text finalLabelText = labelText;
         btn.setOnMousePressed(e -> {
             bgView.setImage(pressedBg);
-            if (finalLabelText != null) finalLabelText.setTranslateY(0);
+            if (finalLabelText != null)
+                finalLabelText.setTranslateY(0);
         });
         btn.setOnMouseReleased(e -> {
             bgView.setImage(normalBg);
-            if (finalLabelText != null) finalLabelText.setTranslateY(-8);
+            if (finalLabelText != null)
+                finalLabelText.setTranslateY(-8);
         });
 
         return btn;

@@ -41,7 +41,8 @@ public class Monster extends Entity implements Collidable {
     }
 
     public static void initImages() {
-        if (imagesInitialized) return;
+        if (imagesInitialized)
+            return;
         // Load with larger size as requested
         monsterDormant = loadSprite("monster_dormant.png", 50, 50);
         monsterStalking = loadSprite("monster_stalking.png", 50, 50);
@@ -53,7 +54,9 @@ public class Monster extends Entity implements Collidable {
     }
 
     /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() { imagesInitialized = false; }
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
 
     // Visual render size (now 50x50 centered on the 25x25 hitbox)
     private static final double RENDER_SIZE = 50.0;
@@ -70,12 +73,13 @@ public class Monster extends Entity implements Collidable {
     private static final int HUNT_DURATION = 360;
     private static final int WAIT_DURATION = 180;
 
-    private int dormantTimer = 0;
-    private int stalkTimer = 0;
-    private int huntTimer = 0;
-    private int waitTimer = 0;
+    private double dormantTimer = 0;
+    private double stalkTimer = 0;
+    private double huntTimer = 0;
+    private double waitTimer = 0;
     private double pulsePhase = 0.0;
     private boolean facingRight = false;
+    private long lastUpdateTime = 0;
 
     public Monster(double x, double y) {
         super(x, y, 25.0);
@@ -90,12 +94,22 @@ public class Monster extends Entity implements Collidable {
     public void update(double playerX, double playerY, boolean playerInEscapeRoom,
             boolean lolliRecentlyCollected, Maze maze) {
 
-        pulsePhase += 0.1;
+        long now = System.nanoTime();
+        if (lastUpdateTime == 0) {
+            lastUpdateTime = now;
+        }
+        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
+        lastUpdateTime = now;
+        
+        // Timer decreases based on time passed, normalized to 60 FPS
+        double timeDelta = dtSeconds * 60.0;
+
+        pulsePhase += 0.1 * timeDelta;
         this.facingRight = playerX > this.x;
 
         switch (state) {
             case DORMANT -> {
-                dormantTimer--;
+                dormantTimer -= timeDelta;
                 if (dormantTimer <= 0 || lolliRecentlyCollected) {
                     state = State.STALKING;
                     stalkTimer = STALK_DURATION;
@@ -109,9 +123,9 @@ public class Monster extends Entity implements Collidable {
                     break;
                 }
 
-                pursuePlayer(playerX, playerY, maze, STALK_SPEED);
+                pursuePlayer(playerX, playerY, maze, STALK_SPEED * timeDelta);
 
-                stalkTimer--;
+                stalkTimer -= timeDelta;
                 if (stalkTimer <= 0) {
                     state = State.HUNTING;
                     huntTimer = HUNT_DURATION;
@@ -125,15 +139,15 @@ public class Monster extends Entity implements Collidable {
                     break;
                 }
 
-                pursuePlayer(playerX, playerY, maze, HUNT_SPEED);
+                pursuePlayer(playerX, playerY, maze, HUNT_SPEED * timeDelta);
 
-                huntTimer--;
+                huntTimer -= timeDelta;
                 if (huntTimer <= 0) {
                     returnToDormant();
                 }
             }
             case WAITING_AT_DOOR -> {
-                waitTimer--;
+                waitTimer -= timeDelta;
                 if (waitTimer <= 0) {
                     returnToDormant();
                 }
@@ -212,22 +226,25 @@ public class Monster extends Entity implements Collidable {
         if (state != State.DORMANT) {
             double pulse = Math.sin(pulsePhase) * 5;
             double baseRadius = AURA_SIZE / 2 + pulse;
-            
-            // Base jagged shape mimicking an organic, flickering, torch-like randomized flame
+
+            // Base jagged shape mimicking an organic, flickering, torch-like randomized
+            // flame
             int numPoints = 16;
             double[] xPoints = new double[numPoints];
             double[] yPoints = new double[numPoints];
-            
+
             for (int layer = 0; layer < 3; layer++) {
                 for (int i = 0; i < numPoints; i++) {
                     double angle = Math.PI * 2 * ((double) i / numPoints);
                     // Apply random jitter to radius for a spiky torch effect
                     double radiusJitter = 0.75 + (Math.random() * 0.45);
                     double currentR = baseRadius * radiusJitter;
-                    
-                    if (layer == 1) currentR *= 0.65;
-                    if (layer == 2) currentR *= 0.35;
-                    
+
+                    if (layer == 1)
+                        currentR *= 0.65;
+                    if (layer == 2)
+                        currentR *= 0.35;
+
                     xPoints[i] = cx + (Math.cos(angle) * currentR);
                     yPoints[i] = cy + (Math.sin(angle) * currentR);
                 }
@@ -251,7 +268,7 @@ public class Monster extends Entity implements Collidable {
             gc.setLineWidth(1.5);
             double ringShift = (Math.random() - 0.5) * 8;
             gc.strokeOval(cx - baseRadius + ringShift, cy - baseRadius - ringShift, baseRadius * 2, baseRadius * 2);
-            
+
             gc.setGlobalAlpha(1.0);
         }
 
@@ -275,7 +292,8 @@ public class Monster extends Entity implements Collidable {
             }
         } else {
             gc.setFill(Color.rgb(220, 220, 240));
-            if (state == State.DORMANT) gc.setGlobalAlpha(0.5);
+            if (state == State.DORMANT)
+                gc.setGlobalAlpha(0.5);
             gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
             gc.setGlobalAlpha(1.0);
         }
@@ -303,18 +321,18 @@ public class Monster extends Entity implements Collidable {
     }
 
     public int getDormantTimer() {
-        return dormantTimer;
+        return (int) dormantTimer;
     }
 
     public int getStalkTimer() {
-        return stalkTimer;
+        return (int) stalkTimer;
     }
 
     public int getHuntTimer() {
-        return huntTimer;
+        return (int) huntTimer;
     }
 
     public int getWaitTimer() {
-        return waitTimer;
+        return (int) waitTimer;
     }
 }
