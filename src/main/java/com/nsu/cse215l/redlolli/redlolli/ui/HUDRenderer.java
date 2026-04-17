@@ -52,7 +52,9 @@ public class HUDRenderer {
             InputStream is = HUDRenderer.class.getResourceAsStream("/assets/images/sprites/" + filename);
             if (is != null)
                 return new Image(is, width, height, true, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error initializing HUDRenderer assets: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }

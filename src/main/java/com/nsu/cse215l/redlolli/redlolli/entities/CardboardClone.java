@@ -22,7 +22,9 @@ public class CardboardClone extends Entity implements Collidable {
             if (is != null) {
                 return new Image(is, width, height, true, false);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error loading CardboardClone sprite: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }

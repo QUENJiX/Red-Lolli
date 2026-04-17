@@ -356,7 +356,9 @@ public class SceneFactory {
             URL url = SceneFactory.class.getResource(path);
             if (url != null)
                 return new Image(url.toExternalForm());
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error initializing SceneFactory assets: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }

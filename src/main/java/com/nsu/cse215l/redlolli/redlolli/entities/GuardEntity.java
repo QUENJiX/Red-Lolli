@@ -37,7 +37,9 @@ public class GuardEntity extends Entity implements Collidable {
             if (is != null) {
                 return new Image(is, width, height, true, false);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error loading GuardEntity sprite: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }

@@ -51,7 +51,9 @@ public class Maze {
             if (is != null) {
                 return new Image(is, width, height, true, false);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            System.err.println("Error initializing Maze assets: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
