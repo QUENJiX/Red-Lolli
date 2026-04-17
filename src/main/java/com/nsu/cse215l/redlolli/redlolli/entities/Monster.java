@@ -3,55 +3,17 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 
 /**
  * The primary antagonist entity for Level 1, "Pale Luna".
  * Operates on a time-based 4-state AI cycle with BFS pathfinding.
+ * This entity has been fully DECOUPLED from JavaFX image rendering.
  */
 public class Monster extends Entity implements Collidable {
 
     public enum State {
         DORMANT, STALKING, HUNTING, WAITING_AT_DOOR
     }
-
-    // ================= IMAGE ASSETS =================
-
-    private static Image monsterDormant;
-    private static Image monsterStalking;
-    private static Image monsterStalkingRight;
-    private static Image monsterHunting;
-    private static Image monsterHuntingRight;
-    private static Image monsterWaiting;
-    private static boolean imagesInitialized = false;
-
-    private static Image loadSprite(String filename, int width, int height) {
-        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
-    }
-
-    public static void initImages() {
-        if (imagesInitialized)
-            return;
-        // Load with larger size as requested
-        monsterDormant = loadSprite("monster_dormant.png", 50, 50);
-        monsterStalking = loadSprite("monster_stalking.png", 50, 50);
-        monsterStalkingRight = loadSprite("monster_stalking_right.png", 50, 50);
-        monsterHunting = loadSprite("monster_hunting.png", 50, 50);
-        monsterHuntingRight = loadSprite("monster_hunting_right.png", 50, 50);
-        monsterWaiting = loadSprite("monster_waiting.png", 50, 50);
-        imagesInitialized = true;
-    }
-
-    /** Call this to force images to reload (e.g. after changing asset paths). */
-    public static void resetImages() {
-        imagesInitialized = false;
-    }
-
-    // Visual render size (now 50x50 centered on the 25x25 hitbox)
-    private static final double RENDER_SIZE = 50.0;
-    private static final double AURA_SIZE = 56.0;
 
     // ================= STATE =================
 
@@ -213,89 +175,6 @@ public class Monster extends Entity implements Collidable {
     }
 
     @Override
-    public void render(GraphicsContext gc) {
-        double offset = (RENDER_SIZE - size) / 2;
-        double cx = x + size / 2;
-        double cy = y + size / 2;
-
-        // Aura (only when not dormant)
-        if (state != State.DORMANT) {
-            double pulse = Math.sin(pulsePhase) * 5;
-            double baseRadius = AURA_SIZE / 2 + pulse;
-
-            // Base jagged shape mimicking an organic, flickering, torch-like randomized
-            // flame
-            int numPoints = 16;
-            double[] xPoints = new double[numPoints];
-            double[] yPoints = new double[numPoints];
-
-            for (int layer = 0; layer < 3; layer++) {
-                for (int i = 0; i < numPoints; i++) {
-                    double angle = Math.PI * 2 * ((double) i / numPoints);
-                    // Apply random jitter to radius for a spiky torch effect
-                    double radiusJitter = 0.75 + (Math.random() * 0.45);
-                    double currentR = baseRadius * radiusJitter;
-
-                    if (layer == 1)
-                        currentR *= 0.65;
-                    if (layer == 2)
-                        currentR *= 0.35;
-
-                    xPoints[i] = cx + (Math.cos(angle) * currentR);
-                    yPoints[i] = cy + (Math.sin(angle) * currentR);
-                }
-
-                if (layer == 0) {
-                    gc.setGlobalAlpha(0.25);
-                    gc.setFill(Color.rgb(180, 20, 20));
-                } else if (layer == 1) {
-                    gc.setGlobalAlpha(0.45);
-                    gc.setFill(Color.rgb(220, 30, 30));
-                } else {
-                    gc.setGlobalAlpha(0.7);
-                    gc.setFill(Color.rgb(255, 60, 60));
-                }
-                gc.fillPolygon(xPoints, yPoints, numPoints);
-            }
-
-            // Erratic shuddering static rings for the terrifying aura glitch aesthetic
-            gc.setGlobalAlpha(0.6);
-            gc.setStroke(Color.rgb(40, 0, 0));
-            gc.setLineWidth(1.5);
-            double ringShift = (Math.random() - 0.5) * 8;
-            gc.strokeOval(cx - baseRadius + ringShift, cy - baseRadius - ringShift, baseRadius * 2, baseRadius * 2);
-
-            gc.setGlobalAlpha(1.0);
-        }
-
-        // Body composite
-        Image body;
-        switch (state) {
-            case DORMANT -> body = monsterDormant;
-            case STALKING -> body = facingRight ? monsterStalkingRight : monsterStalking;
-            case HUNTING -> body = facingRight ? monsterHuntingRight : monsterHunting;
-            case WAITING_AT_DOOR -> body = monsterWaiting;
-            default -> body = monsterDormant;
-        }
-
-        if (body != null) {
-            if (state == State.DORMANT) {
-                gc.setGlobalAlpha(0.5);
-                gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-                gc.setGlobalAlpha(1.0);
-            } else {
-                gc.drawImage(body, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-            }
-        } else {
-            gc.setFill(Color.rgb(220, 220, 240));
-            if (state == State.DORMANT)
-                gc.setGlobalAlpha(0.5);
-            gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
-            gc.setGlobalAlpha(1.0);
-        }
-    }
-
-    @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
     }
@@ -330,5 +209,17 @@ public class Monster extends Entity implements Collidable {
 
     public int getWaitTimer() {
         return (int) waitTimer;
+    }
+    
+    public double getPulsePhase() {
+        return pulsePhase;
+    }
+    
+    public boolean isFacingRight() {
+        return facingRight;
+    }
+    
+    public double getSize() {
+        return size;
     }
 }

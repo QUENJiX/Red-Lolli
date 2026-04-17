@@ -235,4 +235,16 @@ public class SerialKillerEntity extends Entity implements Collidable {
     public int getDecoyAttackFrames() {
         return (int) decoyAttackFrames;
     }
+
+    public boolean isFacingLeft() {
+        return facingLeft;
+    }
+
+    public int getCurrentFrame() {
+        return currentFrame;
+    }
+
+    public double getSize() {
+        return size;
+    }
 }
