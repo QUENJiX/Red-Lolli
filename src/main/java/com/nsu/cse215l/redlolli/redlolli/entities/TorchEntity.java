@@ -13,9 +13,12 @@ public class TorchEntity extends Entity {
     private static Image[] torchFrames;
     private static boolean imagesInitialized = false;
 
-    private int animationTimer = 0;
+    private double animationTimer = 0;
     private int currentFrame = 1; // Frames 1-4 are lit, frame 0 is unlit
     private boolean isLit = true;
+    
+    private long lastUpdateTime = 0;
+    private double timeDelta = 1.0;
 
     private static Image loadSprite(String filename) {
         try {
@@ -50,8 +53,14 @@ public class TorchEntity extends Entity {
     public void update() {
         if (!isLit)
             return;
+            
+        long now = System.nanoTime();
+        if (lastUpdateTime == 0) lastUpdateTime = now;
+        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
+        lastUpdateTime = now;
+        timeDelta = dtSeconds * 60.0;
 
-        animationTimer++;
+        animationTimer += timeDelta;
         if (animationTimer >= 8) { // Change frame every 8 ticks
             animationTimer = 0;
             currentFrame++;

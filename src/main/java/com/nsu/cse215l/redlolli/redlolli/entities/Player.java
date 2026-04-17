@@ -69,17 +69,17 @@ public class Player extends Entity implements Collidable {
 
     // ================= LOGIC =================
 
-    private static final double BASE_SPEED = 2.0;
+    private static final double BASE_SPEED = 3.2;
     /** Speed multiplier when sprinting. */
     private static final double SPRINT_MULTIPLIER = 1.8;
     /** Max stamina in frames (60 frames = 1 second). */
     private static final int MAX_STAMINA_FRAMES = 180;
     /** Cooldown penalty when stamina hits 0. */
-    private static final int EXHAUSTED_FRAMES = 120;
+    private static final int EXHAUSTED_FRAMES = 180;
 
     private boolean isInEscapeRoom = false;
-    private int staminaFrames = MAX_STAMINA_FRAMES;
-    private int exhaustedFrames = 0;
+    private double staminaFrames = MAX_STAMINA_FRAMES;
+    private double exhaustedFrames = 0;
     private double facingX = 1; // start facing right
     private double facingY = 0;
 
@@ -90,15 +90,18 @@ public class Player extends Entity implements Collidable {
     private static final int ESCAPE_ROOM_RECOVERY_INTERVAL = 60; // +1 sanity per second in escape room
     private static final int NEAR_LUNA_DISTANCE = 150; // pixels threshold for "near Luna"
     private int sanity = MAX_SANITY;
-    private int sanityDrainCounter = 0;
+    private double sanityDrainCounter = 0;
     private boolean isNearLuna = false;
     private boolean sanityDead = false; // true when sanity hits 0
 
     // Animation state
     private int animFrame = 0;
-    private int animTimer = 0;
+    private double animTimer = 0;
     private boolean isMoving = false;
     private boolean movedThisFrame = false;
+
+    private long lastUpdateTime = 0;
+    private double timeDelta = 1.0;
 
     public Player(double x, double y) {
         super(x, y, 20.0);
@@ -106,12 +109,18 @@ public class Player extends Entity implements Collidable {
 
     @Override
     public void update() {
+        long now = System.nanoTime();
+        if (lastUpdateTime == 0) lastUpdateTime = now;
+        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
+        lastUpdateTime = now;
+        timeDelta = dtSeconds * 60.0;
+
         if (exhaustedFrames > 0) {
-            exhaustedFrames--;
+            exhaustedFrames -= timeDelta;
         }
 
         if (movedThisFrame) {
-            animTimer++;
+            animTimer += timeDelta;
             if (animTimer > 10) {
                 animFrame++;
                 animTimer = 0;
@@ -133,7 +142,7 @@ public class Player extends Entity implements Collidable {
 
         if (isInEscapeRoom) {
             // Recovery in escape rooms: +1 per second (60 frames)
-            sanityDrainCounter++;
+            sanityDrainCounter += timeDelta;
             if (sanityDrainCounter >= ESCAPE_ROOM_RECOVERY_INTERVAL && sanity < MAX_SANITY) {
                 sanity++;
                 sanityDrainCounter = 0;
@@ -141,7 +150,7 @@ public class Player extends Entity implements Collidable {
         } else {
             // Passive drain: 1 per 5 seconds (300 frames)
             // Faster when near Luna: 1 per 2 seconds (120 frames)
-            sanityDrainCounter++;
+            sanityDrainCounter += timeDelta;
             int drainInterval = isNearLuna ? NEAR_LUNA_DRAIN_INTERVAL : PASSIVE_DRAIN_INTERVAL;
             if (sanityDrainCounter >= drainInterval) {
                 sanity--;
@@ -156,7 +165,7 @@ public class Player extends Entity implements Collidable {
 
     /** Move the player with wall collision and stamina management. */
     public void move(double dx, double dy, Maze maze, boolean sprinting) {
-        double speed = getMovementSpeed(sprinting);
+        double speed = getMovementSpeed(sprinting) * timeDelta;
 
         double nextX = this.x + (dx * speed);
         double nextY = this.y + (dy * speed);
@@ -176,12 +185,16 @@ public class Player extends Entity implements Collidable {
 
         // Drain when sprinting + moving + not exhausted; recover when idle/walking
         if (sprinting && exhaustedFrames == 0 && staminaFrames > 0 && (dx != 0 || dy != 0)) {
-            staminaFrames--;
-            if (staminaFrames == 0) {
+            staminaFrames -= timeDelta;
+            if (staminaFrames <= 0) {
+                staminaFrames = 0;
                 exhaustedFrames = EXHAUSTED_FRAMES;
             }
         } else if (!sprinting && exhaustedFrames == 0 && staminaFrames < MAX_STAMINA_FRAMES) {
-            staminaFrames++;
+            staminaFrames += 0.5 * timeDelta; // slow recovery
+            if (staminaFrames > MAX_STAMINA_FRAMES) {
+                staminaFrames = MAX_STAMINA_FRAMES;
+            }
         }
     }
 

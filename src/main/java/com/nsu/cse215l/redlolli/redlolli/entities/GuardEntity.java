@@ -11,7 +11,7 @@ import java.io.InputStream;
 
 /**
  * Stationary environmental hazards that kill the player on contact.
- * Requires specific mechanics like sneaking or distraction to bypass.
+ * Requires specific mechanics like sneaking or 
  */
 public class GuardEntity extends Entity implements Collidable {
 
@@ -72,13 +72,19 @@ public class GuardEntity extends Entity implements Collidable {
 
     // Distraction state
     private boolean distracted = false;
-    private int distractionTimer = 0;
+    private double distractionTimer = 0;
 
     // Level 1: Bat distraction duration
     private static final int BAT_DISTRACTION_DURATION = 300; // 5 seconds
 
     // Level 2: Cobra distraction duration (TWIST: much shorter distraction window)
-    private static final int COBRA_DISTRACTION_DURATION = 150; // 2.5 seconds
+    private static final int COBRA_DISTRACTION_DURATION = 180; // 3 seconds
+
+    // Level 3: Centipede distraction duration (TWIST: even shorter distraction window)
+    private static final int CENTIPEDE_DISTRACTION_DURATION = 120; // 2 seconds
+
+    private long lastUpdateTime = 0;
+    private double timeDelta = 1.0;
 
     public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
         super(x, y, 28.0);
@@ -89,10 +95,17 @@ public class GuardEntity extends Entity implements Collidable {
 
     @Override
     public void update() {
+        long now = System.nanoTime();
+        if (lastUpdateTime == 0) lastUpdateTime = now;
+        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
+        lastUpdateTime = now;
+        timeDelta = dtSeconds * 60.0;
+
         if (distracted) {
-            distractionTimer--;
+            distractionTimer -= timeDelta;
             if (distractionTimer <= 0) {
                 distracted = false;
+                distractionTimer = 0;
             }
         }
     }
@@ -100,7 +113,7 @@ public class GuardEntity extends Entity implements Collidable {
     public void distract() {
         if (!distracted) {
             distracted = true;
-            distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION : COBRA_DISTRACTION_DURATION;
+            distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION : type == Type.COBRA ? COBRA_DISTRACTION_DURATION : CENTIPEDE_DISTRACTION_DURATION;
         }
     }
 

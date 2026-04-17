@@ -38,7 +38,7 @@ public class GameStateManager {
 
     int currentLevel = 1;
     boolean showingItemFound = false;
-    int warningFlashTimer = 0;
+    double warningFlashTimer = 0;
     double pulsePhaseHUD = 0;
     String activeDeathMessage = "";
 
@@ -47,14 +47,17 @@ public class GameStateManager {
 
     int distractionSpellCount = 0;
     int startingDistractions = 1;
-    int exitGraceFrames = 0;
-    int standStillFrames = 0;
-    int guardHitCooldownFrames = 0;
-    int footstepCooldownFrames = 0;
-    int lunaScreamCooldownFrames = 0;
-    int screenShakeFrames = 0; // For screen shake effect
-    int playerDeathAnimFrames = 0; // Death animation counter (screen fills red)
+    double exitGraceFrames = 0;
+    double standStillFrames = 0;
+    double guardHitCooldownFrames = 0;
+    double footstepCooldownFrames = 0;
+    double lunaScreamCooldownFrames = 0;
+    double screenShakeFrames = 0; // For screen shake effect
+    double playerDeathAnimFrames = 0; // Death animation counter (screen fills red)
     boolean playerIsDead = false; // Persistent flag to prevent re-triggering death
+
+    private long lastUpdateTime = 0;
+    private double timeDelta = 1.0;
 
     boolean hasCloneItem = false;
     boolean wasInEscapeRoom = false;
@@ -100,6 +103,7 @@ public class GameStateManager {
         hasCloneItem = false;
         wasInEscapeRoom = false;
         escapeRoomsCollapsed = false;
+        lastUpdateTime = 0;
 
         // Reset player sanity
         if (player != null) {
@@ -246,19 +250,25 @@ public class GameStateManager {
 
     /** Returns true if the player died this frame. */
     boolean update(Set<KeyCode> activeKeys) {
+        long now = System.nanoTime();
+        if (lastUpdateTime == 0) lastUpdateTime = now;
+        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
+        lastUpdateTime = now;
+        timeDelta = dtSeconds * 60.0;
+
         if (showingItemFound)
             return false;
 
         if (playerIsDead) {
             if (playerDeathAnimFrames > 0) {
-                playerDeathAnimFrames--;
+                playerDeathAnimFrames -= timeDelta;
             }
             return true;
         }
 
         if (lolliRevealState != null && lolliRevealState.active) {
-            lolliRevealState.timer--;
-            lolliRevealState.phase += 0.15;
+            lolliRevealState.timer -= timeDelta;
+            lolliRevealState.phase += 0.15 * timeDelta;
             if (lolliRevealState.timer <= 0) {
                 lolliRevealState.active = false;
                 return false; // signal HelloApplication to show item-found screen
@@ -267,13 +277,13 @@ public class GameStateManager {
         }
 
         if (exitGraceFrames > 0)
-            exitGraceFrames--;
+            exitGraceFrames -= timeDelta;
         if (guardHitCooldownFrames > 0)
-            guardHitCooldownFrames--;
+            guardHitCooldownFrames -= timeDelta;
         if (lunaScreamCooldownFrames > 0)
-            lunaScreamCooldownFrames--;
+            lunaScreamCooldownFrames -= timeDelta;
         if (screenShakeFrames > 0)
-            screenShakeFrames--;
+            screenShakeFrames -= timeDelta;
 
         if (serialKiller != null)
             serialKiller.update();
@@ -300,9 +310,11 @@ public class GameStateManager {
         if (movingInput) {
             standStillFrames = 0;
         } else {
-            standStillFrames++;
-            if (standStillFrames == 1800)
+            standStillFrames += timeDelta;
+            if (standStillFrames >= 1800) {
                 teleportLunaNearPlayer();
+                standStillFrames = 0;
+            }
         }
 
         // Movement
@@ -323,10 +335,10 @@ public class GameStateManager {
                 soundManager.playOneShot(SoundManager.FOOTSTEP, 0.25);
                 footstepCooldownFrames = sprinting ? 9 : 15;
             } else {
-                footstepCooldownFrames--;
+                footstepCooldownFrames -= timeDelta;
             }
         } else {
-            footstepCooldownFrames = Math.max(0, footstepCooldownFrames - 1);
+            footstepCooldownFrames = Math.max(0, footstepCooldownFrames - timeDelta);
         }
 
         // Escape room state
@@ -464,7 +476,7 @@ public class GameStateManager {
             soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
         }
         if (warningFlashTimer > 0)
-            warningFlashTimer--;
+            warningFlashTimer -= timeDelta;
         player.setBeingChased(paleLuna.isHunting());
 
         double lunaDistTiles = distInTiles(player.getX(), player.getY(), paleLuna.getX(), paleLuna.getY());

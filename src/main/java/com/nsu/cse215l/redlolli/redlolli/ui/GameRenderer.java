@@ -96,7 +96,7 @@ public class GameRenderer {
      * The primary entry point for drawing a complete game frame.
      */
     public static double render(GraphicsContext gc, Maze maze, List<Entity> entities,
-            Monster paleLuna, Player player, int warningFlashTimer,
+            Monster paleLuna, Player player, double warningFlashTimer,
             LolliRevealState revealState, int level,
             List<Item> chests,
             String[] itemNames,
@@ -104,13 +104,12 @@ public class GameRenderer {
             boolean hasCloneItem,
             double pulsePhase,
             boolean isLunaHunting,
-            int screenShakeFrames,
+            double screenShakeFrames,
             double vignetteIntensity,
             List<Overlay> overlays) {
 
         gc.setFill(Color.BLACK);
 
-        // Screen shake effect
         double shakeX = 0, shakeY = 0;
         if (screenShakeFrames > 0 || isLunaHunting) {
             double intensity = screenShakeFrames > 0 ? screenShakeFrames * 0.5 : 2.5; // Constant jitter when hunted

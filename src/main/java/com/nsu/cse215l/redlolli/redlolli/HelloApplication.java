@@ -257,7 +257,7 @@ public class HelloApplication extends Application {
      * Renders the player death animation - screen fills red closing in a circle
      * with flashes and jitters.
      */
-    private void renderDeathAnimation(GraphicsContext gc, int framesRemaining) {
+    private void renderDeathAnimation(GraphicsContext gc, double framesRemaining) {
         double progress = 1.0 - (double) framesRemaining / 60.0; // 0.0 to 1.0 over 60 frames
 
         // Max radius to cover the 880x730 screen is approx 575 (from center)

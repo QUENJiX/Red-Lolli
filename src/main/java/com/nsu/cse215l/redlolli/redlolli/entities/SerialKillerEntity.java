@@ -61,13 +61,16 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     private boolean active;
     private boolean attackingDecoy;
-    private int decoyAttackFrames;
+    private double decoyAttackFrames;
 
     // Animation state
     private int currentFrame = 0;
-    private int frameTick = 0;
+    private double frameTick = 0;
     private final int ticksPerFrame = 6;
     private boolean facingLeft = true;
+    
+    private long lastUpdateTime = 0;
+    private double timeDelta = 1.0;
 
     public SerialKillerEntity(double x, double y) {
         super(x, y, 24.0);
@@ -75,15 +78,22 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     @Override
     public void update() {
+        long now = System.nanoTime();
+        if (lastUpdateTime == 0) lastUpdateTime = now;
+        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
+        lastUpdateTime = now;
+        timeDelta = dtSeconds * 60.0;
+
         if (decoyAttackFrames > 0) {
-            decoyAttackFrames--;
-            if (decoyAttackFrames == 0) {
+            decoyAttackFrames -= timeDelta;
+            if (decoyAttackFrames <= 0) {
                 attackingDecoy = false;
+                decoyAttackFrames = 0;
             }
         }
 
         // Animation logic
-        frameTick++;
+        frameTick += timeDelta;
         if (frameTick >= ticksPerFrame) {
             frameTick = 0;
             currentFrame++;
@@ -127,7 +137,7 @@ public class SerialKillerEntity extends Entity implements Collidable {
             else if (dx > 0.1)
                 facingLeft = false;
 
-            double move = Math.min(SPEED, dist);
+            double move = Math.min(SPEED * timeDelta, dist);
 
             // True grid movement to prevent floating-point overshoot jitter and diagonal
             // wall clipping
@@ -144,7 +154,7 @@ public class SerialKillerEntity extends Entity implements Collidable {
                 if (move > 0 && Math.abs(dy) > 0) {
                     y += Math.signum(dy) * Math.min(Math.abs(dy), move);
                 } else if (Math.abs(dy) > 0) {
-                    y += Math.signum(dy) * Math.min(Math.abs(dy), SPEED * 0.5);
+                    y += Math.signum(dy) * Math.min(Math.abs(dy), SPEED * 0.5 * timeDelta);
                 }
             } else {
                 // Primary movement is vertical
@@ -159,7 +169,7 @@ public class SerialKillerEntity extends Entity implements Collidable {
                 if (move > 0 && Math.abs(dx) > 0) {
                     x += Math.signum(dx) * Math.min(Math.abs(dx), move);
                 } else if (Math.abs(dx) > 0) {
-                    x += Math.signum(dx) * Math.min(Math.abs(dx), SPEED * 0.5);
+                    x += Math.signum(dx) * Math.min(Math.abs(dx), SPEED * 0.5 * timeDelta);
                 }
             }
         }
@@ -232,6 +242,6 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     public int getDecoyAttackFrames() {
-        return decoyAttackFrames;
+        return (int) decoyAttackFrames;
     }
 }

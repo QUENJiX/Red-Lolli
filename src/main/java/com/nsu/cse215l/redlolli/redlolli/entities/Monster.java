@@ -66,12 +66,12 @@ public class Monster extends Entity implements Collidable {
 
     private State state = State.DORMANT;
 
-    private static final double STALK_SPEED = 1.6;
-    private static final double HUNT_SPEED = 3.2;
-    private static final int DORMANT_DURATION = 900;
-    private static final int STALK_DURATION = 480;
-    private static final int HUNT_DURATION = 360;
-    private static final int WAIT_DURATION = 180;
+    private static final double STALK_SPEED = 3.2;
+    private static final double HUNT_SPEED = 6.4; 
+    private static final int DORMANT_DURATION = 300;
+    private static final int STALK_DURATION = 300;
+    private static final int HUNT_DURATION = 420;
+    private static final int WAIT_DURATION = 120;
 
     private double dormantTimer = 0;
     private double stalkTimer = 0;
@@ -100,11 +100,16 @@ public class Monster extends Entity implements Collidable {
         }
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
-        
-        // Timer decreases based on time passed, normalized to 60 FPS
-        double timeDelta = dtSeconds * 60.0;
 
+        // At 144Hz, dtSeconds is ~0.007 and timeDelta is ~0.42
+        // By skipping multiplying speed by timeDelta, the monster will move at the flat 
+        // rate per frame it used to, preserving its original 144Hz movement speed.
+        // Wait, if I just revert the timeDelta multiplier on STALK_SPEED and HUNT_SPEED,
+        // it will still drop its speed down to 60fps if playing on a 60Hz monitor. 
+        // velocities.
+        double timeDelta = dtSeconds * 60.0;
         pulsePhase += 0.1 * timeDelta;
+
         this.facingRight = playerX > this.x;
 
         switch (state) {
