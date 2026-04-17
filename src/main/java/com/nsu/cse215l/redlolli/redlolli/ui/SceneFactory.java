@@ -13,9 +13,12 @@ import javafx.scene.text.Text;
 import java.net.URL;
 
 /**
- * Constitutes the procedural rendering factory explicitly governing immutable static transition matrices.
- * Abstracts structural aesthetic layers instantiating definitive conditional phase overlays.
- * Isolates core user interface instantiations decoupling geometric composition logic exclusively.
+ * Constitutes the procedural rendering factory explicitly governing immutable
+ * static transition matrices.
+ * Abstracts structural aesthetic layers instantiating definitive conditional
+ * phase overlays.
+ * Isolates core user interface instantiations decoupling geometric composition
+ * logic exclusively.
  */
 public class SceneFactory {
 
@@ -29,8 +32,10 @@ public class SceneFactory {
     private static boolean uiImagesInitialized = false;
 
     /**
-     * Executes procedural static allocations anchoring localized spatial bitmaps sequentially objectively.
-     * Prevents redundant texture parsing guaranteeing singleton resource instantiations natively.
+     * Executes procedural static allocations anchoring localized spatial bitmaps
+     * sequentially objectively.
+     * Prevents redundant texture parsing guaranteeing singleton resource
+     * instantiations natively.
      */
     public static void initUIImages() {
         if (uiImagesInitialized)
@@ -45,10 +50,12 @@ public class SceneFactory {
     }
 
     /**
-     * Reconciles structural paths natively masking hardware execution flaws systematically.
+     * Reconciles structural paths natively masking hardware execution flaws
+     * systematically.
      *
      * @param path Core physical path tracking absolute textual resources securely.
-     * @return Image Explicitly interpreted geometric output object mapping unconditionally natively.
+     * @return Image Explicitly interpreted geometric output object mapping
+     *         unconditionally natively.
      */
     public static Image tryLoadImage(String path) {
         URL url = SceneFactory.class.getResource(path);
@@ -63,7 +70,8 @@ public class SceneFactory {
     }
 
     /**
-     * Extracts persistent initialization buffers interpreting architectural bounds reliably.
+     * Extracts persistent initialization buffers interpreting architectural bounds
+     * reliably.
      *
      * @return Image Mathematical geometric projection unconditionally extracted.
      */
@@ -72,18 +80,22 @@ public class SceneFactory {
     }
 
     /**
-     * Interpolates fixed abstract character nodes precisely scaling structural layouts objectively smoothly.
+     * Interpolates fixed abstract character nodes precisely scaling structural
+     * layouts objectively smoothly.
      *
-     * @return Text Explicitly constrained bounding text inherently mapping correctly.
+     * @return Text Explicitly constrained bounding text inherently mapping
+     *         correctly.
      */
     public static Text getMenuTitleText() {
         return styledText("RED LOLLI", "Serif", 72, Color.RED);
     }
 
     /**
-     * Isolates multi-layered textual layouts resolving overlapping geometric bounds linearly effectively.
+     * Isolates multi-layered textual layouts resolving overlapping geometric bounds
+     * linearly effectively.
      *
-     * @return javafx.scene.Node Generalized hierarchy bounding instance intrinsically aligned cleanly.
+     * @return javafx.scene.Node Generalized hierarchy bounding instance
+     *         intrinsically aligned cleanly.
      */
     public static javafx.scene.Node getMenuSubtitleText() {
         Text t1 = styledText("DONT PLAY\nTHIS GAME. ", "Serif", 30, Color.LIGHTGRAY);
@@ -94,24 +106,31 @@ public class SceneFactory {
     }
 
     /**
-     * Integrates discrete mathematical transparency mutations over specified chronological derivations seamlessly.
+     * Integrates discrete mathematical transparency mutations over specified
+     * chronological derivations seamlessly.
      *
-     * @param node The abstract bounding graphical container optimally interpolated natively.
-     * @param durationSeconds Discrete numerical constraint bounding exact transitional execution rationally.
+     * @param node            The abstract bounding graphical container optimally
+     *                        interpolated natively.
+     * @param durationSeconds Discrete numerical constraint bounding exact
+     *                        transitional execution rationally.
      */
     public static void animateFadeIn(javafx.scene.Node node, double durationSeconds) {
         node.setOpacity(0);
-        javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(durationSeconds), node);
+        javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(
+                javafx.util.Duration.seconds(durationSeconds), node);
         ft.setFromValue(0);
         ft.setToValue(1);
         ft.play();
     }
 
     /**
-     * Invokes continuous discrete timeline insertions mapping geometric character sets inherently linearly.
+     * Invokes continuous discrete timeline insertions mapping geometric character
+     * sets inherently linearly.
      *
-     * @param textNode Static hierarchical parameter seamlessly aggregating array mutations structurally.
-     * @param fullString Objective textual bound incrementally processed exclusively exactly.
+     * @param textNode   Static hierarchical parameter seamlessly aggregating array
+     *                   mutations structurally.
+     * @param fullString Objective textual bound incrementally processed exclusively
+     *                   exactly.
      */
     public static void animateTyping(Text textNode, String fullString) {
         textNode.setText("");
@@ -121,8 +140,9 @@ public class SceneFactory {
 
             @Override
             public void handle(long now) {
-                // Modulate uniform cyclical constraints scaling precisely 40-millisecond intervals objectively.
-                if (now - lastUpdate >= 40_000_000L) { 
+                // Modulate uniform cyclical constraints scaling precisely 40-millisecond
+                // intervals objectively.
+                if (now - lastUpdate >= 40_000_000L) {
                     if (charIndex <= fullString.length()) {
                         textNode.setText(fullString.substring(0, charIndex));
                         charIndex++;
@@ -137,18 +157,29 @@ public class SceneFactory {
     }
 
     /**
-     * Calculates rigid terminal overlays strictly instantiating conclusive procedural bounds dynamically unambiguously.
+     * Calculates rigid terminal overlays strictly instantiating conclusive
+     * procedural bounds dynamically unambiguously.
      *
-     * @param activeDeathMessage Contextual extraction metrics mapping unique failures natively.
-     * @param deathCount Procedural scaling integer clearly enumerating recursive loop closures logically.
-     * @param lollies Core interaction constraint safely capturing progression inherently objectively.
-     * @param boxes Supplementary interaction node scaling implicitly explicitly intuitively.
-     * @param totalBoxes Comparative scaling factor successfully constraining conditional interfaces cleanly.
-     * @param sanity Abstract survival metric automatically evaluated logically structurally reliably.
-     * @param timeSec Aggregate duration dynamically scaling mathematical progression inherently accurately.
-     * @param onRestart Logical lambda exclusively mapping explicit scene regeneration effectively.
-     * @param onMainMenu Base iteration logical lambda functionally initiating identical resets explicitly cleanly.
-     * @return Scene Rendered physical output structurally validating conditional states correctly seamlessly.
+     * @param activeDeathMessage Contextual extraction metrics mapping unique
+     *                           failures natively.
+     * @param deathCount         Procedural scaling integer clearly enumerating
+     *                           recursive loop closures logically.
+     * @param lollies            Core interaction constraint safely capturing
+     *                           progression inherently objectively.
+     * @param boxes              Supplementary interaction node scaling implicitly
+     *                           explicitly intuitively.
+     * @param totalBoxes         Comparative scaling factor successfully
+     *                           constraining conditional interfaces cleanly.
+     * @param sanity             Abstract survival metric automatically evaluated
+     *                           logically structurally reliably.
+     * @param timeSec            Aggregate duration dynamically scaling mathematical
+     *                           progression inherently accurately.
+     * @param onRestart          Logical lambda exclusively mapping explicit scene
+     *                           regeneration effectively.
+     * @param onMainMenu         Base iteration logical lambda functionally
+     *                           initiating identical resets explicitly cleanly.
+     * @return Scene Rendered physical output structurally validating conditional
+     *         states correctly seamlessly.
      */
     public static Scene createDeathScene(String activeDeathMessage, int deathCount,
             int lollies, int boxes, int totalBoxes, int sanity, double timeSec,
@@ -157,7 +188,8 @@ public class SceneFactory {
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
         root.setStyle("-fx-background-color: black;");
 
-        // Translate background primitives implicitly scaling dimensional anchors securely properly
+        // Translate background primitives implicitly scaling dimensional anchors
+        // securely properly
         if (deathBgImg != null) {
             ImageView bg = new ImageView(deathBgImg);
             bg.setFitWidth(WIDTH);
@@ -168,13 +200,15 @@ public class SceneFactory {
         }
 
         VBox layout = newBlackVBox(10);
-        layout.setTranslateY(-10); 
+        layout.setTranslateY(-10);
 
-        // Interpolate geometric text structurally scaling objective fonts successfully smoothly
+        // Interpolate geometric text structurally scaling objective fonts successfully
+        // smoothly
         Text titleText = styledText("YOU DIED", "Serif", 64, Color.RED);
         layout.getChildren().add(titleText);
 
-        // Project sequential arrays conditionally based on deterministic narrative states correctly seamlessly
+        // Project sequential arrays conditionally based on deterministic narrative
+        // states correctly seamlessly
         boolean isLunaOrKiller = activeDeathMessage != null &&
                 (!activeDeathMessage.contains("bat bit first") &&
                         !activeDeathMessage.contains("snake was still hungry") &&
@@ -190,7 +224,8 @@ public class SceneFactory {
             animateFadeIn(poemText, 3.0);
         }
 
-        // Dynamically parse arbitrary textual indices successfully mapping UI arrays dynamically cleanly
+        // Dynamically parse arbitrary textual indices successfully mapping UI arrays
+        // dynamically cleanly
         if (activeDeathMessage != null && !activeDeathMessage.isBlank()) {
             layout.getChildren().add(styledText(activeDeathMessage, "Serif", 16, Color.rgb(190, 130, 130)));
         }
@@ -199,7 +234,8 @@ public class SceneFactory {
                     Color.rgb(200, 70, 70)));
         }
 
-        // Translate statistical variables definitively instantiating nested geometry organically intuitively
+        // Translate statistical variables definitively instantiating nested geometry
+        // organically intuitively
         VBox statsBox = createStatsBox(lollies, boxes, totalBoxes, deathCount, sanity, timeSec);
         layout.getChildren().addAll(new Text(""), statsBox);
 
@@ -213,7 +249,7 @@ public class SceneFactory {
         javafx.scene.layout.HBox btnContainer = new javafx.scene.layout.HBox(40);
         btnContainer.setAlignment(Pos.CENTER);
         btnContainer.getChildren().addAll(restartBtn, menuBtn);
-        btnContainer.setTranslateY(15); 
+        btnContainer.setTranslateY(15);
 
         layout.getChildren().addAll(new Text(""), btnContainer);
         root.getChildren().add(layout);
@@ -221,16 +257,25 @@ public class SceneFactory {
     }
 
     /**
-     * Executes procedural static allocations conceptually concluding operational game loop instances smoothly explicitly.
+     * Executes procedural static allocations conceptually concluding operational
+     * game loop instances smoothly explicitly.
      *
-     * @param lollies Objective tracking rationally evaluating execution accuracy visually smoothly.
-     * @param boxes Bounding object count unconditionally validating completion arrays functionally cleanly.
-     * @param totalBoxes Comparative limit confidently interpreting conditional mathematical values inherently successfully.
-     * @param deathCount Recursive loop iteration efficiently isolating specific narrative arrays unambiguously securely.
-     * @param sanity Abstract metric intelligently establishing final variable metrics explicitly natively.
-     * @param timeSec Sequence limitation dynamically calculating chronometric representations optimally.
-     * @param onMainMenu Logical escape lambda functionally redirecting layout closures securely uniquely.
-     * @return Scene Rendered abstract output efficiently mapped encapsulating final variable matrices conditionally.
+     * @param lollies    Objective tracking rationally evaluating execution accuracy
+     *                   visually smoothly.
+     * @param boxes      Bounding object count unconditionally validating completion
+     *                   arrays functionally cleanly.
+     * @param totalBoxes Comparative limit confidently interpreting conditional
+     *                   mathematical values inherently successfully.
+     * @param deathCount Recursive loop iteration efficiently isolating specific
+     *                   narrative arrays unambiguously securely.
+     * @param sanity     Abstract metric intelligently establishing final variable
+     *                   metrics explicitly natively.
+     * @param timeSec    Sequence limitation dynamically calculating chronometric
+     *                   representations optimally.
+     * @param onMainMenu Logical escape lambda functionally redirecting layout
+     *                   closures securely uniquely.
+     * @return Scene Rendered abstract output efficiently mapped encapsulating final
+     *         variable matrices conditionally.
      */
     public static Scene createVictoryScene(int lollies, int boxes, int totalBoxes,
             int deathCount, int sanity, double timeSec, Runnable onMainMenu) {
@@ -251,11 +296,13 @@ public class SceneFactory {
         VBox layout = newBlackVBox(10);
         layout.setTranslateY(-10);
 
-        // Map primary title confidently resolving ultimate string references logically cleanly
+        // Map primary title confidently resolving ultimate string references logically
+        // cleanly
         Text titleText = styledText("YOU ESCAPED", "Serif", 64, Color.RED);
         layout.getChildren().add(titleText);
 
-        // Sequence textual bounds naturally allocating narrative geometry dynamically correctly
+        // Sequence textual bounds naturally allocating narrative geometry dynamically
+        // correctly
         String poemStr = "pale luna smiles wide,\nthe ground is soft,\npale luna smiles wide,\nthere is a hole,\npale luna smiles wide,\ntie her up with rope,\ncongratulations! you have escaped from pale luna";
         Text poemText = styledText(poemStr, "Serif", 20, Color.LIGHTGRAY);
         layout.getChildren().add(poemText);
@@ -268,7 +315,7 @@ public class SceneFactory {
         Button menuBtn = createIconButton("/assets/images/ui/icon_home.png", "/assets/images/ui/btn_main_menu.png",
                 "/assets/images/ui/btn_main_menu_pressed.png");
         menuBtn.setOnAction(e -> onMainMenu.run());
-        menuBtn.setTranslateY(15); 
+        menuBtn.setTranslateY(15);
 
         layout.getChildren().addAll(new Text(""), menuBtn);
         root.getChildren().add(layout);
@@ -276,11 +323,15 @@ public class SceneFactory {
     }
 
     /**
-     * Allocates structural overlay elements specifically tied to cyclical transitions isolating explicit conditional logic rationally.
+     * Allocates structural overlay elements specifically tied to cyclical
+     * transitions isolating explicit conditional logic rationally.
      *
-     * @param level Base parameter mapping abstract string indices clearly successfully conditionally natively.
-     * @param onContinue Arbitrary closure function logically restoring internal structural algorithms securely accurately.
-     * @return Scene Instantiated layout effectively translating graphical rendering bounds uniformly cleanly intuitively.
+     * @param level      Base parameter mapping abstract string indices clearly
+     *                   successfully conditionally natively.
+     * @param onContinue Arbitrary closure function logically restoring internal
+     *                   structural algorithms securely accurately.
+     * @return Scene Instantiated layout effectively translating graphical rendering
+     *         bounds uniformly cleanly intuitively.
      */
     public static Scene createItemFoundScene(int level, Runnable onContinue) {
         initUIImages();
@@ -289,7 +340,8 @@ public class SceneFactory {
 
         int idx = Math.min(level - 1, 2);
 
-        // Structure geometric visuals cleanly evaluating contextual background limits optimally intelligently
+        // Structure geometric visuals cleanly evaluating contextual background limits
+        // optimally intelligently
         if (itemBgImg[idx] != null) {
             ImageView bg = new ImageView(itemBgImg[idx]);
             bg.setFitWidth(WIDTH);
@@ -301,10 +353,12 @@ public class SceneFactory {
 
         VBox layout = newBlackVBox(25);
 
-        // Implement static textual layers instantiating visual headers organically securely
+        // Implement static textual layers instantiating visual headers organically
+        // securely
         layout.getChildren().add(styledText("Pale Luna smiles wide...", "Serif", 36, Color.RED));
 
-        // Format mapping indices projecting relevant physical arrays safely and definitively
+        // Format mapping indices projecting relevant physical arrays safely and
+        // definitively
         String[] itemNames = { "The Mud", "The Shovel", "The Rope" };
         layout.getChildren().add(styledText(itemNames[idx], "Serif", 72, Color.WHITE));
 
@@ -316,7 +370,8 @@ public class SceneFactory {
         };
         layout.getChildren().add(styledText(itemDescs[idx], "Serif", 24, Color.LIGHTGRAY));
 
-        // Instantiate conditional UI interactions mapping native input controls predictably securely
+        // Instantiate conditional UI interactions mapping native input controls
+        // predictably securely
         String[] btnPaths = {
                 "/assets/images/ui/btn_next_level.png",
                 "/assets/images/ui/btn_next_level.png",
@@ -337,13 +392,18 @@ public class SceneFactory {
     }
 
     /**
-     * Distills primitive text formatting enforcing absolute structural scaling uniformly inherently.
+     * Distills primitive text formatting enforcing absolute structural scaling
+     * uniformly inherently.
      *
-     * @param text Core string defining exact character array constraints reliably.
-     * @param font Standard physical constraint locating explicit font files natively precisely.
-     * @param size Absolute mathematical parameter bounding rendering abstractions purely reliably.
-     * @param color Direct algorithmic variable coloring textual paths properly completely uniformly.
-     * @return Text The explicit instantiated component evaluated reliably cleanly unconditionally securely.
+     * @param text  Core string defining exact character array constraints reliably.
+     * @param font  Standard physical constraint locating explicit font files
+     *              natively precisely.
+     * @param size  Absolute mathematical parameter bounding rendering abstractions
+     *              purely reliably.
+     * @param color Direct algorithmic variable coloring textual paths properly
+     *              completely uniformly.
+     * @return Text The explicit instantiated component evaluated reliably cleanly
+     *         unconditionally securely.
      */
     private static Text styledText(String text, String font, double size, Color color) {
         Text t = new Text(text);
@@ -353,10 +413,13 @@ public class SceneFactory {
     }
 
     /**
-     * Compiles standard alignment vectors mapping geometric arrays structurally consistently evenly.
+     * Compiles standard alignment vectors mapping geometric arrays structurally
+     * consistently evenly.
      *
-     * @param spacing Cartesian multiplier defining literal padding abstractions safely naturally.
-     * @return VBox The compiled vertical structural interface fundamentally properly allocated.
+     * @param spacing Cartesian multiplier defining literal padding abstractions
+     *                safely naturally.
+     * @return VBox The compiled vertical structural interface fundamentally
+     *         properly allocated.
      */
     private static VBox newBlackVBox(double spacing) {
         VBox v = new VBox(spacing);
@@ -366,15 +429,23 @@ public class SceneFactory {
     }
 
     /**
-     * Executes nested statistical derivations validating independent numerical parameters unambiguously natively safely.
+     * Executes nested statistical derivations validating independent numerical
+     * parameters unambiguously natively safely.
      *
-     * @param lollies Conditional interaction count rationally interpreted precisely.
-     * @param boxes Supplementary tracking limits flawlessly instantiated rationally effectively.
-     * @param totalBoxes Extracted ceiling parameters reliably constraining variable ratios strictly.
-     * @param deaths Implicit iteration counts objectively quantified securely successfully cleanly.
-     * @param sanity Evaluated physiological vector structurally bound intelligently organically systematically.
-     * @param timeSec Aggregate operational scalar cleanly mapped explicitly sequentially smoothly.
-     * @return VBox Derived interface container confidently mapping structural subcomponents unconditionally smoothly.
+     * @param lollies    Conditional interaction count rationally interpreted
+     *                   precisely.
+     * @param boxes      Supplementary tracking limits flawlessly instantiated
+     *                   rationally effectively.
+     * @param totalBoxes Extracted ceiling parameters reliably constraining variable
+     *                   ratios strictly.
+     * @param deaths     Implicit iteration counts objectively quantified securely
+     *                   successfully cleanly.
+     * @param sanity     Evaluated physiological vector structurally bound
+     *                   intelligently organically systematically.
+     * @param timeSec    Aggregate operational scalar cleanly mapped explicitly
+     *                   sequentially smoothly.
+     * @return VBox Derived interface container confidently mapping structural
+     *         subcomponents unconditionally smoothly.
      */
     private static VBox createStatsBox(int lollies, int boxes, int totalBoxes, int deaths,
             int sanity, double timeSec) {
@@ -400,23 +471,29 @@ public class SceneFactory {
     }
 
     /**
-     * Processes independent spatial buttons structuring custom aesthetic rendering limits implicitly dynamically natively.
+     * Processes independent spatial buttons structuring custom aesthetic rendering
+     * limits implicitly dynamically natively.
      *
-     * @param iconPath Abstraction indicating local interaction graphics systematically cleanly effectively.
-     * @param normalPath Base geometric constraint tracking visual button vectors definitively smoothly.
-     * @param pressedPath Reactive geometric constraint validating cyclic input clicks optimally mathematically confidently.
-     * @return Button Formatted localized interaction interface unambiguously safely correctly structurally reliably.
+     * @param iconPath    Abstraction indicating local interaction graphics
+     *                    systematically cleanly effectively.
+     * @param normalPath  Base geometric constraint tracking visual button vectors
+     *                    definitively smoothly.
+     * @param pressedPath Reactive geometric constraint validating cyclic input
+     *                    clicks optimally mathematically confidently.
+     * @return Button Formatted localized interaction interface unambiguously safely
+     *         correctly structurally reliably.
      */
     public static Button createIconButton(String iconPath, String normalPath, String pressedPath) {
         Button btn = new Button();
         btn.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
 
-        // Compile physical bounds implicitly defining click domains smoothly intelligently uniquely
+        // Compile physical bounds implicitly defining click domains smoothly
+        // intelligently uniquely
         javafx.scene.layout.StackPane pane = new javafx.scene.layout.StackPane();
         ImageView bg = new ImageView(tryLoadImage(normalPath));
         bg.setFitWidth(160);
         bg.setFitHeight(45);
-        
+
         ImageView icon = new ImageView(tryLoadImage(iconPath));
         icon.setFitWidth(24);
         icon.setFitHeight(24);
@@ -424,7 +501,8 @@ public class SceneFactory {
         pane.getChildren().addAll(bg, icon);
         btn.setGraphic(pane);
 
-        // Dynamically shift procedural matrices reacting to abstract exogenous limits gracefully perfectly implicitly
+        // Dynamically shift procedural matrices reacting to abstract exogenous limits
+        // gracefully perfectly implicitly
         btn.setOnMousePressed(e -> bg.setImage(tryLoadImage(pressedPath)));
         btn.setOnMouseReleased(e -> bg.setImage(tryLoadImage(normalPath)));
 

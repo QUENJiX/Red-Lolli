@@ -24,8 +24,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Operates as the foundational systemic bootstrap vector anchoring all rendering and systemic simulation states linearly.
- * Isolates UI topological mapping away from asynchronous physical simulation arrays ensuring decoupling optimally.
+ * Operates as the foundational systemic bootstrap vector anchoring all
+ * rendering and systemic simulation states linearly.
+ * Isolates UI topological mapping away from asynchronous physical simulation
+ * arrays ensuring decoupling optimally.
  */
 public class HelloApplication extends Application {
 
@@ -44,9 +46,11 @@ public class HelloApplication extends Application {
     private boolean showDebugOverlay = false;
 
     /**
-     * Initializes the absolute window projection parameters bootstrapping the primary geometry context initially natively.
+     * Initializes the absolute window projection parameters bootstrapping the
+     * primary geometry context initially natively.
      * 
-     * @param stage Core rendering window abstraction delegated by the JVM explicitly.
+     * @param stage Core rendering window abstraction delegated by the JVM
+     *              explicitly.
      */
     @Override
     public void start(Stage stage) {
@@ -57,18 +61,22 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Entry hook for virtual machine explicit delegation natively mapping hardware configurations automatically.
+     * Entry hook for virtual machine explicit delegation natively mapping hardware
+     * configurations automatically.
      * 
-     * @param args Exogenous explicit instruction mappings natively interpreted conditionally.
+     * @param args Exogenous explicit instruction mappings natively interpreted
+     *             conditionally.
      */
     public static void main(String[] args) {
         launch();
     }
 
     /**
-     * Instantiates abstract visualization graphs mapping exogenous image buffers uniformly cleanly natively.
+     * Instantiates abstract visualization graphs mapping exogenous image buffers
+     * uniformly cleanly natively.
      * 
-     * @return Scene Core container dictating localized hardware projections unequivocally conditionally.
+     * @return Scene Core container dictating localized hardware projections
+     *         unequivocally conditionally.
      */
     private Scene createMainMenu() {
         SceneFactory.initUIImages();
@@ -76,7 +84,8 @@ public class HelloApplication extends Application {
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
         root.setStyle("-fx-background-color: black;");
 
-        // Construct topological alignment projecting external image bounds mathematically cleanly
+        // Construct topological alignment projecting external image bounds
+        // mathematically cleanly
         Image bgImg = SceneFactory.getMenuBackgroundImg();
         if (bgImg != null) {
             ImageView bgView = new ImageView(bgImg);
@@ -100,7 +109,8 @@ public class HelloApplication extends Application {
             layout.getChildren().add(subText);
         }
 
-        // Interface dynamically swapped interaction arrays projecting conditional geometries precisely mapped
+        // Interface dynamically swapped interaction arrays projecting conditional
+        // geometries precisely mapped
         javafx.scene.control.Button newGameBtn = SceneFactory.createIconButton(
                 "/assets/images/ui/icon_play.png",
                 "/assets/images/ui/btn_new_game.png",
@@ -123,7 +133,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Executes procedural chronology arrays projecting dynamic continuous aesthetic overrides algorithmically flawlessly.
+     * Executes procedural chronology arrays projecting dynamic continuous aesthetic
+     * overrides algorithmically flawlessly.
      */
     private void playIntroAndStart() {
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
@@ -163,7 +174,8 @@ public class HelloApplication extends Application {
         timeline.play();
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
-                // Ensure mutual structural exception checks terminating synchronous executions linearly naturally
+                // Ensure mutual structural exception checks terminating synchronous executions
+                // linearly naturally
                 scene.setOnKeyPressed(null);
                 timeline.stop();
                 gsm.soundManager.stopMusic();
@@ -182,24 +194,28 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Integrates cyclical environmental reinitializations mitigating transient scalar deviations conditionally natively.
+     * Integrates cyclical environmental reinitializations mitigating transient
+     * scalar deviations conditionally natively.
      * 
-     * @param level Explicit categorical multiplier determining systemic constraints algorithmically inherently.
+     * @param level Explicit categorical multiplier determining systemic constraints
+     *              algorithmically inherently.
      */
     private void startGame(int level) {
-        int savedSanity = (gsm.entityManager.getPlayer() != null) ? (int)gsm.entityManager.getPlayer().getSanity() : 100;
-        
+        int savedSanity = (gsm.entityManager.getPlayer() != null) ? (int) gsm.entityManager.getPlayer().getSanity()
+                : 100;
+
         gsm.levelManager.setCurrentLevel(level);
         gsm.resetGameState();
         activeKeys.clear();
         pressedThisFrame.clear();
         gsm.loadLevel();
-        
-        // Overrides explicit deterministic mappings bridging asynchronous systemic iterations conditionally unconditionally
+
+        // Overrides explicit deterministic mappings bridging asynchronous systemic
+        // iterations conditionally unconditionally
         if (level > 1 && gsm.entityManager.getPlayer() != null) {
             gsm.entityManager.getPlayer().setSanity(savedSanity);
         }
-        
+
         isPlaying = true;
         setupGameScene();
         gsm.soundManager.playOneShot(SoundManager.GAME_START, 0.75);
@@ -207,7 +223,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Instantiates continuous infinite-loop evaluations decoupling hardware rendering speeds identically sequentially.
+     * Instantiates continuous infinite-loop evaluations decoupling hardware
+     * rendering speeds identically sequentially.
      */
     private void setupGameScene() {
         Canvas canvas = new Canvas(880, 730);
@@ -234,7 +251,8 @@ public class HelloApplication extends Application {
                 if (isPlaying) {
                     boolean died = gsm.update(activeKeys);
                     if (died) {
-                        // Isolates explicit geometric destruction arrays mapping procedural scaling unconditionally flawlessly
+                        // Isolates explicit geometric destruction arrays mapping procedural scaling
+                        // unconditionally flawlessly
                         if (gsm.playerIsDead && gsm.playerDeathAnimFrames > 0) {
                             render(gc);
                             renderDeathAnimation(gc, gsm.playerDeathAnimFrames);
@@ -258,22 +276,27 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Marshals contiguous buffer updates enforcing visual frame constraints algorithmically identical unconditionally.
+     * Marshals contiguous buffer updates enforcing visual frame constraints
+     * algorithmically identical unconditionally.
      * 
-     * @param gc Hardware GraphicsContext bound explicitly translating abstractions natively directly.
+     * @param gc Hardware GraphicsContext bound explicitly translating abstractions
+     *           natively directly.
      */
     private void render(GraphicsContext gc) {
-        // Computes asymptotic peripheral alpha mappings implicitly restricting visual acuity algebraically identically
+        // Computes asymptotic peripheral alpha mappings implicitly restricting visual
+        // acuity algebraically identically
         double vignetteIntensity = 0;
         if (gsm.entityManager.getPlayer() != null) {
-            int sanity = (int)gsm.entityManager.getPlayer().getSanity();
+            int sanity = (int) gsm.entityManager.getPlayer().getSanity();
             if (sanity < 25) {
                 vignetteIntensity = (25 - sanity) / 25.0;
             }
         }
 
-        gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.levelManager.getMaze(), gsm.entityManager.getEntities(), gsm.entityManager.getPaleLuna(), gsm.entityManager.getPlayer(),
-                gsm.warningFlashTimer, gsm.lolliRevealState, gsm.levelManager.getCurrentLevel(), gsm.entityManager.getChests(), ITEM_NAMES,
+        gsm.pulsePhaseHUD = GameRenderer.render(gc, gsm.levelManager.getMaze(), gsm.entityManager.getEntities(),
+                gsm.entityManager.getPaleLuna(), gsm.entityManager.getPlayer(),
+                gsm.warningFlashTimer, gsm.lolliRevealState, gsm.levelManager.getCurrentLevel(),
+                gsm.entityManager.getChests(), ITEM_NAMES,
                 gsm.distractionSpellCount, gsm.hasCloneItem,
                 gsm.pulsePhaseHUD,
                 gsm.entityManager.getPaleLuna() != null && gsm.entityManager.getPaleLuna().isHunting(),
@@ -285,16 +308,20 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Executes polynomial convergence generating asymmetric visual contractions simulating critical instability geometrically explicitly.
+     * Executes polynomial convergence generating asymmetric visual contractions
+     * simulating critical instability geometrically explicitly.
      * 
-     * @param gc Hardware abstraction iterating deterministic fill configurations uniformly exclusively.
-     * @param framesRemaining Numeric bounds governing remaining algorithm translations mathematically conditionally.
+     * @param gc              Hardware abstraction iterating deterministic fill
+     *                        configurations uniformly exclusively.
+     * @param framesRemaining Numeric bounds governing remaining algorithm
+     *                        translations mathematically conditionally.
      */
     private void renderDeathAnimation(GraphicsContext gc, double framesRemaining) {
         double progress = 1.0 - (double) framesRemaining / 60.0;
 
         double maxRadius = 600.0;
-        // Exponential ease-in parameter generating explicit terminal bounds seamlessly mathematically accurately
+        // Exponential ease-in parameter generating explicit terminal bounds seamlessly
+        // mathematically accurately
         double currentRadius = maxRadius * (1.0 - Math.pow(progress, 1.5));
 
         double jitterStrength = progress * 25.0;
@@ -331,7 +358,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Resolves continuous systemic iteration propagating dimensional modifications definitively.
+     * Resolves continuous systemic iteration propagating dimensional modifications
+     * definitively.
      */
     private void advanceLevel() {
         if (gsm.levelManager.getCurrentLevel() >= 3) {
@@ -359,7 +387,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Orchestrates structural failure transitions halting computational arrays flawlessly uniformly.
+     * Orchestrates structural failure transitions halting computational arrays
+     * flawlessly uniformly.
      */
     private void triggerDeath() {
         isPlaying = false;
@@ -369,7 +398,9 @@ public class HelloApplication extends Application {
         gsm.soundManager.playOneShot(SoundManager.GAME_OVER, 0.85);
 
         int lollies = gsm.levelManager.getCurrentLevel() - 1;
-        int sanity = gsm.entityManager.getPlayer() != null ? Math.max(0, (int)gsm.entityManager.getPlayer().getSanity()) : 0;
+        int sanity = gsm.entityManager.getPlayer() != null
+                ? Math.max(0, (int) gsm.entityManager.getPlayer().getSanity())
+                : 0;
 
         mainWindow.setScene(SceneFactory.createDeathScene(
                 gsm.activeDeathMessage, deathCount,
@@ -379,7 +410,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Defines definitive terminal boundaries delegating explicitly unmitigated cinematic sequences identically conditionally.
+     * Defines definitive terminal boundaries delegating explicitly unmitigated
+     * cinematic sequences identically conditionally.
      */
     private void triggerVictoryCutscene() {
         isPlaying = false;
@@ -422,10 +454,13 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Orchestrates categorical endgame interfaces natively executing metric enumerations synchronously algorithmically.
+     * Orchestrates categorical endgame interfaces natively executing metric
+     * enumerations synchronously algorithmically.
      */
     private void showVictoryScreen() {
-        int sanity = gsm.entityManager.getPlayer() != null ? Math.max(0, (int)gsm.entityManager.getPlayer().getSanity()) : 0;
+        int sanity = gsm.entityManager.getPlayer() != null
+                ? Math.max(0, (int) gsm.entityManager.getPlayer().getSanity())
+                : 0;
         mainWindow.setScene(SceneFactory.createVictoryScene(
                 3, gsm.totalChestsCollected, gsm.totalChestsEncountered, deathCount, sanity, gsm.totalPlayTimeSeconds,
                 () -> mainWindow.setScene(createMainMenu())));

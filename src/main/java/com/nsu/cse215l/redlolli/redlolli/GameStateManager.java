@@ -18,9 +18,12 @@ import java.util.Set;
 import com.nsu.cse215l.redlolli.redlolli.systems.*;
 
 /**
- * Serves as the central orchestrator for the application's finite state machine.
- * Encapsulates global state metrics and delegates cyclical logic updates to decoupled subsystems.
- * Synchronizes entity spatial matrices, collision constraints, and deterministic delta timings.
+ * Serves as the central orchestrator for the application's finite state
+ * machine.
+ * Encapsulates global state metrics and delegates cyclical logic updates to
+ * decoupled subsystems.
+ * Synchronizes entity spatial matrices, collision constraints, and
+ * deterministic delta timings.
  */
 public class GameStateManager {
 
@@ -63,8 +66,10 @@ public class GameStateManager {
     final SoundManager soundManager = new SoundManager();
 
     /**
-     * Executes procedural initializations to reset systemic temporal configurations natively.
-     * Purges topological entity mappings to reestablish deterministic baseline variables.
+     * Executes procedural initializations to reset systemic temporal configurations
+     * natively.
+     * Purges topological entity mappings to reestablish deterministic baseline
+     * variables.
      */
     void resetGameState() {
         entityManager.clear();
@@ -106,8 +111,10 @@ public class GameStateManager {
     }
 
     /**
-     * Translates strict topological parameters into instantiated environmental matrices.
-     * Evaluates initial logic constraints calculating objective geometries deterministically.
+     * Translates strict topological parameters into instantiated environmental
+     * matrices.
+     * Evaluates initial logic constraints calculating objective geometries
+     * deterministically.
      */
     void loadLevel() {
         levelManager.loadLevel(entityManager);
@@ -130,17 +137,23 @@ public class GameStateManager {
     }
 
     /**
-     * Orchestrates systemic tick propagation directing cyclical interactions flawlessly.
-     * Normalizes chronological deviations via floating-point delta matrices natively.
+     * Orchestrates systemic tick propagation directing cyclical interactions
+     * flawlessly.
+     * Normalizes chronological deviations via floating-point delta matrices
+     * natively.
      * 
-     * @param activeKeys Exogenous Boolean constraint mappings capturing keyboard states dynamically.
-     * @return boolean True communicating a terminal halt mechanism within the core process loop.
+     * @param activeKeys Exogenous Boolean constraint mappings capturing keyboard
+     *                   states dynamically.
+     * @return boolean True communicating a terminal halt mechanism within the core
+     *         process loop.
      */
     boolean update(Set<KeyCode> activeKeys) {
         long now = System.nanoTime();
-        if (lastUpdateTime == 0) lastUpdateTime = now;
-        
-        // Execute temporal coefficient normalization ensuring uniform AI trajectory scaling
+        if (lastUpdateTime == 0)
+            lastUpdateTime = now;
+
+        // Execute temporal coefficient normalization ensuring uniform AI trajectory
+        // scaling
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
@@ -148,7 +161,8 @@ public class GameStateManager {
         if (showingItemFound)
             return false;
 
-        // Process discrete execution sequences prior to halting game cycle fundamentally
+        // Process discrete execution sequences prior to halting game cycle
+        // fundamentally
         if (playerIsDead) {
             if (playerDeathAnimFrames > 0) {
                 playerDeathAnimFrames -= timeDelta;
@@ -158,7 +172,8 @@ public class GameStateManager {
 
         totalPlayTimeSeconds += dtSeconds;
 
-        // Iteratively render priority sequential animations without progressing logical matrices
+        // Iteratively render priority sequential animations without progressing logical
+        // matrices
         if (lolliRevealState != null && lolliRevealState.active) {
             lolliRevealState.timer -= timeDelta;
             lolliRevealState.phase += 0.15 * timeDelta;
@@ -169,7 +184,8 @@ public class GameStateManager {
             return false;
         }
 
-        // Exhaust transient effect constraints proportionally based on active rendering offsets
+        // Exhaust transient effect constraints proportionally based on active rendering
+        // offsets
         if (exitGraceFrames > 0)
             exitGraceFrames -= timeDelta;
         if (guardHitCooldownFrames > 0)
@@ -187,9 +203,11 @@ public class GameStateManager {
         for (TorchEntity torch : entityManager.getTorches())
             torch.update();
 
-        // Integrate asynchronous physiological constraints checking deterministic interaction logic
+        // Integrate asynchronous physiological constraints checking deterministic
+        // interaction logic
         if (entityManager.getPaleLuna() != null) {
-            entityManager.getPlayer().updateNearLunaStatus(entityManager.getPaleLuna().getX(), entityManager.getPaleLuna().getY());
+            entityManager.getPlayer().updateNearLunaStatus(entityManager.getPaleLuna().getX(),
+                    entityManager.getPaleLuna().getY());
         }
 
         entityManager.getPlayer().update();
@@ -211,7 +229,8 @@ public class GameStateManager {
             }
         }
 
-        // Apply discrete Cartesian derivation matrices yielding uniform kinetic bounding globally
+        // Apply discrete Cartesian derivation matrices yielding uniform kinetic
+        // bounding globally
         boolean sprinting = activeKeys.contains(KeyCode.SHIFT) && entityManager.getPlayer().canSprint();
         double beforeX = entityManager.getPlayer().getX(), beforeY = entityManager.getPlayer().getY();
         if (activeKeys.contains(KeyCode.W))
@@ -223,8 +242,10 @@ public class GameStateManager {
         if (activeKeys.contains(KeyCode.D))
             entityManager.getPlayer().move(1, 0, levelManager.getMaze(), sprinting);
 
-        // Disaggregate geometric constraints resolving auditory feedback dependencies procedurally
-        boolean moved = Math.abs(entityManager.getPlayer().getX() - beforeX) > 0.01 || Math.abs(entityManager.getPlayer().getY() - beforeY) > 0.01;
+        // Disaggregate geometric constraints resolving auditory feedback dependencies
+        // procedurally
+        boolean moved = Math.abs(entityManager.getPlayer().getX() - beforeX) > 0.01
+                || Math.abs(entityManager.getPlayer().getY() - beforeY) > 0.01;
         if (moved) {
             if (footstepCooldownFrames <= 0) {
                 soundManager.playOneShot(SoundManager.FOOTSTEP, 0.25);
@@ -236,13 +257,15 @@ public class GameStateManager {
             footstepCooldownFrames = Math.max(0, footstepCooldownFrames - timeDelta);
         }
 
-        // Reconcile dynamic Boolean limits isolating sanctuary regions properly organically 
+        // Reconcile dynamic Boolean limits isolating sanctuary regions properly
+        // organically
         boolean inEscapeRoom = levelManager.getMaze().isEscapeRoom(entityManager.getPlayer().getHitbox());
         boolean enteringEscapeRoom = !wasInEscapeRoom && inEscapeRoom;
         boolean exitingEscapeRoom = wasInEscapeRoom && !inEscapeRoom;
         entityManager.getPlayer().setInEscapeRoom(inEscapeRoom);
 
-        levelManager.getMaze().updateEscapeRoomState(entityManager.getPlayer().getX(), entityManager.getPlayer().getY());
+        levelManager.getMaze().updateEscapeRoomState(entityManager.getPlayer().getX(),
+                entityManager.getPlayer().getY());
 
         if (exitingEscapeRoom) {
             exitGraceFrames = 45;
@@ -265,50 +288,65 @@ public class GameStateManager {
         distractionSpellCount += collisionSystem.newDistractions;
         hasCloneItem = collisionSystem.hasCloneItem;
 
-        // Delegate specific hazard collision evaluations maintaining strict structural decoupling
+        // Delegate specific hazard collision evaluations maintaining strict structural
+        // decoupling
         collisionSystem.playerDied = false;
         collisionSystem.checkGuardThreats(entityManager, inEscapeRoom, enteringEscapeRoom, guardHitCooldownFrames);
-        if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
+        if (collisionSystem.playerDied)
+            return triggerPlayerDeath(collisionSystem.deathMessage);
 
         collisionSystem.playerDied = false;
         collisionSystem.updateSerialKiller(entityManager, levelManager.getMaze());
-        if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
+        if (collisionSystem.playerDied)
+            return triggerPlayerDeath(collisionSystem.deathMessage);
 
         collisionSystem.playerDied = false;
-        collisionSystem.updatePaleLuna(entityManager, levelManager.getMaze(), inEscapeRoom, exitingEscapeRoom, lolliRecentlyCollected, lunaScreamCooldownFrames);
+        collisionSystem.updatePaleLuna(entityManager, levelManager.getMaze(), inEscapeRoom, exitingEscapeRoom,
+                lolliRecentlyCollected, lunaScreamCooldownFrames);
         if (collisionSystem.playHeartbeat) {
             warningFlashTimer = 30;
             soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
         }
-        if (collisionSystem.screenShake) screenShakeFrames = 15;
+        if (collisionSystem.screenShake)
+            screenShakeFrames = 15;
         if (collisionSystem.playScream) {
             soundManager.playOneShot(SoundManager.LUNA_SCREAM_NEARBY, 0.8);
             lunaScreamCooldownFrames = 130;
         }
-        if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
+        if (collisionSystem.playerDied)
+            return triggerPlayerDeath(collisionSystem.deathMessage);
 
         lolliRecentlyCollected = false;
         return false;
     }
 
     /**
-     * Confirms the termination of specific independent cyclical visual progressions.
+     * Confirms the termination of specific independent cyclical visual
+     * progressions.
      * 
-     * @return boolean True authenticating the exhaustion of localized sequential tracking variables.
+     * @return boolean True authenticating the exhaustion of localized sequential
+     *         tracking variables.
      */
     boolean isLolliRevealJustFinished() {
         return lolliRevealState != null && !lolliRevealState.active;
     }
 
     /**
-     * Integrates ephemeral user interface bounding nodes into the rendering abstraction structurally.
+     * Integrates ephemeral user interface bounding nodes into the rendering
+     * abstraction structurally.
      * 
-     * @param imagePath Resource URI classifying absolute textual mapping parameters.
-     * @param x Arbitrary Cartesian limit horizontally instantiating logical vectors.
-     * @param y Arbitrary Cartesian limit vertically instantiating logical vectors.
-     * @param width Numeric structural array indicating linear dimensional geometry.
-     * @param height Numeric structural array indicating vertical dimensional geometry.
-     * @param opacity Floating-point constant extracting objective visibility multipliers smoothly.
+     * @param imagePath Resource URI classifying absolute textual mapping
+     *                  parameters.
+     * @param x         Arbitrary Cartesian limit horizontally instantiating logical
+     *                  vectors.
+     * @param y         Arbitrary Cartesian limit vertically instantiating logical
+     *                  vectors.
+     * @param width     Numeric structural array indicating linear dimensional
+     *                  geometry.
+     * @param height    Numeric structural array indicating vertical dimensional
+     *                  geometry.
+     * @param opacity   Floating-point constant extracting objective visibility
+     *                  multipliers smoothly.
      */
     public void addOverlay(String imagePath, double x, double y, double width, double height,
             double opacity) {
@@ -318,14 +356,20 @@ public class GameStateManager {
     }
 
     /**
-     * Coordinates transient world geometries strictly mapped to matrix dependencies linearly.
+     * Coordinates transient world geometries strictly mapped to matrix dependencies
+     * linearly.
      * 
      * @param imagePath Resource string deriving absolute bounds uniformly natively.
-     * @param worldX Mathematical vector mapping Cartesian offsets dynamically safely.
-     * @param worldY Mathematical vector mapping Cartesian offsets dynamically safely.
-     * @param width Logical distance constraint projecting lateral visualization correctly.
-     * @param height Logical distance constraint projecting longitudinal visualization correctly.
-     * @param opacity Extrapolated integer scaling absolute alpha blending values properly.
+     * @param worldX    Mathematical vector mapping Cartesian offsets dynamically
+     *                  safely.
+     * @param worldY    Mathematical vector mapping Cartesian offsets dynamically
+     *                  safely.
+     * @param width     Logical distance constraint projecting lateral visualization
+     *                  correctly.
+     * @param height    Logical distance constraint projecting longitudinal
+     *                  visualization correctly.
+     * @param opacity   Extrapolated integer scaling absolute alpha blending values
+     *                  properly.
      */
     public void addWorldOverlay(String imagePath, double worldX, double worldY, double width,
             double height, double opacity) {
@@ -335,8 +379,10 @@ public class GameStateManager {
     }
 
     /**
-     * Intercepts environmental constraints conditionally resolving mechanical overrides securely.
-     * Analyzes proximal hazard distances dynamically overriding default hazard logic natively.
+     * Intercepts environmental constraints conditionally resolving mechanical
+     * overrides securely.
+     * Analyzes proximal hazard distances dynamically overriding default hazard
+     * logic natively.
      */
     void tryUseDistraction() {
         GuardEntity nearest = null;
@@ -344,17 +390,20 @@ public class GameStateManager {
         for (GuardEntity guard : entityManager.getGuards()) {
             if (guard.isDistracted())
                 continue;
-            
-            // Normalize euclidean vector distances mathematically mitigating topological ambiguity organically
-            double d = distInTiles(entityManager.getPlayer().getX(), entityManager.getPlayer().getY(), guard.getX(), guard.getY());
-            if (d < best && guard.isWithinDistractionRange(entityManager.getPlayer().getX(), entityManager.getPlayer().getY())) {
+
+            // Normalize euclidean vector distances mathematically mitigating topological
+            // ambiguity organically
+            double d = distInTiles(entityManager.getPlayer().getX(), entityManager.getPlayer().getY(), guard.getX(),
+                    guard.getY());
+            if (d < best && guard.isWithinDistractionRange(entityManager.getPlayer().getX(),
+                    entityManager.getPlayer().getY())) {
                 best = d;
                 nearest = guard;
             }
         }
         if (nearest == null)
             return;
-        
+
         // Execute numerical decay restricting persistent loop overrides precisely
         if (distractionSpellCount > 0) {
             distractionSpellCount--;
@@ -363,14 +412,18 @@ public class GameStateManager {
     }
 
     /**
-     * Synthesizes surrogate entities inserting strict tracking clones conditionally natively.
-     * Establishes dynamic interaction overrides terminating redundant structural arrays correctly.
+     * Synthesizes surrogate entities inserting strict tracking clones conditionally
+     * natively.
+     * Establishes dynamic interaction overrides terminating redundant structural
+     * arrays correctly.
      */
     void tryPlaceClone() {
-        // Enforce chronological conditionals preventing invalid synthetic geometry propagation fundamentally
+        // Enforce chronological conditionals preventing invalid synthetic geometry
+        // propagation fundamentally
         if (!hasCloneItem || levelManager.getCurrentLevel() != 3 || entityManager.getCloneDecoy() != null)
             return;
-        CardboardClone cloneDecoy = new CardboardClone(entityManager.getPlayer().getX() + 5, entityManager.getPlayer().getY() + 5);
+        CardboardClone cloneDecoy = new CardboardClone(entityManager.getPlayer().getX() + 5,
+                entityManager.getPlayer().getY() + 5);
         entityManager.setCloneDecoy(cloneDecoy);
         entityManager.addEntity(cloneDecoy);
         hasCloneItem = false;
@@ -378,11 +431,14 @@ public class GameStateManager {
     }
 
     /**
-     * Exports absolute operational telemetry data aggregating structural abstractions reliably cleanly.
+     * Exports absolute operational telemetry data aggregating structural
+     * abstractions reliably cleanly.
      * Subordinates default visual rendering loops natively explicitly.
      * 
-     * @param gc Hardware geometry bounds delegating explicit alphanumeric matrices sequentially.
-     * @param activeKeys Exogenous key polling arrays translated functionally dynamically.
+     * @param gc         Hardware geometry bounds delegating explicit alphanumeric
+     *                   matrices sequentially.
+     * @param activeKeys Exogenous key polling arrays translated functionally
+     *                   dynamically.
      */
     void drawDebugOverlay(GraphicsContext gc, Set<KeyCode> activeKeys) {
         Monster paleLuna = entityManager.getPaleLuna();
@@ -401,11 +457,11 @@ public class GameStateManager {
 
         gc.setFill(Color.rgb(220, 220, 220));
         gc.setFont(Font.font("Consolas", FontWeight.BOLD, 12));
-        
+
         // Interpret local geometric matrix vectors securely smoothly efficiently
         int[] tile = maze.getTilePositionAt(player.getX() + 10, player.getY() + 10);
         String tileText = tile == null ? "-" : tile[0] + "," + tile[1];
-        
+
         // Output AI sequential indices objectively accurately seamlessly
         String lunaState = paleLuna == null ? "NONE" : paleLuna.getState().name();
         int lunaTimer = 0;
@@ -417,11 +473,12 @@ public class GameStateManager {
                 case WAITING_AT_DOOR -> lunaTimer = paleLuna.getWaitTimer();
             }
         }
-        
+
         // Compile strict sequence parameters unconditionally smoothly optimally
         String[] lines = {
                 "DEBUG (F3)",
-                "Level=" + levelManager.getCurrentLevel() + " Tile=" + tileText + " InEscape=" + player.isInEscapeRoom(),
+                "Level=" + levelManager.getCurrentLevel() + " Tile=" + tileText + " InEscape="
+                        + player.isInEscapeRoom(),
                 "Sprint=" + activeKeys.contains(KeyCode.SHIFT),
                 "Luna=" + lunaState + " Timer=" + lunaTimer + " Nearby=" + (lunaDist <= 5.0),
                 "Spells=" + distractionSpellCount + " Clone=" + hasCloneItem,
@@ -435,23 +492,29 @@ public class GameStateManager {
     }
 
     /**
-     * Executes arbitrary trajectory adjustments bypassing algorithmic dependencies entirely globally.
+     * Executes arbitrary trajectory adjustments bypassing algorithmic dependencies
+     * entirely globally.
      * Prevents logic deadlocks inherently safely natively.
      */
     private void teleportLunaNearPlayer() {
         if (entityManager.getPaleLuna() == null)
             return;
-        entityManager.getPaleLuna().setPosition(entityManager.getPlayer().getX() + 36, entityManager.getPlayer().getY());
+        entityManager.getPaleLuna().setPosition(entityManager.getPlayer().getX() + 36,
+                entityManager.getPlayer().getY());
     }
 
     /**
-     * Derives spatial Cartesian magnitudes mapping decoupled geographic limits effectively reliably.
+     * Derives spatial Cartesian magnitudes mapping decoupled geographic limits
+     * effectively reliably.
      * 
-     * @param x1 Lateral vector variable systematically objectively correctly natively.
-     * @param y1 Longitudinal vector variable systematically objectively correctly natively.
+     * @param x1 Lateral vector variable systematically objectively correctly
+     *           natively.
+     * @param y1 Longitudinal vector variable systematically objectively correctly
+     *           natively.
      * @param x2 Target lateral coordinate cleanly seamlessly mapped exactly.
      * @param y2 Target longitudinal coordinate cleanly seamlessly mapped exactly.
-     * @return double Extracted distance differential explicitly mathematically calculated.
+     * @return double Extracted distance differential explicitly mathematically
+     *         calculated.
      */
     static double distInTiles(double x1, double y1, double x2, double y2) {
         double dx = (x1 - x2) / Maze.TILE_SIZE, dy = (y1 - y2) / Maze.TILE_SIZE;
