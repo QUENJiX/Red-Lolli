@@ -2,7 +2,9 @@ package com.nsu.cse215l.redlolli.redlolli.ui;
 
 import com.nsu.cse215l.redlolli.redlolli.entities.Entity;
 import com.nsu.cse215l.redlolli.redlolli.entities.Item;
+import com.nsu.cse215l.redlolli.redlolli.entities.CardboardClone;
 import com.nsu.cse215l.redlolli.redlolli.entities.Monster;
+import com.nsu.cse215l.redlolli.redlolli.entities.SerialKillerEntity;
 import com.nsu.cse215l.redlolli.redlolli.entities.Player;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 
@@ -36,6 +38,26 @@ public class GameRenderer {
 
     private static Image lunaFlashImg;
     private static Image[] torchFrames;
+    private static Image chestClosedImg;
+    private static Image chestOpenedImg;
+    private static Image chestGlowLolli;
+    private static Image chestGlowClone;
+    private static Image cloneDecoyImg;
+
+    private static Image monsterDormant;
+    private static Image monsterStalking;
+    private static Image monsterStalkingRight;
+    private static Image monsterHunting;
+    private static Image monsterHuntingRight;
+    private static Image monsterWaiting;
+
+    private static Image killerIdleImg;
+    private static Image killerIdleLeftImg;
+    private static Image killerChaseImg;
+    private static Image killerChaseLeftImg;
+    private static Image killerAttackImg;
+    private static Image killerAttackLeftImg;
+
     private static boolean imagesInitialized = false;
 
     private static Image loadSprite(String filename, int width, int height) {
@@ -56,10 +78,164 @@ public class GameRenderer {
             torchFrames[i] = loadSprite("dungeon/wall/torches/torch_" + i + ".png", 40, 40);
         }
         
+        chestClosedImg = loadSprite("sprites/chest_closed.png", 32, 32);
+        chestOpenedImg = loadSprite("sprites/chest_open.png", 32, 32);
+        chestGlowLolli = loadSprite("sprites/chest_glow_lolli.png", 32, 32);
+        chestGlowClone = loadSprite("sprites/chest_glow_clone.png", 32, 32);
+        cloneDecoyImg = loadSprite("sprites/clone_decoy.png", 50, 50);
+
+        monsterDormant = loadSprite("sprites/monster_dormant.png", 50, 50);
+        monsterStalking = loadSprite("sprites/monster_stalking.png", 50, 50);
+        monsterStalkingRight = loadSprite("sprites/monster_stalking_right.png", 50, 50);
+        monsterHunting = loadSprite("sprites/monster_hunting.png", 50, 50);
+        monsterHuntingRight = loadSprite("sprites/monster_hunting_right.png", 50, 50);
+        monsterWaiting = loadSprite("sprites/monster_waiting.png", 50, 50);
+
+        killerIdleImg = loadSprite("sprites/killer_idle_right.png", 40, 70); // Using correct source dims
+        killerIdleLeftImg = loadSprite("sprites/killer_idle_left.png", 40, 70);
+        killerChaseImg = loadSprite("sprites/killer_chase_right.png", 640, 70);
+        killerChaseLeftImg = loadSprite("sprites/killer_chase_left.png", 640, 70);
+        killerAttackImg = loadSprite("sprites/killer_attack_right.png", 640, 70);
+        killerAttackLeftImg = loadSprite("sprites/killer_attack_left.png", 640, 70);
+
         imagesInitialized = true;
     }
 
     // ================= OVERLAY SYSTEM =================
+
+    private static void drawItemImg(GraphicsContext gc, boolean isCollected, Image img, double x, double y) {
+        if (img != null) {
+            gc.drawImage(img, x, y, 32.0, 32.0); // RENDER_SIZE from old Item.java
+        } else {
+            gc.setFill(isCollected ? Color.rgb(160, 82, 45) : Color.rgb(139, 69, 19));
+            gc.fillRect(x, y, 32.0, 32.0);
+        }
+    }
+
+    private static void renderMonster(GraphicsContext gc, Monster m) {
+        double RENDER_SIZE = 50.0;
+        double AURA_SIZE = 56.0;
+        double offset = (RENDER_SIZE - m.getSize()) / 2;
+        double cx = m.getX() + m.getSize() / 2;
+        double cy = m.getY() + m.getSize() / 2;
+
+        // Aura (only when not dormant)
+        if (m.getState() != Monster.State.DORMANT) {
+            double pulse = Math.sin(m.getPulsePhase()) * 5;
+            double baseRadius = AURA_SIZE / 2 + pulse;
+
+            // Base jagged shape mimicking an organic, flickering, torch-like randomized flame
+            int numPoints = 16;
+            double[] xPoints = new double[numPoints];
+            double[] yPoints = new double[numPoints];
+
+            for (int layer = 0; layer < 3; layer++) {
+                for (int i = 0; i < numPoints; i++) {
+                    double angle = Math.PI * 2 * ((double) i / numPoints);
+                    // Apply random jitter to radius for a spiky torch effect
+                    double radiusJitter = 0.75 + (Math.random() * 0.45);
+                    double currentR = baseRadius * radiusJitter;
+
+                    if (layer == 1)
+                        currentR *= 0.65;
+                    if (layer == 2)
+                        currentR *= 0.35;
+
+                    xPoints[i] = cx + (Math.cos(angle) * currentR);
+                    yPoints[i] = cy + (Math.sin(angle) * currentR);
+                }
+
+                if (layer == 0) {
+                    gc.setGlobalAlpha(0.25);
+                    gc.setFill(Color.rgb(180, 20, 20));
+                } else if (layer == 1) {
+                    gc.setGlobalAlpha(0.45);
+                    gc.setFill(Color.rgb(220, 30, 30));
+                } else {
+                    gc.setGlobalAlpha(0.7);
+                    gc.setFill(Color.rgb(255, 60, 60));
+                }
+                gc.fillPolygon(xPoints, yPoints, numPoints);
+            }
+
+            // Erratic shuddering static rings for the terrifying aura glitch aesthetic
+            gc.setGlobalAlpha(0.6);
+            gc.setStroke(Color.rgb(40, 0, 0));
+            gc.setLineWidth(1.5);
+            double ringShift = (Math.random() - 0.5) * 8;
+            gc.strokeOval(cx - baseRadius + ringShift, cy - baseRadius - ringShift, baseRadius * 2, baseRadius * 2);
+
+            gc.setGlobalAlpha(1.0);
+        }
+
+        // Body composite
+        Image body = switch (m.getState()) {
+            case DORMANT -> monsterDormant;
+            case STALKING -> m.isFacingRight() ? monsterStalkingRight : monsterStalking;
+            case HUNTING -> m.isFacingRight() ? monsterHuntingRight : monsterHunting;
+            case WAITING_AT_DOOR -> monsterWaiting;
+        };
+
+        if (body != null) {
+            if (m.getState() == Monster.State.DORMANT) {
+                gc.setGlobalAlpha(0.5);
+                gc.drawImage(body, m.getX() - offset, m.getY() - offset, RENDER_SIZE, RENDER_SIZE);
+                gc.setGlobalAlpha(1.0);
+            } else {
+                gc.drawImage(body, m.getX() - offset, m.getY() - offset, RENDER_SIZE, RENDER_SIZE);
+            }
+        } else {
+            gc.setFill(Color.rgb(220, 220, 240));
+            if (m.getState() == Monster.State.DORMANT)
+                gc.setGlobalAlpha(0.5);
+            gc.fillOval(m.getX() - offset, m.getY() - offset, RENDER_SIZE, RENDER_SIZE);
+            gc.setGlobalAlpha(1.0);
+        }
+    }
+
+    private static void renderSerialKiller(GraphicsContext gc, SerialKillerEntity sk) {
+        Image imgToDraw;
+        int frameWidth = 128;
+        int maxFrames = 5;
+
+        if (!sk.isActive()) {
+            imgToDraw = sk.isFacingLeft() ? killerIdleLeftImg : killerIdleImg;
+            frameWidth = 40; // Idle is now just a single 40 width image
+            maxFrames = 1;
+        } else if (sk.isAttackingDecoy()) {
+            imgToDraw = sk.isFacingLeft() ? killerAttackLeftImg : killerAttackImg;
+            frameWidth = 128; // 640 width / 5 frames
+            maxFrames = 5;
+        } else {
+            imgToDraw = sk.isFacingLeft() ? killerChaseLeftImg : killerChaseImg;
+            frameWidth = 128; // 640 width / 5 frames
+            maxFrames = 5;
+        }
+
+        int currentFrame = sk.getCurrentFrame();
+        if (currentFrame >= maxFrames) {
+            currentFrame = 0;
+        }
+
+        // Calculate aspect-correct width based on the active animation frame
+        double RENDER_HEIGHT = 48.0;
+        double scale = RENDER_HEIGHT / 70.0;
+        double drawWidth = frameWidth * scale;
+
+        // Draw centered (hitbox 24x24)
+        double offsetX = (drawWidth - sk.getSize()) / 2;
+        double offsetY = (RENDER_HEIGHT - sk.getSize()) / 2;
+
+        if (imgToDraw != null) {
+            int sourceX = currentFrame * frameWidth;
+            gc.drawImage(imgToDraw,
+                    sourceX, 0, frameWidth, 70, // Source slice dimensions updated to 70 height
+                    sk.getX() - offsetX, sk.getY() - offsetY, drawWidth, RENDER_HEIGHT); // Destination bounding box
+        } else {
+            gc.setFill(sk.isActive() ? Color.rgb(180, 20, 20) : Color.rgb(80, 40, 40));
+            gc.fillOval(sk.getX() - offsetX, sk.getY() - offsetY, RENDER_HEIGHT, RENDER_HEIGHT);
+        }
+    }
 
     /** Represents a manual image overlay that can be placed anywhere on screen. */
     public static class Overlay {
@@ -129,6 +305,39 @@ public class GameRenderer {
                 if (img != null) {
                     gc.drawImage(img, t.getX(), t.getY(), t.getSize(), t.getSize());
                 }
+            } else if (e instanceof Item) {
+                Item item = (Item) e;
+                double offset = (32.0 - item.getSize()) / 2; // RENDER_SIZE is 32.0
+                double drawX = item.getX() - offset;
+                double drawY = item.getY() - offset;
+
+                if (item.isCollected()) {
+                    drawItemImg(gc, true, chestOpenedImg, drawX, drawY);
+                    if (item.getContentType() == Item.ContentType.LOLLI && chestGlowLolli != null) {
+                        gc.setGlobalAlpha(0.6);
+                        gc.drawImage(chestGlowLolli, drawX, drawY, 32.0, 32.0);
+                        gc.setGlobalAlpha(1.0);
+                    } else if (item.getContentType() == Item.ContentType.CLONE_DECOY && chestGlowClone != null) {
+                        gc.setGlobalAlpha(0.6);
+                        gc.drawImage(chestGlowClone, drawX, drawY, 32.0, 32.0);
+                        gc.setGlobalAlpha(1.0);
+                    }
+                } else {
+                    drawItemImg(gc, false, chestClosedImg, drawX, drawY);
+                }
+            } else if (e instanceof CardboardClone) {
+                CardboardClone clone = (CardboardClone) e;
+                double offset = (50.0 - clone.getSize()) / 2; // RENDER_SIZE is 50.0
+                if (cloneDecoyImg != null) {
+                    gc.drawImage(cloneDecoyImg, clone.getX() - offset, clone.getY() - offset, 50.0, 50.0);
+                } else {
+                    gc.setFill(Color.rgb(210, 180, 140));
+                    gc.fillOval(clone.getX() - offset, clone.getY() - offset, 50.0, 50.0);
+                }
+            } else if (e instanceof Monster) {
+                renderMonster(gc, (Monster) e);
+            } else if (e instanceof SerialKillerEntity) {
+                renderSerialKiller(gc, (SerialKillerEntity) e);
             } else {
                 e.render(gc);
             }

@@ -115,9 +115,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>
-                                com.nsu.cse215l.redlolli/com.nsu.cse215l.redlolli.HelloApplication
-                            </mainClass>
+                            <mainClass>com.nsu.cse215l.redlolli.redlolli/com.nsu.cse215l.redlolli.redlolli.HelloApplication</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
