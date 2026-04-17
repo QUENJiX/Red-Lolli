@@ -155,7 +155,7 @@ public class GameRenderer {
         lightGC.setGlobalBlendMode(BlendMode.ADD);
 
         // Player's personal light (dimmer depending on sanity)
-        double playerLightRadius = 150 + (player.getSanityPercent() * 50.0);
+        double playerLightRadius = 90 + (player.getSanityPercent() * 50.0);
         drawRadialLight(lightGC, player.getX() + 10, player.getY() + 10, playerLightRadius,
                 Color.rgb(220, 230, 255, 1.0));
 
