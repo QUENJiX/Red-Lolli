@@ -44,8 +44,6 @@ public class GuardEntity extends Entity implements Collidable {
     // Level 3: Centipede distraction duration (TWIST: even shorter distraction window)
     private static final int CENTIPEDE_DISTRACTION_DURATION = 120; // 2 seconds
 
-    private long lastUpdateTime = 0;
-
     public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
         super(x, y, 28.0);
         this.type = type;
@@ -55,10 +53,6 @@ public class GuardEntity extends Entity implements Collidable {
 
     @Override
     public void update() {
-        long now = System.nanoTime();
-        if (lastUpdateTime == 0) lastUpdateTime = now;
-        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
-        lastUpdateTime = now;
 
         if (distracted) {
             
@@ -129,3 +123,4 @@ public class GuardEntity extends Entity implements Collidable {
         return distracted;
     }
 }
+

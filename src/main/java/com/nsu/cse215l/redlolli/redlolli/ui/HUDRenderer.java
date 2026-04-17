@@ -328,3 +328,4 @@ public class HUDRenderer {
         gc.fillText(text, x, y);
     }
 }
+

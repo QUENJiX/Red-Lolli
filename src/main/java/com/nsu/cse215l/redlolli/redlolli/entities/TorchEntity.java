@@ -10,8 +10,6 @@ public class TorchEntity extends Entity {
     private long lastFrameTime = System.nanoTime();
     private int currentFrame = 1; // Frames 1-4 are lit, frame 0 is unlit
     private boolean isLit = true;
-    
-    private long lastUpdateTime = 0;
 
             public TorchEntity(double x, double y) {
         super(x, y, 40); // Size can be 40
@@ -24,11 +22,6 @@ public class TorchEntity extends Entity {
     public void update() {
         if (!isLit)
             return;
-            
-        long now = System.nanoTime();
-        if (lastUpdateTime == 0) lastUpdateTime = now;
-        double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
-        lastUpdateTime = now;
 
         
         if (lastFrameTime >= 8) { // Change frame every 8 ticks
@@ -57,3 +50,4 @@ public class TorchEntity extends Entity {
         return currentFrame;
     }
 }
+
