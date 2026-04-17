@@ -19,8 +19,6 @@ public class Monster extends Entity implements Collidable {
 
             /** Call this to force images to reload (e.g. after changing asset paths). */
         // Visual render size (now 50x50 centered on the 25x25 hitbox)
-    private static final double RENDER_SIZE = 50.0;
-    private static final double AURA_SIZE = 56.0;
 
     // ================= STATE =================
 

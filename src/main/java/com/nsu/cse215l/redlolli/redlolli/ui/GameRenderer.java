@@ -1,8 +1,9 @@
 package com.nsu.cse215l.redlolli.redlolli.ui;
 
+import javafx.scene.image.Image;
+
 import com.nsu.cse215l.redlolli.redlolli.systems.AssetManager;
 import com.nsu.cse215l.redlolli.redlolli.entities.*;
-import javafx.scene.image.Image;
 
 import com.nsu.cse215l.redlolli.redlolli.entities.Entity;
 import com.nsu.cse215l.redlolli.redlolli.entities.Item;
@@ -11,7 +12,6 @@ import com.nsu.cse215l.redlolli.redlolli.entities.Player;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -347,7 +347,7 @@ public class GameRenderer {
     public static class LolliRevealState {
         public boolean active;
         public long endTime;
-        public long startTime;public int duration;
+        public long startTime;public long duration;
         public double x, y;
         public double phase;
 
@@ -355,7 +355,7 @@ public class GameRenderer {
             this.active = true;
             this.startTime = System.nanoTime();
             this.endTime = this.startTime + durationNs;
-            this.duration = duration;
+            this.duration = durationNs;
             this.x = x;
             this.y = y;
             this.phase = 0;

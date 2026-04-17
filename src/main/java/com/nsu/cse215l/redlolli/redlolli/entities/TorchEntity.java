@@ -12,7 +12,6 @@ public class TorchEntity extends Entity {
     private boolean isLit = true;
     
     private long lastUpdateTime = 0;
-    private double timeDelta = 1.0;
 
             public TorchEntity(double x, double y) {
         super(x, y, 40); // Size can be 40
@@ -30,7 +29,6 @@ public class TorchEntity extends Entity {
         if (lastUpdateTime == 0) lastUpdateTime = now;
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
-        timeDelta = dtSeconds * 60.0;
 
         
         if (lastFrameTime >= 8) { // Change frame every 8 ticks

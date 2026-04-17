@@ -16,7 +16,6 @@ public class SerialKillerEntity extends Entity implements Collidable {
             /** Call this to force images to reload (e.g. after changing asset paths). */
         // Height of the killer in pixels. Width is calculated automatically to keep
     // aspect ratio.
-    private static final double RENDER_HEIGHT = 48.0;
 
     private static final double SPEED = 1.75;
 

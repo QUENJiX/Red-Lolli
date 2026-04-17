@@ -15,7 +15,6 @@ public class Player extends Entity implements Collidable {
 
             /** Call this to force images to reload (e.g. after changing asset paths). */
         // Visual render size
-    private static final double RENDER_SIZE = 32.0;
 
     // ================= LOGIC =================
 

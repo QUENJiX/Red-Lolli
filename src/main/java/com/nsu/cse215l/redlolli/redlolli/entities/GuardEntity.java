@@ -21,7 +21,6 @@ public class GuardEntity extends Entity implements Collidable {
 
             /** Call this to force images to reload (e.g. after changing asset paths). */
         // Visual render size (40x40 centered on the 28x28 hitbox)
-    private static final double RENDER_SIZE = 40.0;
 
     // ================= STATE =================
 
@@ -46,7 +45,6 @@ public class GuardEntity extends Entity implements Collidable {
     private static final int CENTIPEDE_DISTRACTION_DURATION = 120; // 2 seconds
 
     private long lastUpdateTime = 0;
-    private double timeDelta = 1.0;
 
     public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
         super(x, y, 28.0);
@@ -61,7 +59,6 @@ public class GuardEntity extends Entity implements Collidable {
         if (lastUpdateTime == 0) lastUpdateTime = now;
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
-        timeDelta = dtSeconds * 60.0;
 
         if (distracted) {
             

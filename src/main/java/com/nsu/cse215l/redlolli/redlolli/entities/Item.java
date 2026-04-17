@@ -20,7 +20,6 @@ public class Item extends Entity implements Collidable {
 
             /** Call this to force images to reload (e.g. after changing asset paths). */
         // Visual render size (32x32 centered on the 16x16 hitbox)
-    private static final double RENDER_SIZE = 32.0;
 
         // ================= LOGIC =================
 

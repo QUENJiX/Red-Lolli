@@ -53,7 +53,6 @@ public int totalChestsCollected = 0;
     boolean playerIsDead = false; // Persistent flag to prevent re-triggering death
 
     private long lastUpdateTime = 0;
-    private double timeDelta = 1.0;
 
     boolean hasCloneItem = false;
     boolean wasInEscapeRoom = false;
@@ -127,7 +126,6 @@ public int totalChestsCollected = 0;
         if (lastUpdateTime == 0) lastUpdateTime = now;
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
-        timeDelta = dtSeconds * 60.0;
 
         if (showingItemFound)
             return false;
