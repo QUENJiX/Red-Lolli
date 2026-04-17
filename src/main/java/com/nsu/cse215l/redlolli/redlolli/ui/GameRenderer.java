@@ -490,22 +490,25 @@ public class GameRenderer {
 
     /** Represents a manual image overlay that can be placed anywhere on screen. */
     public static class Overlay {
+        public String imagePath;
         public Image image;
         public double x, y; // Screen position (or use worldX/worldY for maze-relative)
         public double width, height;
         public double opacity = 1.0;
         public boolean useWorldCoords = false; // If true, x/y are maze world coords, converted to screen
 
-        public Overlay(Image image, double x, double y, double width, double height) {
-            this.image = image;
+        public Overlay(String imagePath, double x, double y, double width, double height) {
+            this.imagePath = imagePath;
+            this.image = SceneFactory.tryLoadImage(imagePath);
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
         }
 
-        public Overlay(Image image, double worldX, double worldY, double width, double height, boolean worldCoords) {
-            this.image = image;
+        public Overlay(String imagePath, double worldX, double worldY, double width, double height, boolean worldCoords) {
+            this.imagePath = imagePath;
+            this.image = SceneFactory.tryLoadImage(imagePath);
             this.x = worldX;
             this.y = worldY;
             this.width = width;

@@ -284,17 +284,17 @@ public int totalChestsCollected = 0;
      * Adds a manual image overlay to the current frame. Call each frame for
      * persistent overlays.
      */
-    public void addOverlay(javafx.scene.image.Image image, double x, double y, double width, double height,
+    public void addOverlay(String imagePath, double x, double y, double width, double height,
             double opacity) {
-        GameRenderer.Overlay o = new GameRenderer.Overlay(image, x, y, width, height);
+        GameRenderer.Overlay o = new GameRenderer.Overlay(imagePath, x, y, width, height);
         o.setOpacity(opacity);
         overlays.add(o);
     }
 
     /** Adds a manual overlay at world (maze) coordinates. */
-    public void addWorldOverlay(javafx.scene.image.Image image, double worldX, double worldY, double width,
+    public void addWorldOverlay(String imagePath, double worldX, double worldY, double width,
             double height, double opacity) {
-        GameRenderer.Overlay o = new GameRenderer.Overlay(image, worldX, worldY, width, height, true);
+        GameRenderer.Overlay o = new GameRenderer.Overlay(imagePath, worldX, worldY, width, height, true);
         o.setOpacity(opacity);
         overlays.add(o);
     }
