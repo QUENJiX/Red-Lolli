@@ -77,9 +77,6 @@ public class GuardEntity extends Entity implements Collidable {
     // Level 2: Cobra distraction duration (TWIST: much shorter distraction window)
     private static final int COBRA_DISTRACTION_DURATION = 150; // 2.5 seconds
 
-    // Level 3: Centipede distraction duration
-    private static final int CENTIPEDE_DISTRACTION_DURATION = 150; // 2.5 seconds
-
     public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
         super(x, y, 28.0);
         this.type = type;
@@ -100,9 +97,7 @@ public class GuardEntity extends Entity implements Collidable {
     public void distract() {
         if (!distracted) {
             distracted = true;
-            if (type == Type.BAT) distractionTimer = BAT_DISTRACTION_DURATION;
-            else if (type == Type.COBRA) distractionTimer = COBRA_DISTRACTION_DURATION;
-            else distractionTimer = CENTIPEDE_DISTRACTION_DURATION;
+            distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION : COBRA_DISTRACTION_DURATION;
         }
     }
 
@@ -161,11 +156,11 @@ public class GuardEntity extends Entity implements Collidable {
         if (img != null) {
             gc.drawImage(img, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         } else {
-            Color fallback = Color.GRAY;
+            Color fallback;
             if (type == Type.BAT) fallback = distracted ? Color.rgb(50, 120, 50) : Color.rgb(60, 60, 60);
             else if (type == Type.COBRA) fallback = distracted ? Color.rgb(120, 120, 50) : Color.rgb(80, 80, 30);
-            else fallback = distracted ? Color.rgb(120, 50, 120) : Color.rgb(80, 30, 80);
-
+            else fallback = distracted ? Color.rgb(120, 80, 120) : Color.rgb(80, 30, 80);
+            
             gc.setFill(fallback);
             gc.fillOval(x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
         }

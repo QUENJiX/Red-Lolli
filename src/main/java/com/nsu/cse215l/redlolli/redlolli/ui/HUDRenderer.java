@@ -180,9 +180,9 @@ public class HUDRenderer {
         
         if (level == 3 && hasCloneItem) {
             gc.setFill(Color.rgb(200, 200, 120));
-            gc.fillText("📦 Clone ready  [C] to place", secX, ROW2_Y);
+            gc.fillText("👧 Clone ready  [C] to place", secX, ROW2_Y);
         } else {
-            gc.fillText("✨ Spell: " + distractionSpellCount + "  [E] to cast", secX, ROW2_Y);
+            gc.fillText("✨ Distraction Spell [E]: " + distractionSpellCount, secX, ROW2_Y);
         }
     }
 
