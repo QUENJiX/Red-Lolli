@@ -2,6 +2,9 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 /**
  * Interactive maze objects modeled as chests containing various loot types.
@@ -17,11 +20,44 @@ public class Item extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
+    private static Image chestClosedImg;
+    private static Image chestOpenedImg;
+    private static Image chestGlowLolli;
+    private static Image chestGlowClone;
+    private static boolean imagesInitialized = false;
 
-            /** Call this to force images to reload (e.g. after changing asset paths). */
-        // Visual render size (32x32 centered on the 16x16 hitbox)
+    private static Image loadSprite(String filename, int width, int height) {
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename, width, height);
+    }
 
-        // ================= LOGIC =================
+    public static void initImages() {
+        if (imagesInitialized)
+            return;
+        chestClosedImg = loadSprite("chest_closed.png", 32, 32);
+        chestOpenedImg = loadSprite("chest_open.png", 32, 32);
+        chestGlowLolli = loadSprite("chest_glow_lolli.png", 32, 32);
+        chestGlowClone = loadSprite("chest_glow_clone.png", 32, 32);
+        imagesInitialized = true;
+    }
+
+    /** Call this to force images to reload (e.g. after changing asset paths). */
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
+
+    // Visual render size (32x32 centered on the 16x16 hitbox)
+    private static final double RENDER_SIZE = 32.0;
+
+    private void drawImg(GraphicsContext gc, Image img, double x, double y) {
+        if (img != null) {
+            gc.drawImage(img, x, y, RENDER_SIZE, RENDER_SIZE);
+        } else {
+            gc.setFill(isCollected ? Color.rgb(160, 82, 45) : Color.rgb(139, 69, 19));
+            gc.fillRect(x, y, RENDER_SIZE, RENDER_SIZE);
+        }
+    }
+
+    // ================= LOGIC =================
 
     private boolean isCollected = false;
     private final ContentType contentType;
@@ -39,7 +75,31 @@ public class Item extends Entity implements Collidable {
         this.isCollected = true;
     }
 
-        @Override
+    @Override
+    public void render(GraphicsContext gc) {
+        // Draw sprite centered on hitbox (hitbox 16x16, sprite 32x32)
+        double offset = (RENDER_SIZE - size) / 2;
+        if (isCollected) {
+            drawImg(gc, chestOpenedImg, x - offset, y - offset);
+            if (contentType == ContentType.LOLLI) {
+                if (chestGlowLolli != null) {
+                    gc.setGlobalAlpha(0.6);
+                    gc.drawImage(chestGlowLolli, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+                    gc.setGlobalAlpha(1.0);
+                }
+            } else if (contentType == ContentType.CLONE_DECOY) {
+                if (chestGlowClone != null) {
+                    gc.setGlobalAlpha(0.6);
+                    gc.drawImage(chestGlowClone, x - offset, y - offset, RENDER_SIZE, RENDER_SIZE);
+                    gc.setGlobalAlpha(1.0);
+                }
+            }
+        } else {
+            drawImg(gc, chestClosedImg, x - offset, y - offset);
+        }
+    }
+
+    @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
     }

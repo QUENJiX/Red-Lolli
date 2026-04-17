@@ -3,6 +3,9 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 /**
  * Persistent antagonist in Level 3 using continuous BFS pathfinding.
@@ -12,20 +15,48 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     // ================= IMAGE ASSETS =================
 
+    private static Image idleImg;
+    private static Image idleLeftImg;
+    private static Image chaseImg;
+    private static Image chaseLeftImg;
+    private static Image attackImg;
+    private static Image attackLeftImg;
+    private static boolean imagesInitialized = false;
 
-            /** Call this to force images to reload (e.g. after changing asset paths). */
-        // Height of the killer in pixels. Width is calculated automatically to keep
+    private static Image loadSprite(String filename) {
+        return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance().getSprite("/assets/images/sprites/" + filename);
+    }
+
+    public static void initImages() {
+        if (imagesInitialized)
+            return;
+        idleImg = loadSprite("killer_idle_right.png");
+        idleLeftImg = loadSprite("killer_idle_left.png");
+        chaseImg = loadSprite("killer_chase_right.png");
+        chaseLeftImg = loadSprite("killer_chase_left.png");
+        attackImg = loadSprite("killer_attack_right.png");
+        attackLeftImg = loadSprite("killer_attack_left.png");
+        imagesInitialized = true;
+    }
+
+    /** Call this to force images to reload (e.g. after changing asset paths). */
+    public static void resetImages() {
+        imagesInitialized = false;
+    }
+
+    // Height of the killer in pixels. Width is calculated automatically to keep
     // aspect ratio.
+    private static final double RENDER_HEIGHT = 48.0;
 
     private static final double SPEED = 1.75;
 
     private boolean active;
     private boolean attackingDecoy;
-    private long decoyAttackEndTime = 0;
+    private double decoyAttackFrames;
 
     // Animation state
     private int currentFrame = 0;
-    private long lastFrameTime = System.nanoTime();
+    private double frameTick = 0;
     private final int ticksPerFrame = 6;
     private boolean facingLeft = true;
     
@@ -44,16 +75,18 @@ public class SerialKillerEntity extends Entity implements Collidable {
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
 
-        if (decoyAttackEndTime != 0) { if(System.nanoTime() >= decoyAttackEndTime) {
+        if (decoyAttackFrames > 0) {
+            decoyAttackFrames -= timeDelta;
+            if (decoyAttackFrames <= 0) {
                 attackingDecoy = false;
-                decoyAttackEndTime = 0;
+                decoyAttackFrames = 0;
             }
         }
 
         // Animation logic
-        /* uses nanoTime now */
-        if (System.nanoTime() - lastFrameTime >= ticksPerFrame * 16_666_666L) {
-            lastFrameTime += ticksPerFrame * 16_666_666L;
+        frameTick += timeDelta;
+        if (frameTick >= ticksPerFrame) {
+            frameTick = 0;
             currentFrame++;
             int maxFrames = (!active) ? 1 : 5;
             if (currentFrame >= maxFrames) {
@@ -133,7 +166,51 @@ public class SerialKillerEntity extends Entity implements Collidable {
         }
     }
 
-        @Override
+    @Override
+    public void render(GraphicsContext gc) {
+        Image imgToDraw;
+        int frameWidth = 128;
+        int maxFrames = 5;
+
+        if (!active) {
+            imgToDraw = facingLeft ? idleLeftImg : idleImg;
+            frameWidth = 40; // Idle is now just a single 40 width image
+            maxFrames = 1;
+        } else if (attackingDecoy) {
+            imgToDraw = facingLeft ? attackLeftImg : attackImg;
+            frameWidth = 128; // 640 width / 5 frames
+            maxFrames = 5;
+        } else {
+            imgToDraw = facingLeft ? chaseLeftImg : chaseImg;
+            frameWidth = 128; // 640 width / 5 frames
+            maxFrames = 5;
+        }
+
+        // Safety check to prevent IndexOutOfBoundsException during state transitions
+        if (currentFrame >= maxFrames) {
+            currentFrame = 0;
+        }
+
+        // Calculate aspect-correct width based on the active animation frame
+        double scale = RENDER_HEIGHT / 70.0;
+        double drawWidth = frameWidth * scale;
+
+        // Draw centered (hitbox 24x24)
+        double offsetX = (drawWidth - size) / 2;
+        double offsetY = (RENDER_HEIGHT - size) / 2;
+
+        if (imgToDraw != null) {
+            int sourceX = currentFrame * frameWidth;
+            gc.drawImage(imgToDraw,
+                    sourceX, 0, frameWidth, 70, // Source slice dimensions updated to 70 height
+                    x - offsetX, y - offsetY, drawWidth, RENDER_HEIGHT); // Destination bounding box
+        } else {
+            gc.setFill(active ? Color.rgb(180, 20, 20) : Color.rgb(80, 40, 40));
+            gc.fillOval(x - offsetX, y - offsetY, RENDER_HEIGHT, RENDER_HEIGHT);
+        }
+    }
+
+    @Override
     public Rectangle2D getHitbox() {
         return new Rectangle2D(x, y, size, size);
     }
@@ -148,28 +225,14 @@ public class SerialKillerEntity extends Entity implements Collidable {
 
     public void startDecoyAttack() {
         this.attackingDecoy = true;
-        this.decoyAttackEndTime = System.nanoTime() + 10_000_000_000L;
+        this.decoyAttackFrames = 600;
     }
 
     public boolean isAttackingDecoy() {
         return attackingDecoy;
     }
 
-    public int getDecoyAttackFrames() { return decoyAttackEndTime == 0 ? 0 : (int) Math.max(0, (decoyAttackEndTime - System.nanoTime()) / 16_666_666); }
-
-    public boolean getActive() {
-        return active;
-    }
-
-    public boolean getAttackingDecoy() {
-        return attackingDecoy;
-    }
-
-    public boolean getFacingLeft() {
-        return facingLeft;
-    }
-
-    public int getCurrentFrame() {
-        return currentFrame;
+    public int getDecoyAttackFrames() {
+        return (int) decoyAttackFrames;
     }
 }

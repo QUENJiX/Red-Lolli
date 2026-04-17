@@ -1,5 +1,6 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
+import javafx.scene.canvas.GraphicsContext;
 
 /**
  * Abstract base class for all interactive game objects, enforcing a standard
@@ -19,6 +20,8 @@ public abstract class Entity {
 
     public abstract void update();
 
+    public abstract void render(GraphicsContext gc);
+
     public double getX() {
         return x;
     }
@@ -30,9 +33,5 @@ public abstract class Entity {
     public void setPosition(double x, double y) {
         this.x = x;
         this.y = y;
-    }
-
-    public double getSize() {
-        return size;
     }
 }

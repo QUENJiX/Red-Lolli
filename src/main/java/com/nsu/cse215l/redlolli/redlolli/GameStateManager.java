@@ -33,7 +33,7 @@ public int totalChestsCollected = 0;
     public final CollisionSystem collisionSystem = new CollisionSystem();
 
     boolean showingItemFound = false;
-    long warningFlashEndTime = 0;
+    double warningFlashTimer = 0;
     double pulsePhaseHUD = 0;
     String activeDeathMessage = "";
 
@@ -42,17 +42,17 @@ public int totalChestsCollected = 0;
 
     int distractionSpellCount = 0;
     int startingDistractions = 1;
-    long exitGraceEndTime = 0;
-    long standStillStartTime = System.nanoTime();
-    long guardHitCooldownEndTime = 0;
-    long footstepCooldownEndTime = 0;
-    long lunaScreamCooldownEndTime = 0;
-    long screenShakeEndTime = 0; // For screen shake effect
-    long playerDeathEndTime = 0;
-    long playerDeathStartTime = 0; // Death animation counter (screen fills red)
+    double exitGraceFrames = 0;
+    double standStillFrames = 0;
+    double guardHitCooldownFrames = 0;
+    double footstepCooldownFrames = 0;
+    double lunaScreamCooldownFrames = 0;
+    double screenShakeFrames = 0; // For screen shake effect
+    double playerDeathAnimFrames = 0; // Death animation counter (screen fills red)
     boolean playerIsDead = false; // Persistent flag to prevent re-triggering death
 
     private long lastUpdateTime = 0;
+    private double timeDelta = 1.0;
 
     boolean hasCloneItem = false;
     boolean wasInEscapeRoom = false;
@@ -69,7 +69,7 @@ public int totalChestsCollected = 0;
         overlays.clear();
 
         showingItemFound = false;
-        warningFlashEndTime = 0;
+        warningFlashTimer = 0;
         pulsePhaseHUD = 0;
         lolliRevealState = null;
         activeDeathMessage = "";
@@ -83,13 +83,13 @@ public int totalChestsCollected = 0;
         }
 
         distractionSpellCount = startingDistractions;
-        exitGraceEndTime = 0;
-        standStillStartTime = System.nanoTime();
-        guardHitCooldownEndTime = 0;
-        footstepCooldownEndTime = 0;
-        lunaScreamCooldownEndTime = 0;
-        screenShakeEndTime = 0;
-        playerDeathEndTime = 0; playerDeathStartTime = 0;
+        exitGraceFrames = 0;
+        standStillFrames = 0;
+        guardHitCooldownFrames = 0;
+        footstepCooldownFrames = 0;
+        lunaScreamCooldownFrames = 0;
+        screenShakeFrames = 0;
+        playerDeathAnimFrames = 0;
         playerIsDead = false;
         hasCloneItem = false;
         wasInEscapeRoom = false;
@@ -115,7 +115,7 @@ public int totalChestsCollected = 0;
         if (playerIsDead)
             return true;
         activeDeathMessage = message;
-        playerDeathStartTime = System.nanoTime(); playerDeathEndTime = playerDeathStartTime + 1_000_000_000L; // 1 second death animation (60 frames)
+        playerDeathAnimFrames = 60; // 1 second death animation (60 frames)
         playerIsDead = true;
         return true;
     }
@@ -126,30 +126,38 @@ public int totalChestsCollected = 0;
         if (lastUpdateTime == 0) lastUpdateTime = now;
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
+        timeDelta = dtSeconds * 60.0;
 
         if (showingItemFound)
             return false;
 
         if (playerIsDead) {
-            
+            if (playerDeathAnimFrames > 0) {
+                playerDeathAnimFrames -= timeDelta;
+            }
             return true;
         }
 
         totalPlayTimeSeconds += dtSeconds;
 
         if (lolliRevealState != null && lolliRevealState.active) {
-            lolliRevealState.phase = (System.nanoTime() - lolliRevealState.startTime) / 100_000_000.0;
-            if (System.nanoTime() >= lolliRevealState.endTime) {
+            lolliRevealState.timer -= timeDelta;
+            lolliRevealState.phase += 0.15 * timeDelta;
+            if (lolliRevealState.timer <= 0) {
                 lolliRevealState.active = false;
                 return false; // signal HelloApplication to show item-found screen
             }
             return false;
         }
 
-        
-        
-        
-        
+        if (exitGraceFrames > 0)
+            exitGraceFrames -= timeDelta;
+        if (guardHitCooldownFrames > 0)
+            guardHitCooldownFrames -= timeDelta;
+        if (lunaScreamCooldownFrames > 0)
+            lunaScreamCooldownFrames -= timeDelta;
+        if (screenShakeFrames > 0)
+            screenShakeFrames -= timeDelta;
 
         if (entityManager.getSerialKiller() != null)
             entityManager.getSerialKiller().update();
@@ -174,12 +182,12 @@ public int totalChestsCollected = 0;
         boolean movingInput = activeKeys.contains(KeyCode.W) || activeKeys.contains(KeyCode.A)
                 || activeKeys.contains(KeyCode.S) || activeKeys.contains(KeyCode.D);
         if (movingInput) {
-            standStillStartTime = System.nanoTime();
+            standStillFrames = 0;
         } else {
-            
-            if (System.nanoTime() - standStillStartTime >= 30_000_000_000L) {
+            standStillFrames += timeDelta;
+            if (standStillFrames >= 1800) {
                 teleportLunaNearPlayer();
-                standStillStartTime = System.nanoTime();
+                standStillFrames = 0;
             }
         }
 
@@ -197,14 +205,14 @@ public int totalChestsCollected = 0;
 
         boolean moved = Math.abs(entityManager.getPlayer().getX() - beforeX) > 0.01 || Math.abs(entityManager.getPlayer().getY() - beforeY) > 0.01;
         if (moved) {
-            if (System.nanoTime() >= footstepCooldownEndTime) {
+            if (footstepCooldownFrames <= 0) {
                 soundManager.playOneShot(SoundManager.FOOTSTEP, 0.25);
-                footstepCooldownEndTime = System.nanoTime() + (sprinting ? 150_000_000L : 250_000_000L);
+                footstepCooldownFrames = sprinting ? 9 : 15;
             } else {
-                
+                footstepCooldownFrames -= timeDelta;
             }
         } else {
-            
+            footstepCooldownFrames = Math.max(0, footstepCooldownFrames - timeDelta);
         }
 
         // Escape room state
@@ -217,7 +225,7 @@ public int totalChestsCollected = 0;
         levelManager.getMaze().updateEscapeRoomState(entityManager.getPlayer().getX(), entityManager.getPlayer().getY());
 
         if (exitingEscapeRoom) {
-            exitGraceEndTime = System.nanoTime() + 750_000_000L;
+            exitGraceFrames = 45;
         }
         wasInEscapeRoom = inEscapeRoom;
 
@@ -238,7 +246,7 @@ public int totalChestsCollected = 0;
         hasCloneItem = collisionSystem.hasCloneItem;
 
         collisionSystem.playerDied = false;
-        collisionSystem.checkGuardThreats(entityManager, inEscapeRoom, enteringEscapeRoom, System.nanoTime() < guardHitCooldownEndTime);
+        collisionSystem.checkGuardThreats(entityManager, inEscapeRoom, enteringEscapeRoom, guardHitCooldownFrames);
         if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
 
         collisionSystem.playerDied = false;
@@ -246,15 +254,15 @@ public int totalChestsCollected = 0;
         if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
 
         collisionSystem.playerDied = false;
-        collisionSystem.updatePaleLuna(entityManager, levelManager.getMaze(), inEscapeRoom, exitingEscapeRoom, lolliRecentlyCollected, System.nanoTime() < lunaScreamCooldownEndTime);
+        collisionSystem.updatePaleLuna(entityManager, levelManager.getMaze(), inEscapeRoom, exitingEscapeRoom, lolliRecentlyCollected, lunaScreamCooldownFrames);
         if (collisionSystem.playHeartbeat) {
-            warningFlashEndTime = System.nanoTime() + 500_000_000L;
+            warningFlashTimer = 30;
             soundManager.playOneShot(SoundManager.HEARTBEAT_FAST, 0.45);
         }
-        if (collisionSystem.screenShake) screenShakeEndTime = System.nanoTime() + 250_000_000L;
+        if (collisionSystem.screenShake) screenShakeFrames = 15;
         if (collisionSystem.playScream) {
             soundManager.playOneShot(SoundManager.LUNA_SCREAM_NEARBY, 0.8);
-            lunaScreamCooldownEndTime = System.nanoTime() + 2_166_000_000L;
+            lunaScreamCooldownFrames = 130;
         }
         if (collisionSystem.playerDied) return triggerPlayerDeath(collisionSystem.deathMessage);
 
@@ -357,7 +365,7 @@ public int totalChestsCollected = 0;
                 "Sprint=" + activeKeys.contains(KeyCode.SHIFT),
                 "Luna=" + lunaState + " Timer=" + lunaTimer + " Nearby=" + (lunaDist <= 5.0),
                 "Spells=" + distractionSpellCount + " Clone=" + hasCloneItem,
-                "GuardCD=" + Math.max(0, (guardHitCooldownEndTime - System.nanoTime())/1_000_000)
+                "GuardCD=" + guardHitCooldownFrames
         };
         double y = 76;
         for (String line : lines) {

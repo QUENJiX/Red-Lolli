@@ -25,6 +25,13 @@ public class LevelManager {
 
     public void loadLevel(EntityManager entityManager) {
         Maze.initImages();
+        Item.initImages();
+        CardboardClone.initImages();
+        GuardEntity.initImages();
+        SerialKillerEntity.initImages();
+        Player.initImages();
+        Monster.initImages();
+        TorchEntity.initImages();
         GameRenderer.initImages();
         HUDRenderer.initImages();
 
