@@ -153,23 +153,32 @@ public class GameStateManager {
                     torchTiles.add(new int[] { row, col });
                     grid[row][col] = 1; // Turn back into a wall tile for rendering/collision
                 } else if (tile == 9) {
+                    int erRow = -1, erCol = -1;
+                    List<int[]> escapeRooms = maze.getTilesOfType(6);
+                    double minDist = Double.MAX_VALUE;
+                    for (int[] er : escapeRooms) {
+                        double dist = Math.pow(er[0] - row, 2) + Math.pow(er[1] - col, 2);
+                        if (dist < minDist) { 
+                            minDist = dist; 
+                            erRow = er[0]; 
+                            erCol = er[1]; 
+                        }
+                    }
                     GuardEntity guard = null;
                     if (currentLevel == 1) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.BAT, -1, -1);
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.BAT, erRow, erCol);
                     } else if (currentLevel == 2) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.COBRA, -1, -1);
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.COBRA, erRow, erCol);
                     } else if (currentLevel == 3) {
-                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.CENTIPEDE, -1, -1);
+                        guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10, GuardEntity.Type.CENTIPEDE, erRow, erCol);
                     }
                     if (guard != null) {
                         guards.add(guard);
-                        entities.add(guard);
                     }
                     grid[row][col] = 0; // Turn into floor
                 } else if (tile == 10) {
                     if (currentLevel == 3) {
                         serialKiller = new SerialKillerEntity(col * Maze.TILE_SIZE + 6, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
-                        entities.add(serialKiller);
                     }
                     grid[row][col] = 0; // Turn into floor
                 }
@@ -201,6 +210,15 @@ public class GameStateManager {
         if (lunaRow >= 0) {
             paleLuna = new Monster(lunaCol * Maze.TILE_SIZE + 7.5, lunaRow * Maze.TILE_SIZE + Maze.Y_OFFSET + 7.5);
             entities.add(paleLuna);
+        }
+
+        // Add them to entities manually in the correct order to preserve optimal Lighting BlendMode passes.
+        for (GuardEntity guard : guards) {
+            entities.add(guard);
+        }
+        
+        if (serialKiller != null) {
+            entities.add(serialKiller);
         }
     }
 
