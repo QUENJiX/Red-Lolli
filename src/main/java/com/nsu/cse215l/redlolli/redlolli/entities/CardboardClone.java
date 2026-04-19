@@ -4,42 +4,33 @@ import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
- * Functions natively as a deployable synthetic environmental node overriding
- * ambient AI hostilities.
- * Exploited tactically extending geometric disruption directly impacting
- * persistent deterministic pursuit systems.
- * Systemically severed from all localized procedural graphics APIs supporting
- * comprehensive headless deployment intrinsically.
+ * A decoy item that the player can drop to distract enemies.
+ * It acts as a temporary obstacle or target to keep monsters busy, 
+ * and it's completely separated from the game's visuals so it works smoothly under the hood.
  */
 public class CardboardClone extends Entity implements Collidable {
 
     /**
-     * Deploys the static spatial distraction formulating fundamental physical
-     * limits natively bounded algebraically.
+     * Places the decoy at a specific location on the map.
      * 
-     * @param x Immediate horizontal Cartesian vector translating absolute map grid
-     *          limits inherently.
-     * @param y Immediate vertical Cartesian vector translating absolute map grid
-     *          limits inherently.
+     * @param x The horizontal X coordinate.
+     * @param y The vertical Y coordinate.
      */
     public CardboardClone(double x, double y) {
         super(x, y, 20.0);
     }
 
     /**
-     * Executes cyclic overriding mechanics interpreting zeroed velocity vectors
-     * preventing abstract geometric divergence inherently.
+     * Does nothing. The decoy just sits there, so it doesn't need to update its position.
      */
     @Override
     public void update() {
     }
 
     /**
-     * Formats external geometry evaluating continuous interaction arrays preventing
-     * intersection verifications definitively.
+     * Gets the physical boundary of the decoy so enemies know they've bumped into it.
      * 
-     * @return Hitbox2D Bounding arrays explicitly calculating physical collision
-     *         intercepts identically mapped horizontally.
+     * @return The 2D hitbox representing the decoy's space.
      */
     @Override
     public Hitbox2D getHitbox() {
@@ -47,11 +38,9 @@ public class CardboardClone extends Entity implements Collidable {
     }
 
     /**
-     * Extrapolates rendering limits defining fundamental dimension constants
-     * accurately evaluating scaling logic.
+     * Returns the size of the decoy (its width and height).
      * 
-     * @return double Accurate rendering scalar evaluating spatial scopes linearly
-     *         exclusively mapped statically.
+     * @return The size of the decoy.
      */
     public double getSize() {
         return size;

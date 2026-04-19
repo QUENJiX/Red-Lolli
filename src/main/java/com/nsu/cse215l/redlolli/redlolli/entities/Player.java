@@ -5,12 +5,9 @@ import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
- * Encapsulates the protagonist's localized state, encompassing geometric
- * displacement,
- * resource governance (stamina and sanity), and temporal simulation
- * synchronization.
- * Operates as the central physical entity subject to environmental restrictions
- * and adversarial tracking.
+ * The main player character that you control.
+ * It manages where you are on the map, how much energy (stamina) you have for running, 
+ * and your sanity (health) as you try to survive being chased by monsters!
  */
 public class Player extends Entity implements Collidable {
 
@@ -44,21 +41,19 @@ public class Player extends Entity implements Collidable {
     private double timeDelta = 1.0;
 
     /**
-     * Constructs the protagonist at predefined Cartesian coordinates seamlessly
-     * defining initial geometric allocation.
+     * Drops the player character into the world at a starting coordinate.
      *
-     * @param x The initial longitudinal Cartesian position mapped natively.
-     * @param y The initial latitudinal Cartesian position mapped natively.
+     * @param x The straight-up starting X position on the map grid.
+     * @param y The straight-up starting Y position on the map grid.
      */
     public Player(double x, double y) {
         super(x, y, 20.0);
     }
 
     /**
-     * Processes independent temporal mutations validating fatigue recovery loops
-     * and psychological degradation natively.
-     * Integrates time-delta normalizations averting logic desynchronization across
-     * variable frame delivery scales.
+     * Updates the player's internal systems each frame. 
+     * This mainly checks your stamina to see if you can sprint and your sanity 
+     * to see if you should take damage (or heal up if you found a safe room).
      */
     @Override
     public void update() {
@@ -126,18 +121,13 @@ public class Player extends Entity implements Collidable {
     }
 
     /**
-     * Translates geometric bounds validating explicit wall intersections
-     * independently restricting Cartesian updates.
-     * Decrements physical reserves natively upon intensive maneuvering protocols.
+     * Tries to move the player around the map, stopping them if they bump into a wall.
+     * Also drains stamina if the player is holding the run button.
      *
-     * @param dx        Theoretical localized lateral velocity multiplier dictating
-     *                  longitudinal shifts.
-     * @param dy        Theoretical localized vertical velocity multiplier dictating
-     *                  latitudinal shifts.
-     * @param maze      The fundamental topological map granting collision
-     *                  intersection abstractions statically.
-     * @param sprinting Boolean mandate triggering accelerated translation metrics
-     *                  organically.
+     * @param dx        The direction the player wants to move horizontally (-1, 0, or 1).
+     * @param dy        The direction the player wants to move vertically (-1, 0, or 1).
+     * @param maze      The map itself, so we can check if the player's path is clear.
+     * @param sprinting Whether the player is currently trying to sprint.
      */
     public void move(double dx, double dy, Maze maze, boolean sprinting) {
         double speed = getMovementSpeed(sprinting) * timeDelta;
@@ -181,32 +171,30 @@ public class Player extends Entity implements Collidable {
     }
 
     /**
-     * Extracts active locomotive status validating aesthetic playback requirements
-     * inherently.
+     * Lets the game know if the player moved this frame, usually so it can 
+     * draw the correct walking animation.
      *
-     * @return boolean True exclusively if definitive spatial alterations occurred
-     *         fundamentally this frame.
+     * @return True if the player actively took a step this frame.
      */
     public boolean isMoving() {
         return isMoving;
     }
 
     /**
-     * Harvests calculated cosmetic integer mapping current spatial cycle
-     * projections sequentially.
+     * Figures out which animation frame to draw right now based on how far we've walked.
      *
-     * @return int Active cosmetic frame identifier validating render loop parity.
+     * @return The number corresponding to the current sprite animation frame.
      */
     public int getAnimFrame() {
         return animFrame;
     }
 
     /**
-     * Quantifies geographic overlap bounding constraints conforming to core
-     * systemic checks identically.
+     * Grabs the physical size (hitbox) of the player.
+     * This is what gets checked when the game wants to see if we got eaten by the monster 
+     * or bumped into a wall.
      *
-     * @return Hitbox2D Geometric representation detailing current occupancy
-     *         coordinates dynamically.
+     * @return A Hitbox2D covering the player's physical space on the map.
      */
     @Override
     public Hitbox2D getHitbox() {
@@ -214,96 +202,87 @@ public class Player extends Entity implements Collidable {
     }
 
     /**
-     * Overrides internal aesthetic variables accommodating intense adversarial
-     * pursuit scenarios linearly.
+     * A simple hook to let the player know if a monster is currently running after them.
+     * This can be used for playing intense heartbeat sounds or changing animations.
      *
-     * @param chased Boolean flag indicating active aggressive trailing metrics.
+     * @param chased True if a scary monster is aggressively hunting the player.
      */
     public void setBeingChased(boolean chased) {
     }
 
     /**
-     * Interrogates spatial sanctuary verifications overriding generic lethal
-     * implications natively.
+     * Checks if the player is currently hiding inside a sanctuary room.
+     * If they are, the monster won't attack them!
      *
-     * @return boolean True strictly traversing designated non-hostile topology
-     *         zones dynamically.
+     * @return True if the player is standing inside an escape room.
      */
     public boolean isInEscapeRoom() {
         return isInEscapeRoom;
     }
 
     /**
-     * Formats transient parameter dictates mapping subjective sanctuary integration
-     * independently.
+     * Sets whether the player has safely entered an escape room or just left one.
      *
-     * @param inEscapeRoom Override boolean defining unmitigable geometric safety
-     *                     validations.
+     * @param inEscapeRoom True to make the player completely safe from monsters.
      */
     public void setInEscapeRoom(boolean inEscapeRoom) {
         this.isInEscapeRoom = inEscapeRoom;
     }
 
     /**
-     * Validates persistent metabolic punitive statuses explicitly circumventing
-     * sprint triggers temporarily.
+     * Tells the game if the player ran totally out of breath and needs a breather.
+     * If they're exhausted, they can't sprint for a short time.
      *
-     * @return boolean True intrinsically mapped to unrecovered stamina deficits
-     *         natively.
+     * @return True if the player is too tired to run.
      */
     public boolean isExhausted() {
         return exhaustedFrames > 0;
     }
 
     /**
-     * Checks fundamental resource pools verifying valid thresholds requisite for
-     * accelerated traversal identically.
+     * Helper to quickly check if the player still has gas in the tank to run right now.
      *
-     * @return boolean True contingent precisely upon sufficient reserves excluding
-     *         exhausted consequences natively.
+     * @return True if they have stamina remaining and aren't completely exhausted.
      */
     public boolean canSprint() {
         return staminaFrames > 0 && exhaustedFrames == 0;
     }
 
     /**
-     * Converts quantified biological reserves mapping normalized percentage scalars
-     * mathematically.
+     * Helper for drawing the stamina bar on the screen by returning stamina as a percentage.
      *
-     * @return double Scalar ratio extracting immediate capacity proportionally.
+     * @return A number between 0 and 1 indicating how much stamina is left.
      */
     public double getStaminaPercent() {
         return (double) staminaFrames / MAX_STAMINA_FRAMES;
     }
 
     /**
-     * Isolates explicitly preserved longitudinal orientation mapping recent
-     * translation metrics iteratively.
+     * Remembers which way the player was facing horizontally so we draw 
+     * the sprite looking the right way when they stop.
      *
-     * @return double Active Cartesian vector facing alignment horizontally.
+     * @return The last known horizontal direction.
      */
     public double getFacingX() {
         return facingX;
     }
 
     /**
-     * Isolates explicitly preserved latitudinal orientation mapping recent
-     * translation metrics iteratively.
+     * Remembers which way the player was facing vertically so we draw 
+     * the sprite looking the right way when they stop.
      *
-     * @return double Active Cartesian vector facing alignment vertically.
+     * @return The last known vertical direction.
      */
     public double getFacingY() {
         return facingY;
     }
 
     /**
-     * Correlates geometric divergence parsing relative Euclidean distances
-     * analyzing antagonistic proximities definitively.
-     * Aggravates psychological decline mathematically weighting severe proximity
-     * values unconditionally.
+     * Checks the direct distance between the player and Luna. 
+     * If she's too close, the player's sanity will drain faster out of fear!
      *
-     * @param lunaX Adversarial centralized longitudinal metric directly correlated.
-     * @param lunaY Adversarial centralized latitudinal metric directly correlated.
+     * @param lunaX The monster's X coordinate.
+     * @param lunaY The monster's Y coordinate.
      */
     public void updateNearLunaStatus(double lunaX, double lunaY) {
         double dx = this.x - lunaX;
@@ -316,53 +295,48 @@ public class Player extends Entity implements Collidable {
     }
 
     /**
-     * Determines numerical psychological retention capacities influencing failure
-     * constraints seamlessly.
+     * Finds out exactly how much scary health (sanity) the player has left.
+     * Starts at 100 and drains over time when near the monster.
      *
-     * @return int Exact physiological integer representing sanity intrinsically.
+     * @return The exact number of sanity points left.
      */
     public int getSanity() {
         return sanity;
     }
 
     /**
-     * Manipulates psychological stability allocations governing external systemic
-     * interactions natively.
+     * Forcibly sets the player's current sanity points.
+     * This is useful for giving them a health potion or refilling 
+     * it to full when a new level starts.
      *
-     * @param value Definitive absolute integer mapping renewed capacities
-     *              statically.
+     * @param value What the new sanity value should be.
      */
     public void setSanity(int value) {
         this.sanity = value;
     }
 
     /**
-     * Extracts psychological threshold calculations linearly mapping normalized
-     * fractional scalars logically.
+     * Helper for drawing the sanity bar on the screen by giving it as a percentage.
      *
-     * @return double Scalar ratio communicating subjective sanity deficits
-     *         dynamically.
+     * @return A fraction from 0.0 to 1.0 indicating how full the bar is.
      */
     public double getSanityPercent() {
         return (double) sanity / MAX_SANITY;
     }
 
     /**
-     * Affirms conclusive physiological failure states directly interpreted
-     * intrinsically altering core rendering consequences.
+     * Finds out if the poor player's sanity finally reached zero. 
+     * Usually means the monster caught them, or they got too scared and the game should show a Game Over screen.
      *
-     * @return boolean True universally signaling insurmountable psychological
-     *         degradation fundamentally.
+     * @return True if sanity hit zero.
      */
     public boolean isSanityDead() {
         return sanityDead;
     }
 
     /**
-     * Asserts absolute physiological reclamation protocols restoring core
-     * capacities statically.
-     * Functions predominantly traversing overarching temporal states mapping
-     * sequential load instructions inherently.
+     * A complete reset to make the player completely sane and healthy again.
+     * Resets sanity to MAXIMUM, stops draining, and clears all "is dead" flags.
      */
     public void resetSanity() {
         this.sanity = MAX_SANITY;
@@ -372,13 +346,11 @@ public class Player extends Entity implements Collidable {
     }
 
     /**
-     * Configures theoretical translation multipliers weighing independent metabolic
-     * flags statically against baseline norms.
+     * Figures out exactly how fast the player should be moving based on if they 
+     * are trying to run and whether they're too tired to do so.
      *
-     * @param sprinting Boolean objective mapping preferred velocity parameters
-     *                  conditionally.
-     * @return double Processed velocity scale reflecting physical exhaustion logic
-     *         linearly.
+     * @param sprinting Whether the player is holding the sprint button.
+     * @return The final walking/running speed.
      */
     private double getMovementSpeed(boolean sprinting) {
         // Enforce punitive reductions overriding all subsequent checks mechanically

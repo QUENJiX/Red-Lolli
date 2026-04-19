@@ -1,10 +1,8 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
 /**
- * Operates as a granular physiological tracking module encapsulating
- * independent resources algebraically.
- * Systemically delegates localized bounds (stamina logic, psychological
- * degradation) mapping precise hardware-clock constraints seamlessly.
+ * A simple helper class that keeps track of the player's health (sanity) 
+ * and energy (stamina). It handles cooldowns and damage quietly in the background.
  */
 public class PlayerStatsComponent {
     private final long NANOS_IN_SECOND = 1_000_000_000L;
@@ -13,23 +11,18 @@ public class PlayerStatsComponent {
     private long staminaCooldownEndNanos = 0;
 
     /**
-     * Subtracts specified punitive metrics explicitly bounding remaining
-     * physiological capacities safely above absolute zero.
+     * Reduces the player's sanity, making sure it never drops below zero.
      * 
-     * @param amount Definitive quantitative penalty mapped sequentially against
-     *               remaining psychological resilience intuitively.
+     * @param amount The amount of sanity to lose.
      */
     public void damageSanity(double amount) {
         this.sanity = Math.max(0, this.sanity - amount);
     }
 
     /**
-     * Initializes rigorous chronological exhaustion limits independently
-     * correlating precise real-world duration scalars fundamentally.
+     * Forces the player to wait a certain number of seconds before they can sprint again.
      * 
-     * @param cooldownSeconds Absolute penalty window dictating transient
-     *                        unmitigated recovery locks identically mapped
-     *                        globally.
+     * @param cooldownSeconds How long they have to wait before recovering.
      */
     public void triggerStaminaCooldown(double cooldownSeconds) {
         long duration = (long) (cooldownSeconds * NANOS_IN_SECOND);
@@ -37,33 +30,27 @@ public class PlayerStatsComponent {
     }
 
     /**
-     * Interrogates continuous sequential hardware ticks confirming persistent
-     * punitive overrides globally accurately.
+     * Checks if the player is currently too tired to sprint.
      * 
-     * @return boolean True defining active penalty states obstructing immediate
-     *         sprint instantiations fundamentally.
+     * @return True if stamina is still on cooldown.
      */
     public boolean isStaminaCoolingDown() {
         return System.nanoTime() < staminaCooldownEndNanos;
     }
 
     /**
-     * Extrapolates relative capacities calculating remaining psychological
-     * tolerance inherently mapped linearly.
+     * Gets the player's current sanity points.
      * 
-     * @return double Core quantitative abstraction evaluating mental fortitude
-     *         structurally.
+     * @return The current sanity.
      */
     public double getSanity() {
         return sanity;
     }
 
     /**
-     * Extrapolates relative metabolic verifications calculating functional reserves
-     * natively identical implicitly.
+     * Gets the player's current stamina points.
      * 
-     * @return double Core quantitative scale extracting physical endurance
-     *         thresholds universally.
+     * @return The current stamina.
      */
     public double getStamina() {
         return stamina;

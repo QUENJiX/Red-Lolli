@@ -3,11 +3,9 @@ package com.nsu.cse215l.redlolli.redlolli.entities;
 import com.nsu.cse215l.redlolli.redlolli.core.GameEventBus;
 
 /**
- * Establishes the foundational polymorphic abstraction mapping the base
- * geometric
- * dimensions and chronologically updated states of all interactive objects.
- * Dictates standard coordinate allocations and mandates uniform behavioral
- * implementations natively.
+ * The base class for everything that exists in the game world.
+ * If something has an X/Y position and a size, it's an Entity.
+ * This class ensures that all objects share a common structure for updates and collisions.
  */
 public abstract class Entity {
 
@@ -16,13 +14,11 @@ public abstract class Entity {
     protected double size;
 
     /**
-     * Instantiates the primary environmental node assigning core geometric
-     * constraints.
+     * Creates a new entity at the given coordinates with a specific size.
      * 
-     * @param x    Arbitrary longitudinal coordinate native to the geometric plane.
-     * @param y    Arbitrary latitudinal coordinate native to the geometric plane.
-     * @param size Uniform scalar value establishing base dimensional magnitudes
-     *             mathematically.
+     * @param x    The starting X coordinate on the map.
+     * @param y    The starting Y coordinate on the map.
+     * @param size How big the entity is.
      */
     public Entity(double x, double y, double size) {
         this.x = x;
@@ -31,79 +27,64 @@ public abstract class Entity {
     }
 
     /**
-     * Prescribes mandatory operational overloads validating execution parameters
-     * natively across all derivative implementations.
-     * Guarantees synchronized tick cycles iteratively across explicitly
-     * orchestrated system iterations.
+     * Updates the entity's state each frame. 
+     * Every specific entity (like a player or an enemy) implements this 
+     * to handle its own movement or rules over time.
      */
     public abstract void update();
 
     /**
-     * Injects spatial anomalies securely mapped onto generalized communication
-     * systems synchronously.
-     * Offloads interaction evaluations abstracting the physical execution towards
-     * arbitrary subscribing elements globally.
+     * Announces to the event bus that this entity just collided with something else.
+     * Other systems listen for this to trigger sound effects, damage, or item pickups.
      * 
-     * @param other Formulated geometric array participating reciprocally
-     *              physically.
+     * @param other The other entity involved in the crash.
      */
     public void publishCollision(Entity other) {
         GameEventBus.getInstance().publishCollision(this, other);
     }
 
     /**
-     * Translates local geometric interaction queries implicitly mirroring
-     * standardized communication logic.
-     * Enables polymorphic reactions explicitly resolving interaction consequences
-     * securely without localized parsing limits natively.
+     * Called whenever this entity bumps into another object.
+     * By default, it just broadcasts the collision to the rest of the game.
      * 
-     * @param other Implicated interactive body engaged geographically currently.
+     * @param other The entity we just hit.
      */
     public void onCollide(Entity other) {
         publishCollision(other);
     }
 
     /**
-     * Extrapolates relative centralized horizontal position evaluating current map
-     * metrics naturally.
+     * Gets the current horizontal position of the entity.
      * 
-     * @return double Extracted coordinate metric mapping horizontal position
-     *         accurately.
+     * @return The X coordinate.
      */
     public double getX() {
         return x;
     }
 
     /**
-     * Extrapolates relative centralized vertical position evaluating current map
-     * metrics naturally.
+     * Gets the current vertical position of the entity.
      * 
-     * @return double Extracted coordinate metric mapping vertical position
-     *         accurately.
+     * @return The Y coordinate.
      */
     public double getY() {
         return y;
     }
 
     /**
-     * Replicates internal dimension scalars scaling interaction scopes natively
-     * defining precise rendering scopes radially.
+     * Gets the size (width/height) of the entity natively used for logic and rendering.
      * 
-     * @return double Core scalar interpreting dimensional scales globally
-     *         accurately.
+     * @return The size value.
      */
     public double getSize() {
         return size;
     }
 
     /**
-     * Transposes explicit localized execution ranges abruptly modifying coordinate
-     * centers entirely mathematically.
+     * Immediately moves the entity to a new set of coordinates.
      * 
-     * @param x Arbitrary replacement horizontal vector parameter defined externally
-     *          securely.
-     * @param y Arbitrary replacement vertical vector parameter defined externally
-     *          securely.
+     * @param x The new X coordinate.
+     * @param y The new Y coordinate.
      */
     public void setPosition(double x, double y) {
         this.x = x;

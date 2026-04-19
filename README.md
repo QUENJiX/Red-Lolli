@@ -1,65 +1,52 @@
-# RedLolli
+# 🍭 Escape Pale Luna (RedLolli)
 
 **North South University - CSE215L (Java Programming Language Lab) Final Project**
 
-RedLolli is a 2D grid-based/dungeon-crawler game built using **JavaFX** and the **FXGL** game engine. It incorporates stealth, survival, and puzzle elements where players navigate complex mazes, avoid relentless enemies (like guards and serial killers), and utilize the environment (torches, cardboard clones) to survive and escape.
+Welcome to **Escape Pale Luna**! It's a spooky, totally-not-going-to-give-you-nightmares 2D dungeon crawler built purely with **JavaFX**. You run around dark, creepy mazes, try to grab shiny things (lollis!), and desperately avoid getting your face eaten by the terrifying Pale Luna that roams the halls.
 
-## 🎮 Gameplay Features
+Oh, and did we mention you slowly go insane in the dark? Because you do! Watch your sanity meter, or the screen edges will close in on you!
 
-*   **Diverse Enemies:** Dodge or outsmart unique enemy types including Guards and Serial Killers.
-*   **Dynamic Environments:** Traverse procedurally managed levels (Mazes) featuring line-of-sight and interactive light mechanics (Torches).
-*   **Tactical Items & Abilities:** Deploy items like the `CardboardClone` to deceive enemies, manage your inventory with `Item` entities, and monitor your condition via the built-in `PlayerStatsComponent`.
-*   **Collision & Hitbox System:** Advanced 2D collision detection implemented entirely from scratch utilizing `CollisionSystem` and `Hitbox2D`.
-*   **Event-Driven Architecture:** A decoupled `GameEventBus` handles interactions seamlessly across the game’s core mechanics.
-*   **Custom Rendering & HUD:** Complete control over graphics with dual rendering pipelines: `GameRenderer` for the real-time game world and `HUDRenderer` for the overlay mechanics and player stats.
+## ✨ What's Awesome About It
 
-## ⚙️ Architecture & Technologies
+*   **Terrifying Enemies:** Good luck outrunning Pale Luna. She's hunting you, and she does not want to be your friend. 
+*   **Dynamic Sanity System:** Stay in the dark too long? You go crazy. The screen actually gets a creepy vignette the lower your sanity drops! 
+*   **Sneaky Tactics:** Throw distractions! Plop down a fake cardboard clone of yourself to trick the monsters! Survive by any means necessary.
+*   **Custom Game Engine:** We didn't use a massive heavy engine; we built our own game loop, collision detection, and rendering straight onto a JavaFX `Canvas`.
+*   **Spooky Cutscenes:** Complete with a tense intro, creepy music, and a victory screen if you somehow manage to survive all three floors.
 
-*   **Java Version:** Java/JDK 25
-*   **Graphics & UI:** JavaFX 21.0.6, FXGL 17.3
-*   **Build Tool:** Maven
-*   **Data Handling:** Jackson (v2.18.6) for saving/loading configurations and game states
-*   **Testing:** JUnit 5.12.1
+## ⚙️ The Tech Inside
 
-## 📁 Project Structure
+*   **Language:** Java 25 (Because we like living in the future)
+*   **Graphics & UI:** JavaFX 21.0.6 (Drawing everything frame-by-frame on a Canvas like absolute legends)
+*   **Build Tool:** Maven (To keep all the libraries playing nice together)
+*   **Testing:** JUnit 5.12.1 (To make sure we didn't break too many things)
+
+## 📁 How It's Put Together
+
+Here's a quick tour of where everything lives:
 
 ```text
 src/main/java/com/nsu/cse215l/redlolli/
-├── core/
-│   ├── GameStateManager  # Handles Game States (Menu, Play, Pause, Game Over)
-│   ├── GameEventBus      # In-game event broker (damage, interactions, pickups)
-│   └── GameLogger        # Custom debug and event logger
-├── entities/
-│   ├── Player            # Main character logic and controller
-│   ├── Monster           # Base enemy implementation
-│   ├── GuardEntity       # Patrolling enemy type
-│   ├── SerialKillerEntity# Aggressive tracking enemy type
-│   ├── Item              # Collectible items and powerups
-│   ├── TorchEntity       # Dynamic lighting and interactions
-│   └── CardboardClone    # Decoy item for stealth maneuvers
-├── systems/
-│   ├── CollisionSystem   # Logic to prevent overlapping and trigger hitboxes
-│   ├── EntityManager     # Lifecycle management of all on-screen objects
-│   ├── LevelManager      # Maze parsing, generation, and transitions
-│   └── SoundManager      # BGM and SFX player
-├── ui/
-│   ├── GameRenderer      # Graphics pipeline (Canvas/Nodes)
-│   ├── HUDRenderer       # Overlay (HP, Inventory, Score)
-│   └── SceneFactory      # View constructor for FXGL/JavaFX scenes
-└── Launcher              # Main entry point bootstrapping FXGL/JavaFX
+├── redlolli/
+│   ├── HelloApplication.java # The main game loop and window magic!
+│   ├── GameStateManager.java # The brains of the operation. Tracks your health, levels, and if you are currently being eaten.
+│   ├── Launcher.java         # The simple little guy who turns the key to start the car.
+│   ├── core/                 # Important background stuff like the GameLogger.
+│   ├── entities/             # Everything that moves or does stuff (Player, Pale Luna, Chests, etc).
+│   ├── map/                  # The level layouts and maze generation.
+│   ├── systems/              # Managers for things like Collision and Sound.
+│   └── ui/                   # Making things look pretty (SceneFactory, GameRenderer, HUD).
 ```
 
-## 🚀 Getting Started
+## 🚀 How to Play!
 
-### Prerequisites
+### What you need:
+*   [Java Development Kit (JDK) 25+](https://jdk.java.net/25/) installed on your machine.
+*   That's pretty much it! We included the Maven Wrapper (`mvnw`), so you don't even need to install Maven yourself.
 
-Ensure you have the following installed to compile and run the project:
-*   [Java Development Kit (JDK) 25+](https://jdk.java.net/25/)
-*   [Apache Maven](https://maven.apache.org/download.cgi) (or use the provided `mvnw` wrapper)
+### Start the Game:
 
-### Compiling and Running
-
-You can compile and run the game directly from the terminal utilizing the Maven JavaFX plugin.
+Pop open your terminal, navigate to the folder, and run this magic spell:
 
 **Windows:**
 ```powershell
@@ -71,23 +58,15 @@ You can compile and run the game directly from the terminal utilizing the Maven 
 ./mvnw clean compile javafx:run
 ```
 
-*Note: The application will launch via `HelloApplication.java` mapped to the default Maven execution profile.*
+The game will compile, load up `Launcher.java`, and drop you straight into the nightmare. Have fun!
 
 ## 🛠️ Testing
 
-RedLolli has built-in unit tests to ensure that state, logic, and headless entity initializations execute cleanly.
+Yes, we wrote tests. We are responsible developers. You can run them to make sure everything is working perfectly under the hood:
 
-Run the test suite using:
 ```bash
 ./mvnw test
 ```
 
-## 📝 Design Patterns Utilized
-
-*   **Component Pattern:** (e.g., `PlayerStatsComponent`) for data decoupling on entities.
-*   **Factory Pattern:** (e.g., `SceneFactory`) for streamlined UI creation.
-*   **Singleton/Manager Pattern:** For global handlers like `GameLogger`, `SoundManager`, and `LevelManager`.
-*   **Observer/Pub-Sub Pattern:** Operated through the `GameEventBus` to notify systems of state changes gracefully.
-
-## 👥 Authors
-Developed for the **CSE215L** - Java Programming Language Lab Final Project at **North South University (NSU)**.
+## 👥 Who Made This?
+Built with love, sweat, and maybe a few tears for the **CSE215L** Java Programming Language Lab Final Project at **North South University (NSU)**.

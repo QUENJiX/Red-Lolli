@@ -24,10 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Operates as the foundational systemic bootstrap vector anchoring all
- * rendering and systemic simulation states linearly.
- * Isolates UI topological mapping away from asynchronous physical simulation
- * arrays ensuring decoupling optimally.
+ * The main starting point for Escape Pale Luna! 
+ * This application class sets up the window window, launches the game loop, 
+ * and handles transitions between menus, cutscenes, and active gameplay.
  */
 public class HelloApplication extends Application {
 
@@ -46,11 +45,10 @@ public class HelloApplication extends Application {
     private boolean showDebugOverlay = false;
 
     /**
-     * Initializes the absolute window projection parameters bootstrapping the
-     * primary geometry context initially natively.
+     * Called automatically by JavaFX when the application launches. 
+     * We just grab the primary window stage, set the title, and show the main menu.
      * 
-     * @param stage Core rendering window abstraction delegated by the JVM
-     *              explicitly.
+     * @param stage The main application window provided by JavaFX.
      */
     @Override
     public void start(Stage stage) {
@@ -61,22 +59,18 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Entry hook for virtual machine explicit delegation natively mapping hardware
-     * configurations automatically.
+     * The standard Java entry point. Just tells JavaFX to launch the application!
      * 
-     * @param args Exogenous explicit instruction mappings natively interpreted
-     *             conditionally.
+     * @param args Command line arguments (not really used).
      */
     public static void main(String[] args) {
         launch();
     }
 
     /**
-     * Instantiates abstract visualization graphs mapping exogenous image buffers
-     * uniformly cleanly natively.
+     * Builds the main title screen menu where you can start a new game or exit.
      * 
-     * @return Scene Core container dictating localized hardware projections
-     *         unequivocally conditionally.
+     * @return Scene The JavaFX scene containing the complete main menu layout.
      */
     private Scene createMainMenu() {
         SceneFactory.initUIImages();
@@ -84,8 +78,7 @@ public class HelloApplication extends Application {
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
         root.setStyle("-fx-background-color: black;");
 
-        // Construct topological alignment projecting external image bounds
-        // mathematically cleanly
+        // Draw the creepy ambient background if we have one.
         Image bgImg = SceneFactory.getMenuBackgroundImg();
         if (bgImg != null) {
             ImageView bgView = new ImageView(bgImg);
@@ -96,11 +89,11 @@ public class HelloApplication extends Application {
             root.getChildren().add(bgView);
         }
 
-        // Arrange discrete vertical bounds interpolating UI geometry cleanly natively
+        // Stack our title text and subtitle neatly down the center.
         VBox layout = new VBox(15);
         layout.setAlignment(Pos.CENTER);
 
-        // Bind explicit visual geometries sequentially mapped linearly natively
+        // Put the game's title front and center!
         javafx.scene.text.Text titleText = SceneFactory.getMenuTitleText();
         layout.getChildren().add(titleText);
 
@@ -109,8 +102,7 @@ public class HelloApplication extends Application {
             layout.getChildren().add(subText);
         }
 
-        // Interface dynamically swapped interaction arrays projecting conditional
-        // geometries precisely mapped
+        // Add the clickable buttons to begin playing or to quit
         javafx.scene.control.Button newGameBtn = SceneFactory.createIconButton(
                 "/assets/images/ui/icon_play.png",
                 "/assets/images/ui/btn_new_game.png",
@@ -133,8 +125,9 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Executes procedural chronology arrays projecting dynamic continuous aesthetic
-     * overrides algorithmically flawlessly.
+     * Replaces the menu with a spooky slideshow intro detailing the backstory, 
+     * playing tense music, and ending by dropping you directly into level 1.
+     * Starts immediately when the player hits "Play"!
      */
     private void playIntroAndStart() {
         javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane();
@@ -174,8 +167,7 @@ public class HelloApplication extends Application {
         timeline.play();
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {
-                // Ensure mutual structural exception checks terminating synchronous executions
-                // linearly naturally
+                // If the player hits ENTER, skip the cutscene straight to a loading screen!
                 scene.setOnKeyPressed(null);
                 timeline.stop();
                 gsm.soundManager.stopMusic();
@@ -194,11 +186,10 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Integrates cyclical environmental reinitializations mitigating transient
-     * scalar deviations conditionally natively.
+     * Wipes the board clean, loads up a fresh layout for the given level, and tells the 
+     * engine to start ticking! Keeps track of Sanity so players don't suddenly get healed between levels.
      * 
-     * @param level Explicit categorical multiplier determining systemic constraints
-     *              algorithmically inherently.
+     * @param level Which level or floor number to jump you into.
      */
     private void startGame(int level) {
         int savedSanity = (gsm.entityManager.getPlayer() != null) ? (int) gsm.entityManager.getPlayer().getSanity()
@@ -210,8 +201,7 @@ public class HelloApplication extends Application {
         pressedThisFrame.clear();
         gsm.loadLevel();
 
-        // Overrides explicit deterministic mappings bridging asynchronous systemic
-        // iterations conditionally unconditionally
+        // Make sure we carry your current sanity rating forward to the next level!
         if (level > 1 && gsm.entityManager.getPlayer() != null) {
             gsm.entityManager.getPlayer().setSanity(savedSanity);
         }
@@ -223,8 +213,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Instantiates continuous infinite-loop evaluations decoupling hardware
-     * rendering speeds identically sequentially.
+     * Initializes the canvas and hooks up the heartbeat for the main game.
+     * Tells the physics code to run inside a continuous animation loop.
      */
     private void setupGameScene() {
         Canvas canvas = new Canvas(880, 730);
@@ -251,8 +241,7 @@ public class HelloApplication extends Application {
                 if (isPlaying) {
                     boolean died = gsm.update(activeKeys);
                     if (died) {
-                        // Isolates explicit geometric destruction arrays mapping procedural scaling
-                        // unconditionally flawlessly
+                        // Check if we are currently mid-death-animation or completely completely dead
                         if (gsm.playerIsDead && gsm.playerDeathAnimFrames > 0) {
                             render(gc);
                             renderDeathAnimation(gc, gsm.playerDeathAnimFrames);
@@ -276,15 +265,13 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Marshals contiguous buffer updates enforcing visual frame constraints
-     * algorithmically identical unconditionally.
+     * Spits the actual graphics to the screen! Also calculates cool camera effects, 
+     * like increasing the dark vignette edges if sanity gets way too low.
      * 
-     * @param gc Hardware GraphicsContext bound explicitly translating abstractions
-     *           natively directly.
+     * @param gc The canvas context where every tile and sprite actually gets drawn.
      */
     private void render(GraphicsContext gc) {
-        // Computes asymptotic peripheral alpha mappings implicitly restricting visual
-        // acuity algebraically identically
+        // As you get crazier, the dark edges creep closer around the screen to freak you out!
         double vignetteIntensity = 0;
         if (gsm.entityManager.getPlayer() != null) {
             int sanity = (int) gsm.entityManager.getPlayer().getSanity();
@@ -308,13 +295,10 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Executes polynomial convergence generating asymmetric visual contractions
-     * simulating critical instability geometrically explicitly.
+     * Draws the bloody screen crunch animation when the player gets caught by Pale Luna!
      * 
-     * @param gc              Hardware abstraction iterating deterministic fill
-     *                        configurations uniformly exclusively.
-     * @param framesRemaining Numeric bounds governing remaining algorithm
-     *                        translations mathematically conditionally.
+     * @param gc              The graphics context used to draw the terrifying death overlay.
+     * @param framesRemaining How many frames are left before the player is completely dead.
      */
     private void renderDeathAnimation(GraphicsContext gc, double framesRemaining) {
         double progress = 1.0 - (double) framesRemaining / 60.0;
@@ -358,8 +342,7 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Resolves continuous systemic iteration propagating dimensional modifications
-     * definitively.
+     * Bumps the player up to the next floor! If they beat level 3, play the victory ending!
      */
     private void advanceLevel() {
         if (gsm.levelManager.getCurrentLevel() >= 3) {
@@ -371,7 +354,7 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Constructs divergent visual states delegating logic blocks fundamentally.
+     * Shows a cool "Item Found" popup whenever you find one of the Lollis.
      */
     private void showItemFoundScreen() {
         isPlaying = false;
@@ -387,8 +370,7 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Orchestrates structural failure transitions halting computational arrays
-     * flawlessly uniformly.
+     * Oh no, Pale Luna caught you! Show the death screen with all your stats!
      */
     private void triggerDeath() {
         isPlaying = false;
@@ -410,8 +392,7 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Defines definitive terminal boundaries delegating explicitly unmitigated
-     * cinematic sequences identically conditionally.
+     * You won! Kick off the victory slideshow before showing the final stats!
      */
     private void triggerVictoryCutscene() {
         isPlaying = false;
@@ -454,8 +435,8 @@ public class HelloApplication extends Application {
     }
 
     /**
-     * Orchestrates categorical endgame interfaces natively executing metric
-     * enumerations synchronously algorithmically.
+     * Gives the player the final stat break-down (chests found, playtime, sanity left, etc)
+     * before booting them back to the main menu.
      */
     private void showVictoryScreen() {
         int sanity = gsm.entityManager.getPlayer() != null

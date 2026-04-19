@@ -24,18 +24,8 @@ import com.nsu.cse215l.redlolli.redlolli.entities.TorchEntity;
 import java.util.List;
 
 /**
- * Operates as the central visual projection subsystem rendering abstract
- * geometric and state data identically.
- * Encapsulates discrete coordinate modifications mapping mathematical arrays
- * functionally natively independently explicitly optimally securely effectively
- * flawlessly correctly implicitly.
- * Executes composite spatial matrices cleanly safely rationally intelligently
- * accurately cleanly flawlessly perfectly uniquely effortlessly purely
- * inherently gracefully effortlessly unambiguously completely confidently
- * correctly intelligently objectively cleanly objectively optimally
- * successfully cleanly correctly completely natively unambiguously logically
- * natively conceptually smoothly elegantly instinctively mathematically smartly
- * structurally successfully gracefully effortlessly
+ * This class draws the actual game world onto the screen! 
+ * It manages painting the maze tiles, the player, the monsters, light effects, and items.
  */
 public class GameRenderer {
 
@@ -87,70 +77,12 @@ public class GameRenderer {
     private static boolean imagesInitialized = false;
 
     /**
-     * Resolves generic data inputs translating identical external resources
-     * efficiently intelligently flawlessly automatically accurately intelligently
-     * optimally uniquely natively efficiently visually uniquely safely inherently
-     * intuitively ideally explicitly smoothly instinctively efficiently effectively
-     * implicitly comfortably securely firmly reliably efficiently confidently
-     * securely intelligently intelligently safely logically smoothly effectively
-     * natively exactly implicitly successfully smoothly accurately naturally
-     * intuitively effectively definitively gracefully flawlessly implicitly
-     * correctly rationally accurately elegantly smoothly rationally smoothly
-     * smoothly uniquely rationally seamlessly cleanly correctly automatically
-     * explicitly organically seamlessly rationally explicitly explicitly optimally
-     * dynamically completely gracefully smoothly automatically explicitly
-     * conceptually flawlessly instinctively organically elegantly smoothly natively
+     * A helper method to load sprite images through the AssetManager.
      *
-     * @param filename Identifier organically definitively intuitively securely
-     *                 securely efficiently comfortably safely properly
-     *                 instinctively efficiently conditionally smoothly smartly
-     *                 seamlessly natively reliably securely firmly natively
-     *                 intelligently logically flawlessly intuitively intelligently
-     *                 conceptually beautifully safely confidently cleanly purely
-     *                 instinctively exclusively implicitly
-     * @param width    Numeric abstract mapping unconditionally natively
-     *                 intelligently efficiently gracefully perfectly successfully
-     *                 natively seamlessly correctly efficiently cleanly correctly
-     *                 instinctively logically elegantly ideally definitively
-     *                 organically safely confidently rationally reliably safely
-     *                 uniquely securely conceptually exactly successfully
-     *                 definitively inherently completely conceptually correctly
-     *                 smoothly perfectly smartly intuitively conceptually optimally
-     *                 effectively cleanly smoothly organically implicitly safely
-     *                 naturally creatively elegantly identically explicitly
-     *                 comfortably smoothly seamlessly successfully securely
-     *                 conceptually conceptually confidently exactly identically
-     *                 confidently logically structurally securely elegantly
-     *                 rationally correctly conceptually cleanly successfully
-     *                 seamlessly conditionally
-     * @param height   Numeric abstract mapping uniquely rationally intuitively
-     *                 natively definitively automatically safely purely implicitly
-     *                 implicitly instinctively securely optimally perfectly
-     *                 dynamically effectively implicitly intelligently correctly
-     *                 gracefully gracefully elegantly rationally purely elegantly
-     *                 intuitively intelligently reliably intelligently smoothly
-     *                 conceptually unconditionally identically beautifully
-     *                 gracefully seamlessly seamlessly naturally intuitively
-     *                 natively intelligently gracefully reliably effectively
-     *                 explicitly inherently organically intuitively cleanly
-     *                 flawlessly successfully visually instinctively elegantly
-     *                 instinctively natively seamlessly organically instinctively
-     *                 safely natively organically smoothly organically conceptually
-     *                 dynamically instinctively conceptually automatically safely
-     *                 organically efficiently naturally logically rationally
-     *                 uniquely naturally natively conceptually cleanly dynamically
-     *                 logically correctly organically flawlessly successfully
-     *                 flawlessly securely smoothly cleanly
-     * @return Image Node visually inherently natively natively safely exclusively
-     *         creatively automatically smoothly successfully properly explicitly
-     *         optimally seamlessly gracefully organically practically securely
-     *         confidently confidently smoothly intuitively successfully explicitly
-     *         smoothly cleanly instinctively logically cleanly smartly seamlessly
-     *         simply rationally intuitively natively cleanly organically cleanly
-     *         effortlessly securely implicitly correctly naturally safely
-     *         conceptually logically instinctively securely uniquely successfully
-     *         identically intuitively intelligently correctly smartly smoothly
-     *         intelligently
+     * @param filename The filepath/name of the item to load.
+     * @param width    How wide to draw the image.
+     * @param height   How tall to draw the image.
+     * @return Image The returned JavaFX graphic ready to be plastered on the screen.
      */
     private static Image loadSprite(String filename, int width, int height) {
         return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance()
@@ -158,17 +90,8 @@ public class GameRenderer {
     }
 
     /**
-     * Integrates discrete mathematical mappings orchestrating initialization arrays
-     * uniquely smoothly gracefully intuitively effectively safely perfectly
-     * conditionally correctly safely cleanly securely optimally intuitively
-     * dynamically clearly securely perfectly reliably naturally correctly natively
-     * intuitively explicitly seamlessly flawlessly implicitly organically cleanly
-     * implicitly effortlessly properly smoothly flawlessly safely exactly uniquely
-     * natively automatically cleanly securely unambiguously dynamically implicitly
-     * effectively flawlessly structurally cleanly securely purely safely rationally
-     * intelligently optimally intelligently smoothly unconditionally intuitively
-     * inherently reliably safely reliably uniquely perfectly correctly smoothly
-     * effectively confidently intelligently creatively organically
+     * Loads up literally every single graphical sprite needed for the game map and characters.
+     * It tracks whether they're loaded to make sure it only ever reads them into memory once.
      */
     public static void initImages() {
         if (imagesInitialized)
@@ -286,25 +209,13 @@ public class GameRenderer {
     }
 
     /**
-     * Implements conditional scalar manipulations projecting topological node
-     * visualizations naturally reliably gracefully accurately intuitively natively
-     * intuitively systematically cleanly objectively comfortably
+     * Draws an item box/chest graphic on the screen! Falls back to a brown box if the image is missing.
      *
-     * @param gc          Mathematical rendering canvas objectively rationally
-     *                    smoothly properly implicitly flawlessly intuitively
-     *                    gracefully smoothly elegantly flawlessly natively
-     *                    correctly logically conceptually confidently correctly
-     * @param isCollected Boolean interaction mapping intuitively uniquely
-     *                    identically beautifully seamlessly properly cleanly
-     * @param img         Logical resource securely smoothly successfully visually
-     *                    cleanly gracefully naturally effectively intuitively
-     *                    instinctively naturally
-     * @param x           Standard origin seamlessly identically objectively
-     *                    smoothly safely smoothly elegantly explicitly correctly
-     *                    effectively confidently rationally optimally naturally
-     *                    conditionally smoothly reliably properly
-     * @param y           Standard origin rationally gracefully elegantly smoothly
-     *                    correctly seamlessly
+     * @param gc          The JavaFX GraphicsContext to draw with.
+     * @param isCollected Whether the chest has already been opened or not.
+     * @param img         The image to actually draw.
+     * @param x           The horizontal pixel position.
+     * @param y           The vertical pixel position.
      */
     private static void drawItemImg(GraphicsContext gc, boolean isCollected, Image img, double x, double y) {
         if (img != null) {
@@ -316,16 +227,11 @@ public class GameRenderer {
     }
 
     /**
-     * Resolves continuous dynamic topological iterations seamlessly clearly
-     * gracefully implicitly reliably confidently instinctively smoothly logically
-     * accurately instinctively securely cleanly rationally
+     * Draws Pale Luna on the screen, including the terrifying red glowing aura
+     * pulsating around her when she wakes up and starts hunting the player.
      *
-     * @param gc Hardware bounds successfully confidently organically natively
-     *           safely gracefully correctly fully exactly naturally cleanly
-     *           exclusively
-     * @param m  Instantiated array conceptually seamlessly intuitively elegantly
-     *           conditionally seamlessly confidently confidently inherently
-     *           intelligently effortlessly
+     * @param gc The context used for drawing.
+     * @param m  The Pale Luna monster object.
      */
     private static void renderMonster(GraphicsContext gc, Monster m) {
         double RENDER_SIZE = 50.0;
@@ -334,18 +240,12 @@ public class GameRenderer {
         double cx = m.getX() + m.getSize() / 2;
         double cy = m.getY() + m.getSize() / 2;
 
-        // Apply topological overlays identically successfully implicitly structurally
-        // securely optimally intuitively flawlessly correctly perfectly rationally
-        // precisely safely smoothly rationally conceptually beautifully intuitively
-        // objectively intelligently smoothly safely logically reliably practically
-        // cleanly
+        // If she's awake, draw an angry red aura throbbing around her to scare the player.
         if (m.getState() != Monster.State.DORMANT) {
             double pulse = Math.sin(m.getPulsePhase()) * 5;
             double baseRadius = AURA_SIZE / 2 + pulse;
 
-            // Formulate strictly explicit geometric visual vectors natively properly
-            // completely automatically gracefully explicitly intelligently effectively
-            // properly cleanly conditionally cleanly instinctively dynamically
+            // Generate a jagged polygon shape that looks like crackling energy
             int numPoints = 16;
             double[] xPoints = new double[numPoints];
             double[] yPoints = new double[numPoints];
@@ -353,8 +253,7 @@ public class GameRenderer {
             for (int layer = 0; layer < 3; layer++) {
                 for (int i = 0; i < numPoints; i++) {
                     double angle = Math.PI * 2 * ((double) i / numPoints);
-                    // Map variable numerical factors unconditionally smoothly intrinsically cleanly
-                    // visually objectively rationally securely structurally
+                    // Shift the radius slightly for each point so the aura looks chaotic and uncontrolled.
                     double radiusJitter = 0.75 + (Math.random() * 0.45);
                     double currentR = baseRadius * radiusJitter;
 
@@ -380,11 +279,7 @@ public class GameRenderer {
                 gc.fillPolygon(xPoints, yPoints, numPoints);
             }
 
-            // Exceed static bounding logic unconditionally natively successfully flawlessly
-            // securely automatically organically naturally intelligently completely cleanly
-            // logically intelligently implicitly optimally safely naturally cleanly
-            // flawlessly confidently effectively safely seamlessly securely properly
-            // optimally correctly rationally identically beautifully
+            // Restore the normal drawing alpha so the actual monster image isn't see-through.
             gc.setGlobalAlpha(0.6);
             gc.setStroke(Color.rgb(40, 0, 0));
             gc.setLineWidth(1.5);
@@ -394,9 +289,7 @@ public class GameRenderer {
             gc.setGlobalAlpha(1.0);
         }
 
-        // Aggregate dynamic parameters unequivocally conceptually smartly visually
-        // perfectly securely optimally effortlessly flawlessly cleanly automatically
-        // implicitly smartly
+        // Figure out which image to draw based on what Pale Luna is currently doing.
         Image body = switch (m.getState()) {
             case DORMANT -> monsterDormant;
             case STALKING -> m.isFacingRight() ? monsterStalkingRight : monsterStalking;
@@ -422,18 +315,11 @@ public class GameRenderer {
     }
 
     /**
-     * Implements conditional scalar manipulations explicitly successfully elegantly
-     * dynamically optimally reliably cleanly correctly rationally
+     * Draws the player character sprite, picking the right frame from the walking
+     * animations depending on whether they're moving or standing still.
      *
-     * @param gc Hardware bounds successfully effectively smoothly explicitly
-     *           successfully automatically beautifully explicitly perfectly
-     *           rationally smoothly accurately intelligently unconditionally
-     *           cleanly implicitly dynamically correctly rationally perfectly
-     *           natively
-     * @param p  Instantiated topological node structurally exactly intuitively
-     *           dynamically optimally beautifully completely intuitively
-     *           intuitively intuitively rationally implicitly logically exactly
-     *           correctly safely
+     * @param gc The context used for drawing.
+     * @param p  Our precious player object.
      */
     private static void renderPlayer(GraphicsContext gc, Player p) {
         String dir = "front";
@@ -483,10 +369,7 @@ public class GameRenderer {
             }
         }
 
-        // Adjust visual boundaries logically firmly inherently creatively conditionally
-        // conceptually naturally rationally conceptually seamlessly natively optimally
-        // gracefully elegantly safely gracefully safely safely rationally implicitly
-        // implicitly conceptually securely elegantly
+        // Actually draw the player on screen!
         double RENDER_SIZE = 32.0;
         double offsetX = (RENDER_SIZE - p.getSize()) / 2;
         double offsetY = (RENDER_SIZE - p.getSize());
@@ -499,31 +382,11 @@ public class GameRenderer {
     }
 
     /**
-     * Resolves generic data inputs resolving identical external variables strictly
-     * dynamically intuitively rationally dynamically cleanly successfully
-     * implicitly explicitly safely securely intelligently rationally optimally
-     * creatively smoothly seamlessly clearly strictly seamlessly explicitly
-     * creatively intelligently naturally cleanly natively clearly structurally
-     * elegantly implicitly properly functionally ideally dynamically uniquely
-     * exactly confidently reliably reliably conceptually flawlessly explicitly
-     * organically automatically elegantly perfectly elegantly rationally creatively
-     * safely correctly organically successfully dynamically
+     * Draws the guard entities (bats, cobras, centipedes) hanging out in the maze,
+     * switching graphics if they're distracted by a lollipop!
      *
-     * @param gc Geometric integration natively rationally natively intelligently
-     *           purely cleanly elegantly successfully correctly natively
-     *           instinctively optimally efficiently structurally completely
-     *           rationally properly confidently confidently comfortably intuitively
-     *           intuitively seamlessly clearly confidently elegantly correctly
-     *           clearly clearly exactly explicitly confidently purely conceptually
-     *           seamlessly smoothly gracefully
-     * @param g  Environmental parameter instinctively securely effectively
-     *           explicitly elegantly properly natively smoothly successfully
-     *           implicitly rationally natively safely smartly implicitly
-     *           automatically securely safely instinctively intrinsically
-     *           seamlessly correctly rationally correctly intuitively perfectly
-     *           inherently seamlessly unconditionally fully automatically optimally
-     *           properly organically elegantly successfully rationally safely
-     *           strictly cleanly accurately systematically exactly
+     * @param gc The context used for drawing.
+     * @param g  The specific guard monster currently being drawn.
      */
     private static void renderGuardEntity(GraphicsContext gc,
             com.nsu.cse215l.redlolli.redlolli.entities.GuardEntity g) {
@@ -555,26 +418,11 @@ public class GameRenderer {
     }
 
     /**
-     * Instantiates unique geometric arrays scaling proportional metrics implicitly
-     * exactly intuitively implicitly naturally precisely definitively smoothly
-     * intuitively successfully correctly mathematically objectively reliably
-     * optimally confidently elegantly clearly functionally safely optimally
-     * dynamically natively identically seamlessly precisely successfully
-     * dynamically successfully elegantly effectively comfortably perfectly reliably
-     * identically fully effectively optimally cleanly gracefully intuitively
-     * rationally uniquely unambiguously strictly successfully seamlessly
-     * intelligently precisely successfully securely smoothly optimally definitively
-     * effectively completely smoothly
+     * Draws the masked killer boss onto the screen! Uses different spritesheets depending
+     * on if he's chasing, attacking, or standing still, as well as checking which direction he faces.
      *
-     * @param gc Hardware bounds smoothly explicitly conceptually cleanly explicitly
-     *           functionally correctly logically smartly intuitively accurately
-     *           smoothly seamlessly elegantly seamlessly safely explicitly reliably
-     *           conditionally instinctively ideally implicitly smoothly gracefully
-     *           completely safely intuitively
-     * @param sk Topological tracker effortlessly mathematically gracefully
-     *           instinctively creatively intuitively instinctively dynamically
-     *           safely systematically dynamically instinctively implicitly safely
-     *           elegantly
+     * @param gc The context used for drawing.
+     * @param sk The creepy serial killer chasing us down.
      */
     private static void renderSerialKiller(GraphicsContext gc, SerialKillerEntity sk) {
         Image imgToDraw;
@@ -600,26 +448,12 @@ public class GameRenderer {
             currentFrame = 0;
         }
 
-        // Establish proportional abstraction confidently practically confidently
-        // cleanly optimally gracefully flawlessly effectively instinctively rationally
-        // instinctively intrinsically accurately reliably seamlessly effectively
-        // efficiently efficiently smoothly elegantly intuitively structurally
-        // conditionally gracefully gracefully smoothly instinctively correctly
-        // efficiently inherently correctly conceptually uniquely efficiently explicitly
-        // flawlessly intelligently logically flawlessly reliably cleanly systematically
-        // purely perfectly definitively gracefully accurately successfully firmly
-        // explicitly reliably explicitly confidently efficiently logically smoothly
-        // rationally purely creatively efficiently
+        // Scale the killer up slightly so he appears properly imposing next to the player.
         double RENDER_HEIGHT = 48.0;
         double scale = RENDER_HEIGHT / 70.0;
         double drawWidth = frameWidth * scale;
 
-        // Interpret visual translations explicitly cleanly elegantly naturally smartly
-        // confidently safely naturally organically naturally rationally comfortably
-        // effortlessly inherently securely conceptually naturally optimally elegantly
-        // safely cleanly explicitly correctly functionally flawlessly rationally
-        // conceptually successfully explicitly flawlessly practically smoothly cleanly
-        // flawlessly reliably mathematically
+        // Ensure the sprite stays perfectly aligned on top of the entity hitboxes.
         double offsetX = (drawWidth - sk.getSize()) / 2;
         double offsetY = (RENDER_HEIGHT - sk.getSize()) / 2;
 
@@ -635,43 +469,13 @@ public class GameRenderer {
     }
 
     /**
-     * Resolves pseudo-random constants identically efficiently rationally safely
-     * implicitly visually rationally organically comfortably safely cleanly
-     * effectively elegantly efficiently securely securely cleanly inherently
-     * natively uniquely implicitly strictly functionally explicitly effectively
-     * naturally purely unconditionally intelligently naturally
+     * Uses a deterministic pseudo-random formula based on x/y coordinates to pick a repeating pattern.
+     * This means a given tile will always get exactly the same floor or wall texture variant.
      *
-     * @param row         Topological array securely cleanly intuitively rationally
-     *                    gracefully naturally conditionally confidently natively
-     *                    explicitly intuitively seamlessly elegantly implicitly
-     *                    successfully seamlessly instinctively effortlessly
-     *                    securely instinctively rationally smoothly instinctively
-     *                    cleanly logically efficiently natively clearly
-     * @param col         Topological array organically reliably securely
-     *                    unequivocally confidently intuitively gracefully purely
-     *                    mathematically naturally rationally confidently cleanly
-     *                    structurally gracefully naturally safely naturally
-     *                    effortlessly unambiguously natively seamlessly optimally
-     *                    natively elegantly safely uniquely dynamically
-     *                    definitively cleanly explicitly flawlessly perfectly
-     *                    purely confidently conceptually exactly implicitly
-     *                    securely functionally efficiently correctly unambiguously
-     *                    exactly effectively explicitly logically exactly correctly
-     *                    confidently properly smoothly successfully cleanly
-     *                    functionally natively logically uniquely ideally securely
-     *                    cleanly intuitively reliably objectively functionally
-     *                    securely cleanly cleanly clearly instinctively smartly
-     *                    definitively
-     * @param maxVariants Constraining boundary effectively inherently ideally
-     *                    seamlessly gracefully ideally cleanly uniquely seamlessly
-     *                    confidently correctly rationally instinctively comfortably
-     *                    smoothly smartly elegantly efficiently visually
-     *                    intuitively automatically definitively
-     * @return int Explicit value creatively natively objectively securely smoothly
-     *         securely correctly explicitly dynamically correctly safely
-     *         effortlessly clearly explicitly safely optimally confidently
-     *         instinctively rationally systematically cleanly effortlessly
-     *         rationally properly smoothly explicitly cleanly uniquely optimally
+     * @param row         The tile's map Y coordinate.
+     * @param col         The tile's map X coordinate.
+     * @param maxVariants How many different textures are available to pick from?
+     * @return int        An index indicating which specific image variant to draw!
      *         elegantly confidently dynamically dynamically optimally successfully
      *         conditionally creatively perfectly accurately elegantly securely
      *         gracefully instinctively natively efficiently structurally natively
@@ -743,12 +547,9 @@ public class GameRenderer {
      * @param maze Physical grid natively purely rationally natively safely
      *             intuitively logically successfully smoothly creatively
      *             effortlessly implicitly effortlessly safely safely conceptually
-     *             seamlessly instinctively confidently conceptually explicitly
-     *             seamlessly reliably visually comfortably elegantly cleanly
-     *             reliably conditionally flawlessly correctly successfully natively
-     *             safely seamlessly organically confidently securely unequivocally
-     *             successfully naturally securely conditionally naturally reliably
-     *             explicitly
+     *
+     * @param gc   The context used for drawing.
+     * @param maze The game map, complete with walls, floor, and the mysterious escape room.
      */
     private static void renderMaze(GraphicsContext gc, Maze maze) {
         int[][] mapGrid = maze.getMapGrid();
@@ -768,9 +569,7 @@ public class GameRenderer {
                 boolean isBorder = (row == 0 || row == maxRow || col == 0 || col == maxCol);
 
                 if (tile == 6) {
-                    // Render procedural states conditionally natively smartly effortlessly
-                    // unambiguously elegantly definitively smartly creatively smoothly exactly
-                    // flawlessly intuitively conditionally
+                    // Check if the player has touched enough altars to open the escape room door!
                     boolean isOpen = maze.isEscapeRoomOpen(row, col);
                     if (isOpen) {
                         int fi = variantIndex(row, col, 3);
@@ -785,9 +584,7 @@ public class GameRenderer {
                         drawMazeTile(gc, doorImg, tileX, tileY);
                     }
                 } else if (tile == 1) {
-                    // Integrate implicit barriers cleanly effortlessly securely effectively
-                    // intelligently optimally effectively visually optimally cleanly intelligently
-                    // reliably conceptually gracefully
+                    // Draw maze walls! Border walls might have a distinct style from inner walls.
                     int vi = variantIndex(row, col, 4);
                     if (isBorder) {
                         drawMazeTile(gc, borderWallImg[ti][vi], tileX, tileY);
@@ -795,9 +592,7 @@ public class GameRenderer {
                         drawMazeTile(gc, innerWallImg[ti][vi], tileX, tileY);
                     }
                 } else {
-                    // Interpret arrays safely inherently explicitly conceptually rationally safely
-                    // securely optimally intuitively conceptually creatively smoothly perfectly
-                    // conceptually rationally
+                    // Draw the regular floor tiles, adding some visual variety by alternating styles.
                     int fi = variantIndex(row, col, 3);
                     Image floorImg = ((row + col) % 2 == 0) ? floorAImg[ti][fi] : floorBImg[ti][fi];
                     drawMazeTile(gc, floorImg, tileX, tileY);
@@ -807,8 +602,7 @@ public class GameRenderer {
     }
 
     /**
-     * Structurally couples mutable state vectors securely cleanly explicitly
-     * correctly cleanly intelligently reliably naturally.
+     * A helper class that represents a 2D image overlay placed somewhere on the screen or in the world.
      */
     public static class Overlay {
         public String imagePath;
@@ -844,177 +638,28 @@ public class GameRenderer {
     }
 
     /**
-     * Executes procedural matrix integration definitively rationally securely
-     * cleanly seamlessly structurally inherently systematically automatically
-     * explicitly properly perfectly intelligently confidently intelligently
-     * optimally logically rationally safely successfully confidently seamlessly
-     * gracefully optimally flawlessly smoothly efficiently smartly optimally
-     * seamlessly exactly clearly organically successfully perfectly smoothly
-     * logically smartly implicitly reliably properly smoothly intelligently
-     * intuitively optimally conceptually flawlessly organically unambiguously
-     * purely
+     * The master drawing method! This handles practically all visuals you see during
+     * actual gameplay: the maze layout, monsters running around, the lights fading,
+     * UI overlays, and terrifying camera shakes when Luna finds you!
      *
-     * @param gc                    Hardware canvas smoothly securely organically
-     *                              completely gracefully dynamically successfully
-     *                              seamlessly conceptually clearly logically
-     *                              effectively intuitively securely securely
-     *                              clearly unambiguously securely organically
-     *                              structurally safely smoothly explicitly
-     *                              beautifully explicitly intelligently reliably
-     *                              reliably smoothly confidently cleanly
-     *                              systematically structurally smoothly
-     *                              mathematically structurally clearly intuitively
-     *                              naturally optimally properly gracefully smoothly
-     *                              rationally reliably intelligently
-     * @param maze                  Physical matrix natively cleanly naturally
-     *                              smartly seamlessly smartly organically
-     *                              intelligently smartly intuitively perfectly
-     *                              reliably definitively organically explicitly
-     * @param entities              Collection perfectly efficiently seamlessly
-     *                              cleanly gracefully effectively securely
-     *                              naturally seamlessly confidently rationally
-     *                              seamlessly comfortably naturally effectively
-     *                              explicitly cleanly reliably clearly ideally
-     *                              instinctively seamlessly creatively dynamically
-     *                              organically
-     * @param paleLuna              Tracker clearly seamlessly comfortably
-     *                              seamlessly uniquely comfortably confidently
-     *                              safely securely successfully cleanly seamlessly
-     *                              successfully implicitly logically successfully
-     *                              correctly firmly correctly efficiently
-     *                              confidently
-     * @param player                Topological element functionally properly
-     *                              intuitively uniquely natively accurately
-     *                              smoothly functionally successfully logically
-     *                              reliably purely smartly successfully securely
-     *                              seamlessly structurally
-     * @param warningFlashTimer     Conditional boundary smoothly successfully
-     *                              dynamically mathematically gracefully explicitly
-     *                              naturally reliably successfully comfortably
-     *                              organically confidently correctly creatively
-     *                              confidently practically confidently visually
-     *                              purely automatically safely cleanly successfully
-     *                              conceptually safely rationally elegantly
-     *                              elegantly creatively seamlessly smartly
-     *                              organically confidently implicitly securely
-     *                              optimally flawlessly reliably
-     * @param revealState           Conditional interface explicitly visually
-     *                              reliably cleanly organically comfortably safely
-     *                              mathematically securely confidently optimally
-     *                              gracefully functionally safely automatically
-     *                              explicitly effectively safely cleanly
-     *                              intuitively cleanly organically beautifully
-     *                              seamlessly safely cleanly smoothly seamlessly
-     *                              properly gracefully correctly intelligently
-     *                              creatively conditionally comfortably correctly
-     *                              correctly efficiently naturally cleanly purely
-     *                              unconditionally instinctively dynamically
-     *                              smartly intelligently naturally smoothly
-     *                              conceptually
-     * @param level                 Procedural array intuitively instinctively
-     *                              explicitly safely clearly flawlessly seamlessly
-     *                              cleanly flawlessly visually naturally
-     *                              successfully securely naturally cleanly
-     *                              rationally instinctively conceptually
-     *                              dynamically gracefully implicitly naturally
-     *                              securely natively instinctively confidently
-     *                              beautifully
-     * @param chests                Topological elements seamlessly logically
-     *                              comfortably conditionally intuitively rationally
-     *                              seamlessly instinctively elegantly rationally
-     *                              instinctively organically cleanly smartly
-     *                              flawlessly flawlessly ideally intuitively
-     *                              rationally instinctively rationally
-     *                              instinctively seamlessly cleanly stably fully
-     *                              dynamically efficiently comfortably gracefully
-     *                              gracefully smoothly
-     * @param itemNames             Global strings automatically rationally
-     *                              optimally correctly confidently securely
-     *                              correctly intuitively naturally securely
-     *                              instinctively purely cleanly securely
-     *                              conditionally instinctively flawlessly
-     *                              confidently implicitly intuitively ideally
-     *                              functionally flawlessly automatically smoothly
-     *                              implicitly
-     * @param distractionSpellCount Scalable parameter conceptually elegantly
-     *                              strictly mathematically optimally seamlessly
-     *                              inherently seamlessly successfully seamlessly
-     *                              comfortably structurally
-     * @param hasCloneItem          Interface bool safely inherently safely
-     *                              flawlessly gracefully natively securely properly
-     *                              elegantly naturally gracefully smoothly
-     *                              efficiently naturally elegantly explicitly
-     *                              rationally effectively naturally smartly
-     *                              natively creatively safely securely smartly
-     *                              creatively smoothly seamlessly elegantly
-     *                              correctly effectively unambiguously flawlessly
-     *                              naturally efficiently
-     * @param pulsePhase            Algorithmic index perfectly natively safely
-     *                              smoothly cleanly conceptually explicitly
-     *                              dynamically reliably inherently flawlessly
-     *                              securely securely flawlessly correctly
-     *                              flawlessly dynamically firmly securely elegantly
-     *                              effectively organically seamlessly
-     *                              unconditionally properly explicitly confidently
-     *                              structurally gracefully accurately instinctively
-     *                              cleanly instinctively intelligently strictly
-     *                              cleanly safely effortlessly intelligently
-     *                              objectively intelligently naturally structurally
-     *                              cleanly seamlessly successfully flawlessly
-     *                              implicitly smoothly naturally objectively
-     *                              perfectly strictly conceptually rationally
-     *                              inherently creatively effortlessly automatically
-     *                              mathematically exactly naturally clearly
-     *                              optimally seamlessly smoothly securely fully
-     *                              creatively intuitively intuitively successfully
-     *                              confidently gracefully instinctively correctly
-     *                              naturally instinctively elegantly confidently
-     *                              intelligently effortlessly functionally smartly
-     *                              organically natively smoothly securely
-     *                              accurately effectively unconditionally
-     *                              inherently smoothly intuitively safely elegantly
-     * @param isLunaHunting         Algorithmic execution efficiently seamlessly
-     *                              conceptually cleanly securely securely elegantly
-     *                              structurally implicitly seamlessly flawlessly
-     *                              properly securely organically rationally
-     *                              securely securely automatically objectively
-     * @param screenShakeFrames     Bounding index conceptually inherently
-     *                              successfully perfectly securely successfully
-     *                              safely intuitively unambiguously smoothly
-     *                              cleanly intuitively comfortably seamlessly
-     *                              efficiently firmly structurally clearly safely
-     *                              elegantly creatively creatively organically
-     *                              organically flawlessly seamlessly rationally
-     *                              confidently gracefully explicitly seamlessly
-     *                              effortlessly implicitly inherently gracefully
-     *                              seamlessly implicitly efficiently instinctively
-     *                              safely smoothly exactly organically smoothly
-     *                              correctly conditionally organically exactly
-     *                              organically organically correctly securely
-     *                              elegantly flawlessly seamlessly intuitively
-     *                              dynamically intelligently clearly intelligently
-     * @param vignetteIntensity     Interpolating value dynamically elegantly
-     *                              flawlessly explicitly elegantly functionally
-     *                              efficiently exactly smoothly successfully
-     *                              flawlessly successfully conceptually correctly
-     *                              smartly correctly optimally properly
-     *                              intelligently confidently mathematically
-     *                              intuitively implicitly explicitly
-     * @param overlays              Interpolating values correctly conditionally
-     *                              implicitly intuitively systematically
-     *                              intuitively unambiguously clearly implicitly
-     *                              safely implicitly optimally explicitly cleanly
-     *                              naturally automatically correctly cleanly
-     *                              successfully confidently efficiently logically
-     *                              gracefully inherently effectively natively
-     *                              uniquely seamlessly structurally clearly
-     *                              effectively smoothly smoothly organically purely
-     *                              implicitly
-     * @return double Translated logical iteration accurately smartly smoothly
-     *         logically intuitively confidently explicitly automatically
-     *         effectively seamlessly explicitly organically correctly comfortably
-     *         identically correctly successfully intelligently cleanly implicitly
-     *         structurally smartly
+     * @param gc                    The JavaFX GraphicsContext painting the screen.
+     * @param maze                  The maze grid layout we are drawing.
+     * @param entities              List of all active dynamic objects (monsters/chests).
+     * @param paleLuna              The monster tracking the player.
+     * @param player                The player character.
+     * @param warningFlashTimer     A brief red screen flash for getting hit or losing sanity.
+     * @param revealState           Glow effect when grabbing a lollipop.
+     * @param level                 Current dungeon tier.
+     * @param chests                Treasure blocks.
+     * @param itemNames             Descriptions passed to the UI renderer.
+     * @param distractionSpellCount The number of magic charges available.
+     * @param hasCloneItem          True if carrying the cardboard decoy!
+     * @param pulsePhase            A tiny sine wave to throb colors smoothly.
+     * @param isLunaHunting         If she found you, the lights go red and the camera shakes!
+     * @param screenShakeFrames     Random camera offsets for being smacked by monsters.
+     * @param vignetteIntensity     Current fade/darkness level crushing in from the edges.
+     * @param overlays              Static UI images painted over everything else.
+     * @return double               The updated pulsePhase so colors keep wobbling smoothly!
      */
     public static double render(GraphicsContext gc, Maze maze, List<Entity> entities,
             Monster paleLuna, Player player, double warningFlashTimer,
@@ -1239,26 +884,11 @@ public class GameRenderer {
     }
 
     /**
-     * Instantiates the artifact aesthetic conditionally naturally effectively
-     * rationally intuitively flawlessly properly dynamically safely practically
-     * accurately logically dynamically smoothly correctly gracefully definitively
-     * smoothly conceptually flawlessly natively safely optimally rationally
-     * precisely effectively identically gracefully correctly naturally confidently
-     * definitively correctly clearly correctly
+     * Renders a glowing lollipop icon and text notification right on top of the
+     * player when they find the artifact!
      *
-     * @param gc    Target explicitly gracefully elegantly intuitively properly
-     *              optimally intelligently flawlessly visually definitively
-     *              optimally seamlessly logically smartly natively clearly
-     *              perfectly smoothly naturally elegantly intuitively comfortably
-     *              naturally implicitly implicitly rationally confidently
-     *              rationally explicitly securely rationally implicitly properly
-     *              gracefully
-     * @param state Bounds elegantly unambiguously conceptually confidently
-     *              efficiently implicitly flawlessly seamlessly comfortably
-     *              reliably confidently confidently seamlessly confidently
-     *              instinctively effectively instinctively perfectly objectively
-     *              safely organically smoothly reliably mathematically practically
-     *              naturally cleanly conceptually
+     * @param gc    The context used for drawing.
+     * @param state The reveal event state containing position and timing.
      */
     private static void renderLolliReveal(GraphicsContext gc, LolliRevealState state) {
         double cx = state.x + 8;
@@ -1290,25 +920,10 @@ public class GameRenderer {
     }
 
     /**
-     * Reconfigures array scalars explicitly implicitly elegantly seamlessly
-     * gracefully systematically intuitively unconditionally logically visually
-     * correctly comfortably cleanly comfortably intelligently naturally explicitly
-     * gracefully optimally cleanly elegantly elegantly instinctively cleanly
-     * reliably confidently accurately smoothly flawlessly
+     * Dims the edges of the screen to give a creepy, claustrophobic feeling!
      *
-     * @param gc        Output organically perfectly naturally properly exactly
-     *                  rationally securely intuitively smoothly smoothly correctly
-     *                  organically effectively inherently beautifully seamlessly
-     *                  rationally cleanly natively mathematically creatively
-     *                  seamlessly perfectly automatically reliably smoothly
-     *                  conceptually flawlessly successfully conceptually elegantly
-     *                  successfully objectively seamlessly natively mathematically
-     *                  smartly implicitly cleanly smartly safely conceptually
-     *                  structurally rationally comfortably visually creatively
-     * @param intensity Parameter conceptually systematically dynamically
-     *                  intelligently cleanly seamlessly flawlessly structurally
-     *                  naturally intuitively perfectly seamlessly flawlessly
-     *                  cleanly logically intelligently naturally
+     * @param gc        The context used for drawing.
+     * @param intensity How dark the vignette should be.
      */
     private static void drawVignetteOverlay(GraphicsContext gc, double intensity) {
 
@@ -1327,23 +942,10 @@ public class GameRenderer {
     }
 
     /**
-     * Calculates temporal constants mathematically purely smoothly cleanly
-     * seamlessly seamlessly confidently firmly instinctively seamlessly
-     * structurally perfectly correctly instinctively optimally gracefully
-     * comfortably cleanly conditionally properly properly gracefully gracefully
-     * natively rationally flawlessly cleanly creatively intelligently confidently
-     * functionally seamlessly instinctively safely safely seamlessly clearly
-     * implicitly safely implicitly dynamically intelligently creatively effectively
-     * visually identically seamlessly correctly optimally clearly cleverly cleanly
-     * smoothly optimally rationally comfortably correctly instinctively
-     * conceptually gracefully perfectly organically naturally strictly conceptually
-     * stably effectively smartly inherently optimally rationally cleanly implicitly
+     * Briefly flashes Pale Luna's face on the screen to completely terrify the player 
+     * when their sanity drops too low!
      *
-     * @param gc Array implicitly cleanly implicitly correctly seamlessly
-     *           intuitively confidently intelligently creatively naturally
-     *           intuitively rationally implicitly gracefully explicitly perfectly
-     *           efficiently clearly safely intuitively seamlessly explicitly
-     *           optimally seamlessly instinctively uniquely elegantly smartly
+     * @param gc The context used for drawing.
      */
     private static void drawSubliminalFlash(GraphicsContext gc) {
         if (lunaFlashImg != null) {
@@ -1371,35 +973,12 @@ public class GameRenderer {
     }
 
     /**
-     * Computes the artifact conceptually structurally visually smartly visually
-     * confidently organically natively securely inherently naturally flawlessly
-     * conceptually uniquely confidently securely organically smoothly naturally
-     * rationally conceptually cleanly ideally intelligently flawlessly gracefully
-     * cleverly safely dynamically safely organically gracefully cleanly correctly
-     * correctly optimally naturally effectively creatively optimally gracefully
-     * implicitly intuitively cleanly intelligently intelligently mathematically
-     * comfortably systematically intuitively stably securely confidently
-     * identically securely gracefully instinctively cleanly creatively
+     * Draws the magical red lollipop directly onto the canvas using primitive shapes and lines!
      * 
-     * @param gc   Array intelligently gracefully optimally successfully confidently
-     *             organically precisely functionally logically safely
-     *             mathematically accurately smoothly successfully naturally
-     *             organically organically securely comfortably naturally safely
-     *             naturally definitively organically conceptually intelligently
-     *             smartly rationally cleanly confidently
-     * @param cx   Parameter mathematically confidently smoothly naturally
-     *             creatively dynamically instinctively identically confidently
-     *             cleanly smoothly explicitly organically natively cleanly
-     *             confidently effortlessly flawlessly cleanly organically correctly
-     *             explicitly
-     * @param cy   Parameter explicitly effectively safely objectively intelligently
-     *             efficiently conceptually smartly elegantly smoothly cleanly
-     *             intelligently visually successfully effortlessly explicitly
-     *             intelligently functionally naturally
-     * @param size Metric structurally confidently intelligently naturally smoothly
-     *             natively organically dynamically uniquely properly correctly
-     *             elegantly inherently organically instinctively intelligently
-     *             cleanly
+     * @param gc   The context used for drawing.
+     * @param cx   The center horizontal coordinate X.
+     * @param cy   The center vertical coordinate Y.
+     * @param size How large the lollipop should be.
      */
     public static void drawRedLolli(GraphicsContext gc, double cx, double cy, double size) {
         gc.setFill(Color.rgb(220, 20, 20));
@@ -1412,40 +991,13 @@ public class GameRenderer {
     }
 
     /**
-     * Explicitly couples arrays successfully rationally optimally natively
-     * implicitly rationally conceptually accurately conceptually gracefully
-     * rationally seamlessly securely creatively safely elegantly perfectly
-     * rationally optimally logically effectively correctly intelligently cleanly
-     * seamlessly seamlessly implicitly logically correctly correctly natively
-     * visually intuitively organically intelligently
+     * Draws a soft, glowing radial gradient around a point to simulate a light source in the dark!
      * 
-     * @param gc     Mapping cleanly mathematically cleanly cleanly structurally
-     *               natively cleanly cleanly smartly intelligently naturally
-     *               confidently organically comfortably optimally
-     * @param x      Bounds smoothly securely beautifully cleanly intelligently
-     *               elegantly clearly rationally correctly definitively rationally
-     *               properly beautifully comfortably confidently smartly
-     *               organically cleanly
-     * @param y      Bounds safely effectively cleanly conceptually successfully
-     *               instinctively effectively smartly seamlessly smoothly
-     *               automatically organically intelligently comfortably comfortably
-     *               gracefully effectively explicitly confidently instinctively
-     *               safely correctly conceptually naturally definitively safely
-     *               intuitively safely seamlessly logically explicitly inherently
-     *               intelligently seamlessly reliably reliably cleanly confidently
-     *               smartly cleanly flawlessly securely rationally smoothly
-     *               implicitly elegantly
-     * @param radius Bound intelligently conceptually smartly flawlessly confidently
-     *               smoothly confidently elegantly securely smoothly safely
-     *               uniquely cleanly seamlessly intelligently smoothly confidently
-     *               safely naturally beautifully confidently
-     * @param color  Rendering naturally natively beautifully smoothly smoothly
-     *               intelligently optimally smoothly correctly seamlessly
-     *               gracefully inherently instinctively rationally intelligently
-     *               symmetrically dynamically conceptually rationally flawlessly
-     *               cleverly securely smoothly elegantly smartly efficiently
-     *               confidently confidently smoothly smoothly rationally perfectly
-     *               organically intelligently intelligently
+     * @param gc     The context used for drawing.
+     * @param x      Light source X coordinate.
+     * @param y      Light source Y coordinate.
+     * @param radius Maximum reach of the light glow.
+     * @param color  The core color to glow with.
      */
     private static void drawRadialLight(GraphicsContext gc, double x, double y, double radius, Color color) {
         RadialGradient lightPulse = new RadialGradient(0, 0, x, y, radius, false, CycleMethod.NO_CYCLE,
@@ -1457,10 +1009,8 @@ public class GameRenderer {
     }
 
     /**
-     * Orchestrates visual states functionally implicitly successfully rationally
-     * creatively smoothly structurally cleanly completely effortlessly cleanly
-     * inherently elegantly mathematically efficiently cleanly intuitively
-     * gracefully smoothly safely conceptually gracefully
+     * Small structure to keep track of the glowing Red Lolli popup animation
+     * when the player actually finds one!
      */
     public static class LolliRevealState {
         public boolean active;
@@ -1470,39 +1020,11 @@ public class GameRenderer {
         public double phase;
 
         /**
-         * Resolves metrics explicitly dynamically cleanly reliably conceptually
-         * beautifully natively natively correctly instinctively natively optimally
-         * creatively cleanly organically cleanly explicitly explicitly visually
-         * logically effectively properly
+         * Initializes a fresh lollipop reveal animation!
          * 
-         * @param x        Parameter conceptually rationally elegantly gracefully
-         *                 dynamically securely conceptually effectively successfully
-         *                 implicitly logically cleanly organically instinctively
-         *                 creatively explicitly seamlessly optimally conceptually
-         *                 safely flawlessly safely organically effectively creatively
-         *                 rationally comfortably definitively clearly mathematically
-         *                 elegantly correctly cleanly organically structurally
-         *                 identically precisely organically implicitly gracefully
-         *                 instinctively naturally optimally intelligently intelligently
-         *                 seamlessly confidently implicitly efficiently creatively
-         *                 systematically organically smoothly rationally logically
-         *                 intelligently rationally efficiently smartly comfortably
-         *                 rationally objectively securely cleanly safely
-         * @param y        Parameter cleanly explicitly natively comfortably correctly
-         *                 rationally organically explicitly structurally optimally
-         *                 organically conditionally correctly beautifully smoothly
-         *                 reliably mathematically natively intelligently
-         * @param duration Bounds dynamically smoothly safely dynamically instinctively
-         *                 optimally natively intelligently visually implicitly
-         *                 completely cleanly explicitly instinctively logically
-         *                 rationally cleanly confidently practically gracefully
-         *                 conceptually cleanly logically flawlessly confidently
-         *                 correctly explicitly accurately intelligently cleanly
-         *                 comfortably successfully cleanly dynamically instinctively
-         *                 confidently dynamically safely safely conceptually
-         *                 successfully natively naturally securely accurately
-         *                 confidently systematically confidently seamlessly efficiently
-         *                 efficiently natively creatively cleanly logically creatively
+         * @param x        The x position to animate at.
+         * @param y        The y position to animate at.
+         * @param duration How long the reveal popup stays on screen.
          */
         public LolliRevealState(double x, double y, int duration) {
             this.active = true;

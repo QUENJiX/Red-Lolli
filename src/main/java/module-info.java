@@ -1,8 +1,6 @@
 /**
- * Development History:
- * Phase 1, Week 1, Day 1 - Module structure initialized.
- * Defines the core Java Modules required by Escape Pale Luna and exports
- * internal domains to the JavaFX graphics/reflection engines.
+ * Tells Java which libraries Escape Pale Luna needs to run, 
+ * especially JavaFX for drawing our graphics and playing sound!
  */
 module com.nsu.cse215l.redlolli.redlolli {
     requires transitive javafx.controls;

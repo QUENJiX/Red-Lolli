@@ -1,21 +1,18 @@
 package com.nsu.cse215l.redlolli.redlolli.core;
 
 /**
- * Operates as a systemic architectural contract defining polymorphic physical
- * boundary structures universally.
- * Systemically delegates geometric boundary mappings ensuring absolute
- * constraint implementations across diverse environmental entities linearly.
+ * Represents an object in the game world that can bump into other objects.
+ * Anything that implements this interface has a physical boundary and can
+ * trigger collisions.
  */
 public interface Collidable {
 
     /**
-     * Acquires the immutable Axis-Aligned Bounding Box (AABB) mapping spatial
-     * geometry uniformly.
-     * Systemically isolates hardware-accelerated overlaps through strictly
-     * algebraic boundary coordinates natively.
+     * Gets the boundary box (hitbox) for this object.
+     * We use this to figure out if this object is overlapping or crashing into
+     * anything else on the screen.
      * 
-     * @return Hitbox2D Core spatial abstraction validating explicit deterministic
-     *         intersections geometrically.
+     * @return The 2D hitbox representing the object's physical space.
      */
     Hitbox2D getHitbox();
 }

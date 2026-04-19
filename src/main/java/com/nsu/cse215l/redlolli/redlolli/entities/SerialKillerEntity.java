@@ -5,12 +5,9 @@ import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
- * Operates as the formidable tracking antagonist deployed structurally in
- * advanced environments.
- * Utilizes continuous deterministic Breath-First Search pathfinding for
- * unyielding target acquisition.
- * Features explicitly decoupled geometry mechanics capable of interpreting
- * interactive illusions (i.e. CardboardClone).
+ * An advanced tracking enemy that relentlessly hunts the player down.
+ * It uses the same Breadth-First pathfinding as the monster to chase the player,
+ * but it can also be tricked into attacking a cardboard clone!
  */
 public class SerialKillerEntity extends Entity implements Collidable {
 
@@ -29,21 +26,18 @@ public class SerialKillerEntity extends Entity implements Collidable {
     private double timeDelta = 1.0;
 
     /**
-     * Initializes the antagonist defining localized matrix limits and coordinate
-     * allocations natively.
+     * Spawns the killer at a specific set of coordinates on the map.
      * 
-     * @param x Arbitrary longitudinal geometric center.
-     * @param y Arbitrary latitudinal geometric center.
+     * @param x The starting horizontal position.
+     * @param y The starting vertical position.
      */
     public SerialKillerEntity(double x, double y) {
         super(x, y, 24.0);
     }
 
     /**
-     * Governs internal chronological simulations overriding default temporal
-     * iteration mechanisms universally.
-     * Integrates hardware-agnostic delta-time verifications rendering deterministic
-     * outcomes invariant of frame execution.
+     * Ticks the killer's animation forward and updates any distraction timers.
+     * His movement logic is handled separately by the updateChase method.
      */
     @Override
     public void update() {
@@ -80,17 +74,12 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     /**
-     * Solves strict geographic traversal metrics mathematically dictating next-hop
-     * node allocations unilaterally.
-     * Reconciles procedural sub-pixel translations mitigating collision clipping
-     * against cardinal node boundaries intrinsically.
+     * Finds the shortest path to the target (usually the player) and moves a small amount towards them.
+     * Doesn't let the killer get stuck on walls thanks to carefully rounding movement.
      * 
-     * @param targetX Proximate Cartesian endpoint explicitly generating horizontal
-     *                vector derivations natively.
-     * @param targetY Proximate Cartesian endpoint explicitly generating vertical
-     *                vector derivations natively.
-     * @param maze    Source abstraction querying absolute collision boundaries
-     *                statically mapped sequentially.
+     * @param targetX The target's X position.
+     * @param targetY The target's Y position.
+     * @param maze    The map to ask for pathfinding directions.
      */
     public void updateChase(double targetX, double targetY, Maze maze) {
         // Assert immediate termination conditionals validating dormant states and
@@ -174,11 +163,9 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     /**
-     * Resolves physical limits instantiating unmitigable boundaries mathematically
-     * mapped globally.
+     * Gets a rectangle containing the killer's current space on the map for collisions.
      * 
-     * @return Hitbox2D Valid geometric intersection array evaluating continuous
-     *         interaction queries independently.
+     * @return A Hitbox2D representing the killer.
      */
     @Override
     public Hitbox2D getHitbox() {
@@ -186,29 +173,26 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     /**
-     * Signals active pursuit protocols confirming deterministic AI awakening
-     * fundamentally.
+     * Checks if the killer has woken up and started hunting.
      * 
-     * @return boolean True extracting awakened traversal verification entirely.
+     * @return True if the killer is active.
      */
     public boolean isActive() {
         return active;
     }
 
     /**
-     * Alters absolute traversal triggers assigning unyielding pursuit execution
-     * linearly.
+     * Tells the killer to wake up and start hunting, or fall asleep and stop moving.
      * 
-     * @param active Explicit algorithmic execution verifications externally
-     *               injected.
+     * @param active True if he should hunt.
      */
     public void setActive(boolean active) {
         this.active = active;
     }
 
     /**
-     * Redirects internal trajectory vectors enforcing temporary suspension
-     * simulating geometric interaction natively.
+     * Fools the killer into thinking a decoy is the player and distracts him for 
+     * a massive chunk of time!
      */
     public void startDecoyAttack() {
         this.attackingDecoy = true;
@@ -216,53 +200,46 @@ public class SerialKillerEntity extends Entity implements Collidable {
     }
 
     /**
-     * Queries internal logic verifying suspension iterations governing synthetic
-     * pursuit delays externally identical.
+     * Checks if the killer is busy stabbing a piece of cardboard.
      * 
-     * @return boolean True identifying absolute tracking interruptions natively.
+     * @return True if he's currently distracted by the decoy.
      */
     public boolean isAttackingDecoy() {
         return attackingDecoy;
     }
 
     /**
-     * Quantifies residual AI latencies communicating suspension magnitudes
-     * explicitly natively.
+     * Figures out exactly how much longer the killer will waste time fighting the decoy.
      * 
-     * @return int Arbitrary remaining ticks preceding target reacquisition
-     *         execution sequentially.
+     * @return The remaining wait ticks before he goes back to hunting the player.
      */
     public int getDecoyAttackFrames() {
         return (int) decoyAttackFrames;
     }
 
     /**
-     * Ascertains explicitly mapped rendering coordinates translating absolute
-     * coordinate limits intrinsically.
+     * Communicates which way the killer is facing to draw his sprite correctly.
      * 
-     * @return boolean True communicating negative horizontal matrices natively
-     *         mapped.
+     * @return True if he's walking entirely left.
      */
     public boolean isFacingLeft() {
         return facingLeft;
     }
 
     /**
-     * Discloses explicit integer alignments calculating transient cosmetic
-     * abstractions externally mapped.
+     * Retrieves the current animation frame so the screen renderer 
+     * knows which picture of the killer to display right now.
      * 
-     * @return int Linear animation value natively evaluated structurally.
+     * @return An integer representing a single sprite frame.
      */
     public int getCurrentFrame() {
         return currentFrame;
     }
 
     /**
-     * Transmits precise spatial scales communicating identical logic bounds
-     * externally evaluated mathematically.
+     * Gets the current logical or pixel size of the tracking entity.
      * 
-     * @return double Core scalar interpreting dimensional interaction thresholds
-     *         identically.
+     * @return The 2D size of the killer.
      */
     public double getSize() {
         return size;

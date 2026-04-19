@@ -7,12 +7,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Operates as the centralized architectural registry encapsulating all dynamic
- * physical components natively.
- * Systemically abstracts localized lifecycles and instantiation mechanics,
- * orchestrating discrete collections
- * (e.g., Guards, Torches, Chests) to algorithmically streamline iterating
- * execution frames implicitly.
+ * Acts as the master list for everything moving or interactive in the game.
+ * Tracks the player, monsters, chests, items, and torches so other systems, 
+ * like drawing or collisions, can loop through them easily without having to 
+ * worry about where they are physically stored.
  */
 public class EntityManager {
 
@@ -27,10 +25,8 @@ public class EntityManager {
     private final List<TorchEntity> torches = new ArrayList<>();
 
     /**
-     * Purges all active entity mappings forcibly reinitializing array allocations
-     * sequentially definitively.
-     * Prevents phantom rendering artifacts persisting between abstract geographic
-     * transitions structurally.
+     * Wipes the entire screen clean of items, monsters, and characters.
+     * Perfect for getting ready to load the next level!
      */
     public void clear() {
         entities.clear();
@@ -43,34 +39,31 @@ public class EntityManager {
     }
 
     /**
-     * Parses the architectural grid strictly injecting adversarial and interactable
-     * actors programmatically statically.
-     * Evaluates topological arrays translating dimensional indices into
-     * instantiated physical geometries optimally cleanly.
+     * Spawns all characters and interactable objects onto the map according to 
+     * exactly where the level's map file says they should be. It can also spawn 
+     * harder monsters or better items on later levels!
      *
-     * @param maze         The fundamental map abstraction denoting Cartesian spawn
-     *                     nodes implicitly securely.
-     * @param currentLevel The numerical scalar deriving active escalating
-     *                     difficulty mappings definitively.
+     * @param maze         The structural grid the game uses to place tiles.
+     * @param currentLevel The number of the current stage, making enemies harder at high numbers.
      */
     public void spawnEntities(Maze maze, int currentLevel) {
         int[][] grid = maze.getMapGrid();
 
-        // Isolate structural coordinates to dictate instantiation locations post-scan
-        // natively confidently optimally
+        // Keep track of specific special spots like chests and characters mapped 
+        // to spawn positions.
         List<int[]> emptyChestTiles = new ArrayList<>();
         List<int[]> lolliChestTiles = new ArrayList<>();
         List<int[]> torchTiles = new ArrayList<>();
         int lunaRow = -1, lunaCol = -1;
 
-        // Traverse the coordinate array sequentially to ascertain the environment
-        // layout rigorously optimally stably
+        // Loop through all points in the level to find numbers corresponding to 
+        // monsters and items.
         for (int row = 0; row < grid.length; row++) {
             for (int col = 0; col < grid[row].length; col++) {
                 int tile = grid[row][col];
 
-                // Route tile mappings conditionally depending on entity designations safely
-                // uniquely
+                // Determine what exactly each number means. Usually numbers represent empty boxes
+                // or specific enemy types.
                 if (tile == 2) {
                     emptyChestTiles.add(new int[] { row, col });
                     grid[row][col] = 0;
@@ -83,14 +76,13 @@ public class EntityManager {
                     grid[row][col] = 0;
                 } else if (tile == 8) {
                     torchTiles.add(new int[] { row, col });
-                    // Alter the interactive element back into an obstacle to restrict traversal
-                    // structurally solidly
+                    // Torches are actually physical walls, so turn the tile into a solid block!
                     grid[row][col] = 1;
                 } else if (tile == 9) {
                     int erRow = -1, erCol = -1;
 
-                    // Cross-reference coordinate distance to establish dynamic patrol nodes
-                    // natively algorithmically logically
+                    // Tell the guard where an escape room is, so they can block it until we get
+                    // their item.
                     List<int[]> escapeRooms = maze.getTilesOfType(6);
                     double minDist = Double.MAX_VALUE;
                     for (int[] er : escapeRooms) {
@@ -103,8 +95,8 @@ public class EntityManager {
                     }
                     GuardEntity guard = null;
 
-                    // Instantiate adversaries correlating to progressive difficulty intervals
-                    // seamlessly correctly properly
+                    // Swap out the basic bat for tougher enemies like cobras and centipedes 
+                    // when you progress in the game.
                     if (currentLevel == 1) {
                         guard = new GuardEntity(col * Maze.TILE_SIZE + 10, row * Maze.TILE_SIZE + Maze.Y_OFFSET + 10,
                                 GuardEntity.Type.BAT, erRow, erCol);
@@ -121,8 +113,7 @@ public class EntityManager {
                     grid[row][col] = 0;
                 } else if (tile == 10) {
 
-                    // Activate terminal threat logic isolated distinctly to advanced progression
-                    // unconditionally correctly successfully
+                    // Oh boy. He's here. Only load the serial killer on level 3!
                     if (currentLevel == 3) {
                         serialKiller = new SerialKillerEntity(col * Maze.TILE_SIZE + 6,
                                 row * Maze.TILE_SIZE + Maze.Y_OFFSET + 6);
@@ -132,13 +123,12 @@ public class EntityManager {
             }
         }
 
-        // Construct interactive static environments mapping collected coordinates
-        // cleanly naturally natively inherently optimally
+        // Put the boxes in the locations we marked out earlier. We even add a 
+        // cardboard clone tool randomly if the player doesn't already have one.
         for (int[] pos : emptyChestTiles) {
             Item.ContentType type = Item.ContentType.EMPTY;
 
-            // Ensure unique tactical deployment items exist natively on the map layout once
-            // natively dynamically smartly rationally securely
+            // Make sure we only give them one decoy box per stage.
             if (currentLevel == 3 && !containsContent(Item.ContentType.CLONE_DECOY)) {
                 type = Item.ContentType.CLONE_DECOY;
             }
@@ -159,8 +149,7 @@ public class EntityManager {
             entities.add(torch);
         }
 
-        // Central algorithmic antagonist deployment parameter securely sequentially
-        // flawlessly mathematically inherently instinctively cleanly
+        // Deploy the monster at her special spawning point on the level map.
         if (lunaRow >= 0) {
             paleLuna = new Monster(lunaCol * Maze.TILE_SIZE + 7.5, lunaRow * Maze.TILE_SIZE + Maze.Y_OFFSET + 7.5);
             entities.add(paleLuna);
@@ -176,213 +165,129 @@ public class EntityManager {
     }
 
     /**
-     * Determines empirically whether specified item mappings exist stationed
-     * natively inside allocated container sequences.
-     * Prevents overlapping logic instantiations uniquely evaluating array
-     * dependencies dynamically implicitly successfully safely functionally.
+     * Allows us to quickly check if a certain type of item has already 
+     * been hidden inside a chest somewhere. Super useful for unique items!
      *
-     * @param type The explicitly targeted functional classification bounds
-     *             validating identical allocations.
-     * @return boolean True extracting exact match logic verifying contained
-     *         presence positively natively rationally perfectly efficiently
-     *         explicitly.
+     * @param type The specific type of content we're wondering about.
+     * @return True if another chest with this identical item already exists.
      */
     private boolean containsContent(Item.ContentType type) {
         return chests.stream().anyMatch(c -> c.getContentType() == type);
     }
 
     /**
-     * Incorporates singular dynamic components into execution iteration loops
-     * structurally correctly effectively dynamically cleanly successfully safely
-     * natively.
+     * Inserts any normal entity into the tracking lists without making a fuss.
+     * Often used to load simple objects.
      *
-     * @param entity Inherited geometric array evaluating physical presence
-     *               objectively securely natively firmly confidently natively
-     *               reliably logically smoothly.
+     * @param entity The living or static puzzle piece you're dropping into the world.
      */
     public void addEntity(Entity entity) {
         entities.add(entity);
     }
 
     /**
-     * Eliminates physical constraints entirely from localized execution logic
-     * conditionally implicitly creatively seamlessly definitively uniquely
-     * confidently flawlessly clearly intuitively correctly smoothly.
+     * Wipes a specific character or object completely off the map.
+     * Used when monsters die or items get scavenged!
      *
-     * @param entity Inherited spatial vector definitively purged algorithmically
-     *               cleanly creatively efficiently practically natively properly
-     *               organically implicitly successfully naturally safely securely
-     *               cleanly properly seamlessly mathematically cleanly naturally
-     *               smartly gracefully objectively.
+     * @param entity The exact character or object looking to be deleted.
      */
     public void removeEntity(Entity entity) {
         entities.remove(entity);
     }
 
     /**
-     * Retrieves the structural protagonist entity mapping internal user inputs
-     * geometrically linearly properly successfully automatically clearly
-     * unambiguously exclusively logically gracefully safely effectively optimally
-     * predictably purely naturally efficiently naturally accurately.
+     * Gets direct access to the main character doing the exploring!
      *
-     * @return Player Extracted operational node natively bound dynamically
-     *         accurately confidently intuitively organically logically successfully
-     *         systematically seamlessly.
+     * @return The Player object representing the user.
      */
     public Player getPlayer() {
         return player;
     }
 
     /**
-     * Reallocates localized interaction proxies dictating central physics
-     * computations optimally uniquely flawlessly conceptually instinctively
-     * mathematically systematically dynamically logically creatively systematically
-     * structurally structurally clearly correctly implicitly natively effectively
-     * optimally safely correctly.
+     * Plugs the user's new character into the master tracker.
      *
-     * @param player Formulated logical protagonist node exclusively intelligently
-     *               successfully gracefully natively elegantly exactly reliably
-     *               safely correctly properly creatively smoothly organically
-     *               flawlessly accurately optimally cleanly rationally
-     *               unambiguously reliably
+     * @param player The shiny new Player object being instantiated.
      */
     public void setPlayer(Player player) {
         this.player = player;
     }
 
     /**
-     * Isolates algorithmic traversal nodes instantiating dominant pursuit matrices
-     * unconditionally natively functionally implicitly naturally creatively cleanly
-     * smoothly conceptually intelligently instinctively creatively intelligently.
+     * Returns the main antagonist of the entire game so that 
+     * systems can figure out where she is and what she's screaming about.
      *
-     * @return Monster Implicated predatory geometric reference conditionally purely
-     *         perfectly systematically intuitively effectively uniquely gracefully
-     *         smoothly creatively logically successfully effectively correctly
-     *         confidently intelligently optimally explicitly systematically cleanly
+     * @return The Monster affectionately known as Pale Luna.
      */
     public Monster getPaleLuna() {
         return paleLuna;
     }
 
     /**
-     * Isolates secondary procedural tracker algorithms natively mapped securely
-     * organically natively dynamically correctly successfully conceptually
-     * effectively seamlessly inherently optimally confidently intelligently
-     * natively organically gracefully efficiently.
+     * Checks up on the optional serial killer antagonist introduced 
+     * in the latest stages.
      *
-     * @return SerialKillerEntity Structured execution loop objectively sequentially
-     *         implicitly mathematically conditionally cleanly creatively inherently
-     *         intelligently cleanly naturally conceptually successfully seamlessly
-     *         natively optimally structurally intelligently cleanly reliably
+     * @return The SerialKillerEntity hunting the player.
      */
     public SerialKillerEntity getSerialKiller() {
         return serialKiller;
     }
 
     /**
-     * Evaluates transient defensive geometries systematically shielding user inputs
-     * unconditionally structurally brilliantly neatly successfully efficiently
-     * definitively uniquely correctly creatively safely practically safely sensibly
-     * mathematically explicitly perfectly intuitively.
+     * Provides access to the fake cardboard cut-out 
+     * if the player placed one to trick monsters!
      *
-     * @return CardboardClone Explicit defensive spatial map mathematically
-     *         organically confidently instinctively clearly flawlessly natively
-     *         naturally creatively smoothly successfully confidently organically
-     *         smoothly efficiently logically natively dynamically optimally
-     *         intelligently intelligently intelligently safely securely efficiently
+     * @return The currently active CardboardClone, or null if none 
+     *         are deployed.
      */
     public CardboardClone getCloneDecoy() {
         return cloneDecoy;
     }
 
     /**
-     * Alters transient algorithmic illusions forcefully executing topological
-     * bounds reliably rationally properly objectively smartly implicitly cleanly
-     * structurally cleanly reliably seamlessly implicitly implicitly confidently
-     * efficiently effectively automatically logically correctly precisely
-     * organically logically naturally
+     * Locks the deployed decoy into the tracker so all monsters will 
+     * look at it instead.
      *
-     * @param decoy Instantiated geometric surrogate practically comfortably
-     *              reliably explicitly correctly organically naturally smartly
-     *              safely intelligently cleanly naturally confidently functionally
-     *              safely cleanly successfully intuitively mathematically
-     *              explicitly optimally comfortably perfectly systematically
-     *              securely conceptually securely rationally
+     * @param decoy The new CardboardClone being placed on the floor down.
      */
     public void setCloneDecoy(CardboardClone decoy) {
         this.cloneDecoy = decoy;
     }
 
     /**
-     * Formats identical iteration arrays generating read-only sequences
-     * functionally exactly gracefully cleanly smoothly optimally intelligently
-     * safely efficiently uniquely cleanly safely gracefully smoothly naturally
-     * smartly rationally implicitly effectively inherently logically definitively
-     * effectively rationally completely
+     * Gets a complete list of everything that exists right now.
+     * Returns it safely so no one accidentally breaks the list!
      *
-     * @return List The structurally verified immutable iteration array optimally
-     *         cleanly natively reliably intelligently sequentially natively
-     *         confidently safely seamlessly cleanly logically securely smoothly
-     *         smartly instinctively objectively explicitly securely natively
+     * @return An unmodifiable list of all active game Entities.
      */
     public List<Entity> getEntities() {
         return Collections.unmodifiableList(entities);
     }
 
     /**
-     * Formulates restricted coordinate matrices exposing localized interactable
-     * entities natively organically gracefully effectively smoothly systematically
-     * successfully safely smoothly structurally safely optimally effectively
-     * naturally intuitively intuitively securely implicitly accurately creatively
-     * intelligently correctly rationally creatively reliably securely flawlessly
-     * cleanly instinctively.
+     * Spits out a ready-to-read list of all lootable treasure boxes.
      *
-     * @return List The geometrically static unmodified bounds unconditionally
-     *         safely correctly efficiently naturally explicitly natively flawlessly
-     *         mathematically functionally natively cleanly smartly effectively
-     *         intelligently logically perfectly automatically elegantly properly
-     *         smoothly correctly cleanly gracefully properly definitively smartly
-     *         perfectly inherently logically seamlessly flawlessly smoothly
-     *         seamlessly elegantly successfully creatively optimally implicitly
-     *         definitively creatively organically successfully automatically
-     *         logically cleanly creatively precisely confidently explicitly
-     *         correctly definitively intuitively objectively natively gracefully
-     *         effectively seamlessly
+     * @return An unmodifiable list of Chests (Items) waiting to be opened.
      */
     public List<Item> getChests() {
         return Collections.unmodifiableList(chests);
     }
 
     /**
-     * Extrapolates constrained array nodes verifying hazardous boundaries
-     * successfully implicitly securely structurally clearly natively creatively
-     * optimally clearly safely safely confidently gracefully instinctively reliably
-     * definitively automatically intuitively successfully
+     * Gives you all the smaller, stationed enemy guards in the level 
+     * (like bats and snakes) so collision detectors can check if you stepped on them.
      *
-     * @return List The strictly bound array iterating stationary execution nodes
-     *         dynamically perfectly cleverly cleanly confidently structurally
-     *         confidently effectively efficiently practically natively smoothly
-     *         naturally flawlessly securely conditionally cleverly purely elegantly
+     * @return An unmodifiable list of standard Guards.
      */
     public List<GuardEntity> getGuards() {
         return Collections.unmodifiableList(guards);
     }
 
     /**
-     * Encapsulates static geometric luminaries providing strictly decoupled
-     * aesthetic markers naturally mathematically natively explicitly cleanly
-     * comfortably naturally cleanly systematically optimally organically
-     * successfully effectively precisely flawlessly instinctively flawlessly
-     * creatively effortlessly comfortably inherently purely gracefully smartly
-     * seamlessly
+     * Tells the lighting system where all the warm, glowing torches 
+     * are scattered around.
      *
-     * @return List The strictly constrained bounding matrix encapsulating fixed
-     *         environment lights perfectly automatically safely gracefully
-     *         explicitly flawlessly beautifully organically inherently successfully
-     *         definitively predictably smoothly organically uniquely reliably
-     *         mathematically securely organically reliably correctly structurally
-     *         optimally cleverly natively functionally securely inherently
-     *         elegantly cleanly reliably
+     * @return An unmodifiable list of Torch objects nailed to the walls.
      */
     public List<TorchEntity> getTorches() {
         return Collections.unmodifiableList(torches);

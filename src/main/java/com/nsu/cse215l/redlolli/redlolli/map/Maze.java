@@ -11,24 +11,22 @@ import java.io.InputStream;
 import java.util.Queue;
 
 /**
- * Operates as the foundational topological infrastructure interpreting scalar
- * localized Cartesian nodes intrinsically.
- * Integrates algorithmic geometric parsers mapping external quantitative CSV
- * definitions symmetrically into transient simulation logic mathematically.
- * Systemically delegates localized bounds constraints overriding generalized
- * intersections guaranteeing deterministic planar tracking implicitly.
+ * The core map system that reads level designs from CSV files and turns them
+ * into a functional grid of walls, floors, and points of interest. 
+ * It manages where players can walk, handles pathfinding, and keeps track 
+ * of dynamic features like unlocking escape rooms.
  */
 public class Maze {
 
     /**
-     * Defines the absolute systemic cellular boundary multiplier executing global
-     * rendering translations seamlessly.
+     * The size of each tile in pixels. Used to calculate visual positions
+     * from the raw map grid.
      */
     public static final double TILE_SIZE = 40.0;
 
     /**
-     * Dictates the persistent vertical margin displacing structural coordinate
-     * limits mapping visual overlay alignments.
+     * The top margin added to the map so the HUD doesn't cover up
+     * the top row of tiles.
      */
     public static final double Y_OFFSET = 50.0;
 
@@ -38,11 +36,10 @@ public class Maze {
     private int levelTheme = 1;
 
     /**
-     * Resolves localized aesthetic configuration definitions propagating external
-     * visualization modifiers natively.
+     * Finds out which visual theme (like dungeon or forest) the current
+     * map is using so the renderer knows what textures to load.
      * 
-     * @return int Sequential integer defining predefined architectural style
-     *         components intuitively.
+     * @return An integer representing the theme ID.
      */
     public int getLevelTheme() {
         return levelTheme;
@@ -51,15 +48,11 @@ public class Maze {
     private boolean[] escapeRoomOpen;
 
     /**
-     * Re-evaluates transient structural access thresholds measuring relative
-     * spatial constraints identically mapped automatically.
-     * Continuously cross-references exogenous entity penetration validating
-     * internal boundary transitions logically.
+     * Checks if the player is standing close enough to an escape room
+     * door to force it open.
      * 
-     * @param playerX Absolute continuous lateral position isolating spatial
-     *                location definitively.
-     * @param playerY Absolute continuous longitudinal position isolating spatial
-     *                location definitively.
+     * @param playerX The player's horizontal pixel position.
+     * @param playerY The player's vertical pixel position.
      */
     public void updateEscapeRoomState(double playerX, double playerY) {
         if (mapGrid == null)
@@ -88,15 +81,11 @@ public class Maze {
     }
 
     /**
-     * Interrogates continuous sequential state registers validating mapped doorway
-     * logic states precisely natively.
+     * Tells you if a specific escape room door has been propped open.
      * 
-     * @param row Grid latitudinal node referencing isolated door coordinates
-     *            abstractly.
-     * @param col Grid longitudinal node referencing isolated door coordinates
-     *            abstractly.
-     * @return boolean True dictating active penetration configurations mitigating
-     *         spatial restriction limits seamlessly.
+     * @param row The row where the door is supposedly located.
+     * @param col The column where the door is supposedly located.
+     * @return True if the door should be visually and physically open.
      */
     public boolean isEscapeRoomOpen(int row, int col) {
         if (escapeRoomOpen == null)
@@ -111,24 +100,20 @@ public class Maze {
     }
 
     /**
-     * Constructs spatial translation configurations directly loading mapping
-     * matrices iteratively algebraically.
+     * Creates a map by reading the CSV file from your project resources.
      * 
-     * @param csvFilePath Direct static directory bound delegating spatial
-     *                    deserialization sequentially.
+     * @param csvFilePath The filepath to the level design file.
      */
     public Maze(String csvFilePath) {
         loadMapFromCSV(csvFilePath);
     }
 
     /**
-     * Constructs spatial translation configurations overriding dynamic aesthetic
-     * integer styles seamlessly.
+     * Creates a map by reading the CSV file and overrides its visual look
+     * with the specified theme.
      * 
-     * @param csvFilePath Direct static directory bound delegating spatial
-     *                    deserialization sequentially.
-     * @param levelTheme  Integer scaling parameter translating visual parameters
-     *                    linearly natively.
+     * @param csvFilePath The filepath to the level design file.
+     * @param levelTheme  The graphics theme ID you want the game to draw.
      */
     public Maze(String csvFilePath, int levelTheme) {
         this.levelTheme = levelTheme;
@@ -136,13 +121,11 @@ public class Maze {
     }
 
     /**
-     * Executes robust InputStream parsing interpreting defined structural constants
-     * abstractly mapping cellular arrays explicitly.
-     * Mitigates unresolvable deserializations mathematically injecting fundamental
-     * emergency scalar buffers identically independently.
+     * The actual worker method that parses out commas and numbers from the CSV file
+     * and drops them into a 2D integer array. If it can't find your file, it builds
+     * a tiny fallback box so the game doesn't crash into a fiery explosion.
      * 
-     * @param path Absolute memory definition correlating quantitative logic schemas
-     *             abstractly.
+     * @param path The filepath string mapped directly to your assets folder.
      */
     private void loadMapFromCSV(String path) {
         List<int[]> rowList = new ArrayList<>();
@@ -150,8 +133,8 @@ public class Maze {
         try {
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) {
-                // Instantiates fail-safe default planar configurations averting immediate
-                // runtime logic regressions entirely
+                // Oh no! File is missing. Making a tiny 6x5 fallback room so 
+                // gameplay can at least technically boot.
                 mapGrid = new int[][] {
                         { 1, 1, 1, 1, 1, 1 },
                         { 1, 0, 0, 0, 2, 1 },
@@ -184,8 +167,8 @@ public class Maze {
                         playerSpawnRow = r;
                         playerSpawnCol = c;
 
-                        // Converts initial scalar origins into decoupled static topological paths
-                        // linearly
+                        // Swap the spawn tile out for a normal floor tile (0) 
+                        // now that we've recorded where it is.
                         mapGrid[r][c] = 0;
                     }
                 }
@@ -199,15 +182,11 @@ public class Maze {
     }
 
     /**
-     * Orchestrates structural bounding evaluations extrapolating continuous Hitbox
-     * coordinates onto discrete planar scales directly.
-     * Prevents continuous exogenous movements verifying scalar wall penetrations
-     * mathematically seamlessly.
+     * Checks if a specific hitbox is crashing into any walls (tile logic ID `1`)
+     * on the map grid. Helps entities stop moving if they smack into solid rock.
      * 
-     * @param nextHitbox Abstract Cartesian geometry evaluating anticipated
-     *                   structural shifts immediately statically.
-     * @return boolean True confirming geometric clipping structurally impeding
-     *         progressive translation intrinsically.
+     * @param nextHitbox The bounds of the object to test in world coordinates.
+     * @return True if the box overlaps with least one solid wall tile.
      */
     public boolean isWallCollision(Hitbox2D nextHitbox) {
         if (mapGrid == null)
@@ -232,13 +211,11 @@ public class Maze {
     }
 
     /**
-     * Resolves distributed multipoint boundary arrays confirming explicit
-     * intersections spanning escape thresholds analytically.
+     * Quickly validates if a specific rect is intersecting with an escape
+     * room tile (ID `6`) by testing five tiny points inside of its hitbox.
      * 
-     * @param hitbox Immutable geometry evaluated against designated structural
-     *               topological matrices inherently.
-     * @return boolean True strictly isolating verified geometric topological
-     *         engagements identically explicitly.
+     * @param hitbox The entity's hitbox to check.
+     * @return True if the entity is brushing up against an escape room.
      */
     public boolean isEscapeRoom(Hitbox2D hitbox) {
         if (mapGrid == null)
@@ -247,8 +224,8 @@ public class Maze {
         double cx = (hitbox.getMinX() + hitbox.getMaxX()) / 2;
         double cy = (hitbox.getMinY() + hitbox.getMaxY()) / 2;
 
-        // Employs static multipoint radial extrapolation circumventing dynamic memory
-        // fragmentation continuously natively
+        // Five-point validation: Center, and top, bottom, left, and right just 
+        // inside the edge. This catches overlaps nicely.
         if (isPointEscapeRoom(cx, cy) ||
                 isPointEscapeRoom(hitbox.getMinX() + 2, cy) ||
                 isPointEscapeRoom(hitbox.getMaxX() - 2, cy) ||
@@ -268,13 +245,12 @@ public class Maze {
     }
 
     /**
-     * Interpolates closest accessible Cartesian coordinates evaluating cardinal
-     * proximity surrounding deterministic nodes recursively.
+     * Takes an object's current position and nudges it to the closest safe 
+     * floor tile around it. Really useful for getting players or items out 
+     * of walls they accidentally clipped into.
      * 
-     * @param hitbox Evaluated region demanding spatial validation organically
-     *               sequentially.
-     * @return int[] Definitive grid coordinates establishing resolved exterior
-     *         traversal positions mapping identically.
+     * @param hitbox The hitbox of the object you're trying to safely relocate.
+     * @return An integer array [row, col] giving the safest grid coordinates to spawn/move them.
      */
     public int[] findSafeRoomDoor(Hitbox2D hitbox) {
         if (mapGrid == null)
@@ -309,21 +285,16 @@ public class Maze {
     }
 
     /**
-     * Executes algorithmic Breadth-First traversal matrices extrapolating optimal
-     * discrete grid routing recursively.
-     * Calculates immutable sequential steps averting abstract environmental
-     * impediments deterministically globally.
+     * An implementation of Breadth-First Search (BFS) to find the shortest path
+     * from one tile to another. Useful for enemies figuring out how to chase 
+     * the player around corners without getting stuck.
      * 
-     * @param startR  Primary initial longitudinal cellular position mapping
-     *                geometrically.
-     * @param startC  Primary initial latitudinal cellular position mapping
-     *                geometrically.
-     * @param targetR Exogenous pursuit boundary target longitudinal mapping
-     *                geometrically.
-     * @param targetC Exogenous pursuit boundary target latitudinal mapping
-     *                geometrically.
-     * @return int[] Next definitive traversal vector algebraically translating path
-     *         matrices directly natively.
+     * @param startR  The row index where the path starts.
+     * @param startC  The column index where the path starts.
+     * @param targetR The destination row index you want to reach.
+     * @param targetC The destination column index you want to reach.
+     * @return An integer array [row, col] representing the very next step to take,
+     *         or null if no path exists.
      */
     public int[] getNextMove(int startR, int startC, int targetR, int targetC) {
         if (startR == targetR && startC == targetC)
@@ -379,21 +350,15 @@ public class Maze {
     }
 
     /**
-     * Performs continuous linear raycast approximations measuring unhindered
-     * optical topological parameters explicitly structurally.
-     * Normalizes transient fractional distance increments measuring fractional
-     * penetration bounds securely structurally.
+     * Shoots an imaginary laser beam from one point to another to see if there are 
+     * any walls blocking the view. Useful for determining if an enemy can actually 
+     * see you from across the room.
      * 
-     * @param x1 Transient longitudinal origin ray coordinate uniformly measured
-     *           sequentially.
-     * @param y1 Transient latitudinal origin ray coordinate uniformly measured
-     *           sequentially.
-     * @param x2 External target longitudinal projection coordinate explicitly
-     *           mapping identically.
-     * @param y2 External target latitudinal projection coordinate explicitly
-     *           mapping identically.
-     * @return boolean True confirming unhindered topological continuity directly
-     *         mapping unobstructed ray boundaries explicitly.
+     * @param x1 The starting horizontal position (e.g. an enemy's X).
+     * @param y1 The starting vertical position (e.g. an enemy's Y).
+     * @param x2 The target horizontal position (e.g. your X).
+     * @param y2 The target vertical position (e.g. your Y).
+     * @return True if the path between these points is completely unobstructed.
      */
     public boolean hasLineOfSight(double x1, double y1, double x2, double y2) {
         if (mapGrid == null)
@@ -424,13 +389,11 @@ public class Maze {
     }
 
     /**
-     * Traverses generalized cellular grids isolating explicit conditional
-     * configurations sequentially algorithmically.
+     * Sweeps through the entire map array to collect every single tile
+     * that corresponds to the given tile ID (e.g. finding all doors, generators, etc.).
      * 
-     * @param type Deterministic integer correlating topological constraints
-     *             inherently.
-     * @return List Collection aggregating exact planar matrix parameters
-     *         fundamentally mathematically.
+     * @param type The specific tile ID you're looking for.
+     * @return A list of arrays [row, col] representing every location of this tile.
      */
     public List<int[]> getTilesOfType(int type) {
         List<int[]> positions = new ArrayList<>();
@@ -449,15 +412,12 @@ public class Maze {
     }
 
     /**
-     * Downscales continuous global geometry identifying strict relative localized
-     * logic configurations geometrically algebraically.
+     * Converts a world coordinate into its corresponding grid position and
+     * returns the type of tile stored there in the map grid.
      * 
-     * @param worldX Uniform Cartesian lateral coordinate implicitly mapping
-     *               seamlessly linearly.
-     * @param worldY Uniform Cartesian latitudinal coordinate implicitly mapping
-     *               seamlessly linearly.
-     * @return int Explicit mapped constraint type defining active topology
-     *         logically definitively.
+     * @param worldX The horizontal pixel position in the game world.
+     * @param worldY The vertical pixel position in the game world.
+     * @return The integer ID representing what kind of tile this is, or -1 if the position is off map.
      */
     public int getTileAt(double worldX, double worldY) {
         int col = (int) (worldX / TILE_SIZE);
@@ -471,15 +431,13 @@ public class Maze {
     }
 
     /**
-     * Resolves transient coordinates compiling strict matrix indexes confirming
-     * independent planar translations cleanly.
+     * Converts standard pixel coordinates into row and column indices for 
+     * the underlying map array. Handy if you need to know exactly which 
+     * tile an entity is hovering over.
      * 
-     * @param worldX Unaligned hardware position recursively extrapolating laterally
-     *               visually.
-     * @param worldY Unaligned hardware position recursively extrapolating
-     *               longitudinally visually.
-     * @return int[] Resolved cellular indices uniformly projecting bounding
-     *         configurations mathematically natively.
+     * @param worldX A horizontal pixel position.
+     * @param worldY A vertical pixel position.
+     * @return A two-element integer array [row, col], or null if out-of-bounds.
      */
     public int[] getTilePositionAt(double worldX, double worldY) {
         int col = (int) (worldX / TILE_SIZE);
@@ -493,8 +451,9 @@ public class Maze {
     }
 
     /**
-     * Conditionally collapses active conditional boundaries transforming dynamic
-     * topologies strictly identically static unconditionally.
+     * Loops through the entire level and turns every single escape room 
+     * door (tile ID `6`) into a normal, non-blocking floor space (tile ID `0`).
+     * Time to leave!
      */
     public void collapseEscapeRooms() {
         if (mapGrid == null) {
@@ -511,31 +470,30 @@ public class Maze {
     }
 
     /**
-     * Resolves the primary underlying logic hierarchy mapping spatial constraints
-     * natively uniformly.
+     * Gets read-only access to the entire 2D map array so the game
+     * engine knows where to draw the ground, walls, and so on.
      * 
-     * @return int[][] Comprehensive grid translation definition arrays
-     *         deterministically mapping definitively.
+     * @return The 2D integer array containing the active map level.
      */
     public int[][] getMapGrid() {
         return mapGrid;
     }
 
     /**
-     * Extracts persistent initialization coordinates strictly defining longitudinal
-     * planar logic safely mathematically.
+     * Finds the vertical starting location the player begins at 
+     * based on the level map's spawn tile (ID `7`).
      * 
-     * @return int Core start position linearly assigned synchronously.
+     * @return The integer row where the player spawns.
      */
     public int getPlayerSpawnRow() {
         return playerSpawnRow;
     }
 
     /**
-     * Extracts persistent initialization coordinates strictly defining latitudinal
-     * planar logic safely mathematically.
+     * Finds the horizontal starting location the player begins at 
+     * based on the level map's spawn tile (ID `7`).
      * 
-     * @return int Core start position linearly assigned synchronously.
+     * @return The integer column where the player spawns.
      */
     public int getPlayerSpawnCol() {
         return playerSpawnCol;

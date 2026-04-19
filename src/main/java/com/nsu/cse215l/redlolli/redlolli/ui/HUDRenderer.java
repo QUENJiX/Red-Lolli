@@ -13,11 +13,9 @@ import javafx.scene.text.FontWeight;
 import java.util.List;
 
 /**
- * Orchestrates the application's heads-up display rendering matrix.
- * Translates underlying game state variables into a fixed-scale orthogonal
- * projection layer.
- * Systematically divides real-time tracking data into distinct, updated visual
- * modules natively.
+ * This class draws all the stuff on the top of the screen while you play the game!
+ * It handles the player's health/sanity bar, the current level, your items, and the spooky 
+ * little icon showing what Pale Luna is currently doing.
  */
 public class HUDRenderer {
 
@@ -40,17 +38,13 @@ public class HUDRenderer {
     private static boolean imagesInitialized = false;
 
     /**
-     * Resolves distinct aesthetic resource identifiers yielding explicitly scaled
-     * bitmapped visual arrays.
+     * A helper method to load sprites specifically for the HUD.
+     * We pass it along to the AssetManager so it caches the file properly!
      *
-     * @param filename Target identifier isolating physical location inherently
-     *                 visually.
-     * @param width    Abstract mapping value for lateral scale parameters
-     *                 structurally.
-     * @param height   Abstract mapping value for vertical scale parameters
-     *                 structurally.
-     * @return Image Explicitly loaded structural rendering variable natively
-     *         extracted.
+     * @param filename The name of the file to load (like "monster_hunting.png").
+     * @param width    How wide to draw the sprite.
+     * @param height   How tall to draw the sprite.
+     * @return Image The loaded JavaFX graphic ready to be drawn.
      */
     private static Image loadSprite(String filename, int width, int height) {
         return com.nsu.cse215l.redlolli.redlolli.systems.AssetManager.getInstance()
@@ -58,8 +52,8 @@ public class HUDRenderer {
     }
 
     /**
-     * Establishes persistent graphical references ensuring uniform hardware
-     * mappings logically.
+     * Loads up all the little skulls and monster face icons for the top bar!
+     * We track whether they are loaded so we only have to do this once.
      */
     public static void initImages() {
         if (imagesInitialized)
@@ -74,38 +68,26 @@ public class HUDRenderer {
     }
 
     /**
-     * Resets the initialization validation cache confirming sequential reloading
-     * dynamically.
+     * Wipes our memory of whether images were loaded or not, forcing a quick reload next time.
      */
     public static void resetImages() {
         imagesInitialized = false;
     }
 
     /**
-     * Executes the foundational projection separating HUD logic cleanly into
-     * rendering groups.
-     * Extrapolates physical states mapping visual representation vectors linearly.
+     * The main drawing method that updates the top bar every single frame!
+     * It splits up into separate sections: drawing Level, Lollipops, Items, Luna's status, and Sanity.
      *
-     * @param gc                    Hardware rendering component processing
-     *                              graphical indices optimally.
-     * @param level                 Absolute cycle iterator mapping progression
-     *                              depth accurately.
-     * @param chests                Topological entity list conveying objective
-     *                              bounds conditionally.
-     * @param itemNames             Assorted strings mapping literal visual
-     *                              translations natively.
-     * @param paleLuna              Target external antagonist mapping spatial
-     *                              derivation algorithms mathematically.
-     * @param player                Core topological object tracking diagnostic
-     *                              progression variables identically.
-     * @param distractionSpellCount Abstraction metric indicating valid mechanical
-     *                              override availability natively.
-     * @param hasCloneItem          Boolean asserting local state capability
-     *                              securely and unconditionally.
-     * @param pulsePhase            Iterative parameter resolving continuous
-     *                              cyclical HUD animations smoothly.
-     * @return double Translated visual execution vector correctly shifting abstract
-     *         animation steps sequentially.
+     * @param gc                    The JavaFX GraphicsContext to draw onto.
+     * @param level                 The current level number.
+     * @param chests                The list of items lying around on the map.
+     * @param itemNames             The list of spooky secret items available.
+     * @param paleLuna              The actual Pale Luna monster entity, to check her current mood.
+     * @param player                The player entity, to check health/sanity and inventory.
+     * @param distractionSpellCount The number of distractions the player has saved up.
+     * @param hasCloneItem          Whether the player is carrying the cardboard clone decoy.
+     * @param pulsePhase            A number that goes up over time, used to make the health bar throb.
+     * @return double The updated pulsePhase value for the next frame's animation.
      */
     public static double drawHUD(GraphicsContext gc, int level, List<Item> chests,
             String[] itemNames, Monster paleLuna, Player player,
@@ -134,15 +116,12 @@ public class HUDRenderer {
     }
 
     /**
-     * Synthesizes background geometries providing standard solid backing logically
-     * mapping spatial matrices.
+     * Colors in the dark background of the top bar and gives it a nice red border at the bottom.
      *
-     * @param gc Target abstraction projecting static canvas updates stably and
-     *           objectively.
+     * @param gc The drawing context for the canvas.
      */
     private static void drawBackground(GraphicsContext gc) {
-        // Enforce basic gradient borders anchoring local interface variables
-        // exclusively
+        // Draw the main dark grey block for the HUD background
         gc.setFill(Color.rgb(10, 10, 14));
         gc.fillRect(0, 0, HUD_W, HUD_H);
 
@@ -170,12 +149,10 @@ public class HUDRenderer {
     }
 
     /**
-     * Projects continuous text bounds updating basic state enumerations
-     * dynamically.
+     * Draws the text telling you what level you are currently on.
      *
-     * @param gc    Mathematical node scaling output coordinates inherently
-     *              securely.
-     * @param level Evaluated metric dictating raw cyclic progression explicitly.
+     * @param gc    The drawing context.
+     * @param level The current level number.
      */
     private static void drawLevelSection(GraphicsContext gc, int level) {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
@@ -187,13 +164,11 @@ public class HUDRenderer {
     }
 
     /**
-     * Establishes conditional rendering parameters validating interaction checks
-     * sequentially natively.
+     * Checks if you've picked up the Red Lolli objective yet and draws a glowing
+     * red lollipop icon if you have, or a sad grey one if you haven't.
      *
-     * @param gc     Hardware target interpolating graphical variables predictably
-     *               and functionally.
-     * @param chests Reference collection enumerating valid boolean interaction
-     *               outputs completely.
+     * @param gc     The drawing context.
+     * @param chests The list of items in the level to check if the lolli was grabbed.
      */
     private static void drawLolliSection(GraphicsContext gc, List<Item> chests) {
         boolean found = chests.stream().anyMatch(c -> c.isCollected() && c.hasLolli());
@@ -202,8 +177,7 @@ public class HUDRenderer {
         double cx = secX + 5;
         double cy = HUD_H / 2;
 
-        // Apply sinusoidal modifiers conveying aesthetic oscillations accurately
-        // automatically
+        // Make the lollipop glow with a wiggling math wave if you found it!
         double pulse = Math.sin(System.currentTimeMillis() * 0.005) * 0.2 + 0.8;
         if (found) {
             gc.setFill(Color.rgb(255, 215, 0, 0.05 * pulse));
@@ -222,19 +196,14 @@ public class HUDRenderer {
     }
 
     /**
-     * Extracts categorical strings projecting mechanical requirements mapping
-     * textual outputs clearly cleanly.
+     * Shows which secret item you're supposed to be finding on this level, 
+     * and lets you know how many distraction spells you have left!
      *
-     * @param gc                    Output target interpolating sequential strings
-     *                              systematically objectively.
-     * @param level                 Baseline algorithmic modifier extracting mapped
-     *                              array targets cleanly.
-     * @param itemNames             Extrapolated strings array indexing specific
-     *                              objective labels directly.
-     * @param distractionSpellCount Integral translating stored defensive override
-     *                              resources completely flawlessly.
-     * @param hasCloneItem          Validation toggle rendering specific alternate
-     *                              interactions strictly cleanly.
+     * @param gc                    The drawing context.
+     * @param level                 The current level (so we know which item to tell you to find).
+     * @param itemNames             The list of spooky secret item names.
+     * @param distractionSpellCount The amount of magic distraction balls the player can throw.
+     * @param hasCloneItem          Whether the player is currently carrying the cardboard decoy box.
      */
     private static void drawFindSection(GraphicsContext gc, int level, String[] itemNames,
             int distractionSpellCount, boolean hasCloneItem) {
@@ -260,18 +229,13 @@ public class HUDRenderer {
     }
 
     /**
-     * Transmits decoupled adversarial mappings directly formatting threat
-     * representations linearly seamlessly.
-     * Resolves distinct tracking bounds utilizing cyclic color scaling
-     * deterministically cleanly.
+     * Draws a tiny little picture of Pale Luna's face and a status bar showing what she's 
+     * doing right now (Sleeping, Stalking, Hunting you, or waiting outside your door).
      *
-     * @param gc         Mathematical rendering abstraction mapping geometric
-     *                   parameters cleanly and uniformly.
-     * @param paleLuna   AI reference extrapolating threat vectors structurally
-     *                   correctly.
-     * @param pulsePhase Chronological iteration tracking arbitrary visual
-     *                   oscillations smoothly predictably.
-     * @return double Final scalar yielding updated progression safely correctly.
+     * @param gc         The drawing context.
+     * @param paleLuna   The monster entity to read the state from.
+     * @param pulsePhase A number used for animating the spooky red glowing bar.
+     * @return double    The updated animation number.
      */
     private static double drawLunaSection(GraphicsContext gc, Monster paleLuna, double pulsePhase) {
         if (paleLuna == null)
@@ -329,13 +293,11 @@ public class HUDRenderer {
     }
 
     /**
-     * Converts physiological variable checks into standard linear text interfaces
-     * continuously natively.
+     * Draws the player's sanity bar and updates the little skull icon depending
+     * on how low their sanity has dropped.
      *
-     * @param gc     Native visual array configuring objective text properly
-     *               identically stably.
-     * @param player Central topological object asserting fundamental variable
-     *               metrics dynamically properly.
+     * @param gc     The drawing context.
+     * @param player The player object, so we can check their current sanity score.
      */
     private static void drawSanitySection(GraphicsContext gc, Player player) {
         double secX = DIV_LUNA + 6;
@@ -368,13 +330,11 @@ public class HUDRenderer {
     }
 
     /**
-     * Determines regional mapping bounds establishing Boolean safety outputs
-     * objectively clearly objectively.
+     * Draws a helpful little indicator on the far right that tells you 
+     * if you are currently hiding inside a sanctuary room.
      *
-     * @param gc     Graphical array rendering continuous binary tracking natively
-     *               cleanly effectively.
-     * @param player Core spatial parameter providing matrix positioning securely
-     *               dynamically optimally.
+     * @param gc     The drawing context.
+     * @param player The player object, used to check if they are standing in a safe spot.
      */
     private static void drawSafeSection(GraphicsContext gc, Player player) {
         double secX = DIV_SANITY + 8;
@@ -391,19 +351,13 @@ public class HUDRenderer {
     }
 
     /**
-     * Formats basic textual nodes rendering uniform string identifiers explicitly
-     * consistently natively.
+     * A helper that simply styles the tiny text labels hovering over the progress bars.
      *
-     * @param gc    Rendering anchor applying explicit parameter limitations
-     *              properly optimally cleanly.
-     * @param x     Arbitrary coordinate tracking horizontal string deployments
-     *              accurately.
-     * @param y     Arbitrary coordinate tracking vertical string deployments
-     *              accurately.
-     * @param label Contextual string defining explicitly mapped UI elements
-     *              definitively safely.
-     * @param color Abstract RGB abstraction translating visual output boundaries
-     *              linearly intelligently.
+     * @param gc    The drawing context.
+     * @param x     The X pixel position.
+     * @param y     The Y pixel position.
+     * @param label The text to draw.
+     * @param color The color of the text.
      */
     private static void drawBarLabel(GraphicsContext gc, double x, double y, String label, Color color) {
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
@@ -412,29 +366,19 @@ public class HUDRenderer {
     }
 
     /**
-     * Allocates functional geometry constraints validating scalar parameter shifts
-     * visually perfectly consistently.
+     * A helper method that draws a rectangle progress bar with a border, background, and text.
+     * Used for things like the sanity bar and Pale Luna's timer bars!
      *
-     * @param gc       Output target interpolating hardware boundaries explicitly
-     *                 naturally structurally.
-     * @param x        Mathematical location defining physical rectangular bounds
-     *                 linearly unambiguously.
-     * @param y        Mathematical location defining physical rectangular bounds
-     *                 linearly unambiguously.
-     * @param width    Bounded size parameter delineating explicit matrix
-     *                 allocations cleanly systematically safely.
-     * @param height   Bounded size parameter delineating explicit matrix
-     *                 allocations cleanly systematically safely.
-     * @param bg       Standard color mapping rendering default backgrounds natively
-     *                 clearly strictly.
-     * @param border   Strict linear frame maintaining explicit bounded
-     *                 visualizations accurately fundamentally conditionally.
-     * @param fill     Internal scaling abstraction visually indicating specific
-     *                 array progression reliably structurally intuitively.
-     * @param progress Decimal ratio calculating definitive geometric
-     *                 representations precisely successfully cleanly intelligently.
-     * @param text     Auxiliary identifier rendering bounded context labels
-     *                 dependably naturally properly securely.
+     * @param gc       The drawing context.
+     * @param x        The X pixel position.
+     * @param y        The Y pixel position.
+     * @param width    How wide to make the bar.
+     * @param height   How tall to make the bar.
+     * @param bg       The background color of the empty part of the bar.
+     * @param border   The border color wrapping around the bar.
+     * @param fill     The color of the actual progress filling the bar.
+     * @param progress A number from 0 to 1 dictating how full the bar should be drawn.
+     * @param text     The text to draw directly inside the middle of the bar.
      */
     private static void drawBar(GraphicsContext gc, double x, double y, double width, double height,
             Color bg, Color border, Color fill, double progress, String text) {

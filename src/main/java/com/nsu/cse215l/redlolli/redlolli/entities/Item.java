@@ -4,18 +4,13 @@ import com.nsu.cse215l.redlolli.redlolli.core.Collidable;
 import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
- * Operates as a dynamic environmental interaction node representing
- * discoverable architectural resources centrally.
- * Encapsulates singular internal payloads (e.g., plot items or diversions)
- * defining discrete interaction permutations organically.
- * Wholly decoupled from implicit rendering constraints to support purely
- * logical headless iterations uniformly.
+ * An item sitting on the map that the player can pick up, like a piece of candy or a decoy. 
+ * They don't move or do anything on their own until the player steps on them.
  */
 public class Item extends Entity implements Collidable {
 
     /**
-     * Enumerates literal payload enumerations restricting arbitrary asset
-     * instantiation procedurally.
+     * The different kinds of items that can exist in the game.
      */
     public enum ContentType {
         EMPTY,
@@ -27,15 +22,11 @@ public class Item extends Entity implements Collidable {
     private final ContentType contentType;
 
     /**
-     * Instantiates the interaction node explicitly bounded to localized global
-     * coordinates.
+     * Places a new item on the map at the given x and y coordinates.
      * 
-     * @param x           Arbitrary longitudinal coordinate native to the map grid
-     *                    physically.
-     * @param y           Arbitrary latitudinal coordinate native to the map grid
-     *                    physically.
-     * @param contentType Structural dependency mapping predetermined physical
-     *                    contents strictly.
+     * @param x           The horizontal position of the item.
+     * @param y           The vertical position of the item.
+     * @param contentType The specific type of item (like a lolli or a clone decoy).
      */
     public Item(double x, double y, ContentType contentType) {
         super(x, y, 16.0);
@@ -43,27 +34,25 @@ public class Item extends Entity implements Collidable {
     }
 
     /**
-     * Implements blank operational overloads assuring standardized collection
-     * traversal across global managers implicitly.
+     * Items don't move, so they do nothing each frame.
      */
     @Override
     public void update() {
     }
 
     /**
-     * Evaluates geometric interaction completion flipping internal procedural
-     * validation boolean securely.
+     * Marks this item as collected so the game knows to remove it from the map
+     * and give the player their reward.
      */
     public void collect() {
         this.isCollected = true;
     }
 
     /**
-     * Replicates internal positional magnitudes returning external physical bounds
-     * uniformly translated.
+     * Gets the physical boundary of the item so the player can pick it up
+     * by walking into it.
      * 
-     * @return Hitbox2D Bounding arrays restricting dynamic traversals mapped
-     *         logically.
+     * @return The 2D hitbox representing the item on the map.
      */
     @Override
     public Hitbox2D getHitbox() {
@@ -71,43 +60,36 @@ public class Item extends Entity implements Collidable {
     }
 
     /**
-     * Communicates immutable collection states implicitly restricting reiteration
-     * loops naturally.
+     * Tells us if this item has already been collected by the player.
      * 
-     * @return boolean True only following successful physical intersection
-     *         executions.
+     * @return True if the player already picked it up.
      */
     public boolean isCollected() {
         return isCollected;
     }
 
     /**
-     * Serves as an isolated explicit payload verification mapping direct
-     * progression catalysts organically.
+     * Small helper method to quickly check if this item is the main objective (a Lolli).
      * 
-     * @return boolean True when internal architecture isolates explicit primary
-     *         progression nodes securely.
+     * @return True if the item is a lolli.
      */
     public boolean hasLolli() {
         return contentType == ContentType.LOLLI;
     }
 
     /**
-     * Extracts immutable explicit categorizations governing downstream mechanical
-     * rewards strictly.
+     * Gets the specific type of this item so the game knows what reward to give the player.
      * 
-     * @return ContentType Extracted intrinsic classification natively mapped.
+     * @return The item's type.
      */
     public ContentType getContentType() {
         return contentType;
     }
 
     /**
-     * Extrapolates generic dimension scalar values evaluating rendering
-     * abstractions sequentially isolated.
+     * Returns the visual or physical size of the item.
      * 
-     * @return double Numerical magnitude identifying physical boundary magnitudes
-     *         explicitly.
+     * @return The dimensions of the item.
      */
     public double getSize() {
         return size;

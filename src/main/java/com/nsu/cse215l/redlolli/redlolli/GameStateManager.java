@@ -18,12 +18,9 @@ import java.util.Set;
 import com.nsu.cse215l.redlolli.redlolli.systems.*;
 
 /**
- * Serves as the central orchestrator for the application's finite state
- * machine.
- * Encapsulates global state metrics and delegates cyclical logic updates to
- * decoupled subsystems.
- * Synchronizes entity spatial matrices, collision constraints, and
- * deterministic delta timings.
+ * The master brain of the game! This class manages what's happening globally,
+ * like tracking timers, checking win/loss conditions, and telling other 
+ * systems when to update.
  */
 public class GameStateManager {
 
@@ -66,10 +63,8 @@ public class GameStateManager {
     final SoundManager soundManager = new SoundManager();
 
     /**
-     * Executes procedural initializations to reset systemic temporal configurations
-     * natively.
-     * Purges topological entity mappings to reestablish deterministic baseline
-     * variables.
+     * Resets all the game variables, clears out monsters, and basically 
+     * gets everything ready for a fresh new run or level.
      */
     void resetGameState() {
         entityManager.clear();
@@ -111,10 +106,8 @@ public class GameStateManager {
     }
 
     /**
-     * Translates strict topological parameters into instantiated environmental
-     * matrices.
-     * Evaluates initial logic constraints calculating objective geometries
-     * deterministically.
+     * Tells the LevelManager to build the actual 2D maze and spawn all 
+     * the entities inside it!
      */
     void loadLevel() {
         levelManager.loadLevel(entityManager);
@@ -122,10 +115,10 @@ public class GameStateManager {
     }
 
     /**
-     * Executes structural failure sequences triggering absolute game state halting.
+     * Triggers the player's death sequence and stops normal gameplay.
      * 
-     * @param message Textual mapping of the definitive fatal error state.
-     * @return boolean True indicating absolute game iteration termination natively.
+     * @param message The reason they died (e.g., eaten by a monster or went insane).
+     * @return boolean Always returns true to indicate the player is dead!
      */
     private boolean triggerPlayerDeath(String message) {
         if (playerIsDead)
@@ -137,15 +130,11 @@ public class GameStateManager {
     }
 
     /**
-     * Orchestrates systemic tick propagation directing cyclical interactions
-     * flawlessly.
-     * Normalizes chronological deviations via floating-point delta matrices
-     * natively.
+     * The main game loop tick! Runs every single frame to move characters, 
+     * check collisions, and update timers.
      * 
-     * @param activeKeys Exogenous Boolean constraint mappings capturing keyboard
-     *                   states dynamically.
-     * @return boolean True communicating a terminal halt mechanism within the core
-     *         process loop.
+     * @param activeKeys Which keyboard keys the player is currently holding down.
+     * @return boolean True if the game loop should stop (like when dead), false otherwise.
      */
     boolean update(Set<KeyCode> activeKeys) {
         long now = System.nanoTime();
@@ -321,32 +310,23 @@ public class GameStateManager {
     }
 
     /**
-     * Confirms the termination of specific independent cyclical visual
-     * progressions.
+     * Checks if the glowing red lollipop reveal animation just finished playing.
      * 
-     * @return boolean True authenticating the exhaustion of localized sequential
-     *         tracking variables.
+     * @return boolean True if the animation is completely done.
      */
     boolean isLolliRevealJustFinished() {
         return lolliRevealState != null && !lolliRevealState.active;
     }
 
     /**
-     * Integrates ephemeral user interface bounding nodes into the rendering
-     * abstraction structurally.
+     * Adds a simple static overlay image to the screen, like a HUD element!
      * 
-     * @param imagePath Resource URI classifying absolute textual mapping
-     *                  parameters.
-     * @param x         Arbitrary Cartesian limit horizontally instantiating logical
-     *                  vectors.
-     * @param y         Arbitrary Cartesian limit vertically instantiating logical
-     *                  vectors.
-     * @param width     Numeric structural array indicating linear dimensional
-     *                  geometry.
-     * @param height    Numeric structural array indicating vertical dimensional
-     *                  geometry.
-     * @param opacity   Floating-point constant extracting objective visibility
-     *                  multipliers smoothly.
+     * @param imagePath File path to the image to show.
+     * @param x         The horizontal position on the screen.
+     * @param y         The vertical position on the screen.
+     * @param width     How wide to draw it.
+     * @param height    How tall to draw it.
+     * @param opacity   How visible it is (1.0 is solid, 0.0 is invisible).
      */
     public void addOverlay(String imagePath, double x, double y, double width, double height,
             double opacity) {
@@ -356,20 +336,15 @@ public class GameStateManager {
     }
 
     /**
-     * Coordinates transient world geometries strictly mapped to matrix dependencies
-     * linearly.
+     * Adds an overlay image that moves around with the world map rather than 
+     * staying glued to the screen. Good for floor marks!
      * 
-     * @param imagePath Resource string deriving absolute bounds uniformly natively.
-     * @param worldX    Mathematical vector mapping Cartesian offsets dynamically
-     *                  safely.
-     * @param worldY    Mathematical vector mapping Cartesian offsets dynamically
-     *                  safely.
-     * @param width     Logical distance constraint projecting lateral visualization
-     *                  correctly.
-     * @param height    Logical distance constraint projecting longitudinal
-     *                  visualization correctly.
-     * @param opacity   Extrapolated integer scaling absolute alpha blending values
-     *                  properly.
+     * @param imagePath File path to the image.
+     * @param worldX    X coordinate in the game world.
+     * @param worldY    Y coordinate in the game world.
+     * @param width     How wide to draw it.
+     * @param height    How tall to draw it.
+     * @param opacity   How visible it is.
      */
     public void addWorldOverlay(String imagePath, double worldX, double worldY, double width,
             double height, double opacity) {
@@ -379,10 +354,8 @@ public class GameStateManager {
     }
 
     /**
-     * Intercepts environmental constraints conditionally resolving mechanical
-     * overrides securely.
-     * Analyzes proximal hazard distances dynamically overriding default hazard
-     * logic natively.
+     * Casts a distraction spell! Finds the nearest guard and temporarily
+     * dazes them so the player can sneak past safely.
      */
     void tryUseDistraction() {
         GuardEntity nearest = null;
@@ -412,10 +385,8 @@ public class GameStateManager {
     }
 
     /**
-     * Synthesizes surrogate entities inserting strict tracking clones conditionally
-     * natively.
-     * Establishes dynamic interaction overrides terminating redundant structural
-     * arrays correctly.
+     * Drops a cardboard cutout decoy if the player has one, 
+     * making Pale Luna attack it instead of the player!
      */
     void tryPlaceClone() {
         // Enforce chronological conditionals preventing invalid synthetic geometry
@@ -431,14 +402,11 @@ public class GameStateManager {
     }
 
     /**
-     * Exports absolute operational telemetry data aggregating structural
-     * abstractions reliably cleanly.
-     * Subordinates default visual rendering loops natively explicitly.
+     * Draws the secret debug menu to print out timers, coordinates, 
+     * and monster states for development and testing!
      * 
-     * @param gc         Hardware geometry bounds delegating explicit alphanumeric
-     *                   matrices sequentially.
-     * @param activeKeys Exogenous key polling arrays translated functionally
-     *                   dynamically.
+     * @param gc         The context used for drawing text.
+     * @param activeKeys The keys currently held down.
      */
     void drawDebugOverlay(GraphicsContext gc, Set<KeyCode> activeKeys) {
         Monster paleLuna = entityManager.getPaleLuna();
@@ -492,9 +460,8 @@ public class GameStateManager {
     }
 
     /**
-     * Executes arbitrary trajectory adjustments bypassing algorithmic dependencies
-     * entirely globally.
-     * Prevents logic deadlocks inherently safely natively.
+     * Warps Pale Luna right next to the player. Used if the player
+     * stands completely still for too long!
      */
     private void teleportLunaNearPlayer() {
         if (entityManager.getPaleLuna() == null)
@@ -504,17 +471,13 @@ public class GameStateManager {
     }
 
     /**
-     * Derives spatial Cartesian magnitudes mapping decoupled geographic limits
-     * effectively reliably.
+     * Helper method to calculate the distance between two points in terms of map tiles.
      * 
-     * @param x1 Lateral vector variable systematically objectively correctly
-     *           natively.
-     * @param y1 Longitudinal vector variable systematically objectively correctly
-     *           natively.
-     * @param x2 Target lateral coordinate cleanly seamlessly mapped exactly.
-     * @param y2 Target longitudinal coordinate cleanly seamlessly mapped exactly.
-     * @return double Extracted distance differential explicitly mathematically
-     *         calculated.
+     * @param x1 First X coordinate.
+     * @param y1 First Y coordinate.
+     * @param x2 Second X coordinate.
+     * @param y2 Second Y coordinate.
+     * @return double How many tiles apart they are.
      */
     static double distInTiles(double x1, double y1, double x2, double y2) {
         double dx = (x1 - x2) / Maze.TILE_SIZE, dy = (y1 - y2) / Maze.TILE_SIZE;

@@ -1,12 +1,9 @@
 package com.nsu.cse215l.redlolli.redlolli.entities;
 
 /**
- * Operates as a dynamic environmental node providing synthetic localized
- * illumination mathematically.
- * Systemically decoupled from explicit hardware rendering procedures
- * facilitating headless environmental validation definitively.
- * Implements deterministic randomization ensuring visual desynchronization
- * across contiguous instantiation parameters.
+ * A flickering torch on the wall that can be placed on the map.
+ * Its animation is randomly shifted when created so that multiple torches 
+ * sitting next to each other don't blink in perfect sync.
  */
 public class TorchEntity extends Entity {
 
@@ -18,30 +15,23 @@ public class TorchEntity extends Entity {
     private double timeDelta = 1.0;
 
     /**
-     * Instantiates the illumination entity anchoring it to explicit Cartesian array
-     * components statically.
-     * Integrates mathematical entropy mitigating cohesive tick synchronicity across
-     * uniform localized arrays organically.
+     * Creates a torch at a specific place on the map and randomly mixes up its animation.
      * 
-     * @param x Arbitrary longitudinal coordinate interpreting initial dimensional
-     *          bounding seamlessly.
-     * @param y Arbitrary latitudinal coordinate interpreting initial dimensional
-     *          bounding seamlessly.
+     * @param x The horizontal position of the torch.
+     * @param y The vertical position of the torch.
      */
     public TorchEntity(double x, double y) {
         super(x, y, 40);
 
-        // Disperse initialization coefficients artificially creating heterogeneous
-        // visual execution sequences natively
+        // Start the animation at a slightly random time and frame 
+        // so a hallway full of torches looks natural instead of weirdly identical.
         this.animationTimer = (int) (Math.random() * 10);
         this.currentFrame = 1 + (int) (Math.random() * 4);
     }
 
     /**
-     * Translates chronological passage calculating uniform hardware-agnostic
-     * animation scaling statically.
-     * Validates transient boolean states explicitly overriding abstract cyclical
-     * procedures universally.
+     * Ticks the torch's flickering animation forward smoothly over time.
+     * If the torch has been turned off, it just skips this entirely.
      */
     @Override
     public void update() {
@@ -52,14 +42,12 @@ public class TorchEntity extends Entity {
         if (lastUpdateTime == 0)
             lastUpdateTime = now;
 
-        // Execute structural scaling metrics establishing precise independent
-        // procedural velocities linearly
+        // Figure out how much time actually passed between frames
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
 
-        // Formulate cosmetic iteration updates natively validating fixed progression
-        // thresholds seamlessly
+        // Keep counting up until it's time to swap to the next animation frame
         animationTimer += timeDelta;
         if (animationTimer >= 8) {
             animationTimer = 0;
@@ -71,46 +59,36 @@ public class TorchEntity extends Entity {
     }
 
     /**
-     * Resolves structural dimensions providing generic arrays necessary for
-     * secondary dynamic bounding constraints unconditionally.
+     * Returns the size of the torch for drawing on the screen.
      * 
-     * @return double Scalar encapsulating the structural magnitude symmetrically
-     *         mapped logically.
+     * @return The 2D size of the torch.
      */
     public double getSize() {
         return size;
     }
 
     /**
-     * Extrapolates explicitly decoupled visual integers interpreting sequential
-     * abstract execution cycles cleanly.
+     * Gets the current frame of the flickering animation.
      * 
-     * @return int Immediate aesthetic translation step defining the transient
-     *         visual state natively.
+     * @return The current animation step.
      */
     public int getCurrentFrame() {
         return currentFrame;
     }
 
     /**
-     * Validates intrinsic luminance boundaries communicating internal rendering
-     * metrics externally linearly.
+     * Checks if the torch is currently producing light and flickering.
      * 
-     * @return boolean True extracting deterministic illumination conditions
-     *         mechanically mapped.
+     * @return True if the torch is turned on.
      */
     public boolean isLit() {
         return isLit;
     }
 
     /**
-     * Dictates localized luminosity parameters manipulating cyclic execution limits
-     * inherently mapped visually.
-     * Extinguishes ongoing progression thresholds seamlessly standardizing zeroed
-     * aesthetic vectors globally.
+     * Turns the torch on or off, immediately changing whether it animates or not.
      * 
-     * @param lit Override parameter explicitly dictating external boolean limits
-     *            directly mapped.
+     * @param lit Whether the torch should be lit.
      */
     public void setLit(boolean lit) {
         this.isLit = lit;

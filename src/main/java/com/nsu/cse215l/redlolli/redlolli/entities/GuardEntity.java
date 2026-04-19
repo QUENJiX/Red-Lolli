@@ -5,18 +5,15 @@ import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
- * Implements localized, static environmental hazards explicitly barring
- * traversal into designated sanctuary nodes.
- * Enforces rigid geometric barriers that necessitate transient interaction
- * logic (e.g., distractions) to bypass securely.
- * Governs differential difficulty scales programmatically shifting
- * vulnerability windows strictly based on instantiation type.
+ * A stationary enemy (like a bat, cobra, or centipede) that blocks passage
+ * to a specific tile on the map (the escape room).
+ * The player has to distract the guard to safely slip past them.
+ * Their specific type dictates how quickly they recover from being distracted.
  */
 public class GuardEntity extends Entity implements Collidable {
 
     /**
-     * Categorizes the physiological archetype of the static hazard dictating
-     * precise internal latency constraints.
+     * The different kinds of guards, which govern how long they stay distracted.
      */
     public enum Type {
         BAT,
@@ -40,19 +37,13 @@ public class GuardEntity extends Entity implements Collidable {
     private double timeDelta = 1.0;
 
     /**
-     * Constructs the stationary deterrent coupling its presence explicitly to
-     * constrained spatial coordinates.
+     * Creates a new guard protecting a specific tile on the map.
      *
-     * @param x         Initial longitudinal location natively defining the entity's
-     *                  rendering center.
-     * @param y         Initial latitudinal location natively defining the entity's
-     *                  rendering center.
-     * @param type      The operational archetype defining the difficulty class and
-     *                  subsequent vulnerability margins.
-     * @param escapeRow The precise matrix row identifying the targeted sanctuary
-     *                  tile this instance protects.
-     * @param escapeCol The precise matrix column identifying the targeted sanctuary
-     *                  tile this instance protects.
+     * @param x         The starting horizontal position of the guard.
+     * @param y         The starting vertical position of the guard.
+     * @param type      The kind of guard (BAT, COBRA, CENTIPEDE).
+     * @param escapeRow The row on the map grid that this guard protects.
+     * @param escapeCol The column on the map grid that this guard protects.
      */
     public GuardEntity(double x, double y, Type type, int escapeRow, int escapeCol) {
         super(x, y, 28.0);
@@ -62,9 +53,8 @@ public class GuardEntity extends Entity implements Collidable {
     }
 
     /**
-     * Processes independent clock logic ensuring localized vulnerability
-     * transitions map identically across unstable
-     * framerate iterations sequentially.
+     * Updates the guard's state each frame. 
+     * Mainly used to decrease their distraction timer over time until they recover.
      */
     @Override
     public void update() {
@@ -72,14 +62,12 @@ public class GuardEntity extends Entity implements Collidable {
         if (lastUpdateTime == 0)
             lastUpdateTime = now;
 
-        // Isolate processing intervals mapping literal seconds sequentially validating
-        // standard tick metrics natively
+        // Figure out how much time has passed since the last frame
         double dtSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
         lastUpdateTime = now;
         timeDelta = dtSeconds * 60.0;
 
-        // Erode active vulnerability margins iteratively executing immediate state
-        // resets fundamentally upon expiration
+        // If the guard is distracted, count down until they go back to normal
         if (distracted) {
             distractionTimer -= timeDelta;
             if (distractionTimer <= 0) {
@@ -90,39 +78,32 @@ public class GuardEntity extends Entity implements Collidable {
     }
 
     /**
-     * Injects transient compliance explicitly decoupling the entity's default
-     * lethality checks for a mathematically derived limit.
-     * Modulates operational constraints explicitly mirroring the entity's
-     * instantiated archetype universally.
+     * Causes the guard to get distracted and become harmless to the player for a short time.
+     * The amount of time depends on the guard's type.
      */
     public void distract() {
         if (!distracted) {
             distracted = true;
 
-            // Assign chronological vulnerability limits linearly constrained by increasing
-            // game-cycle difficulty
+            // Set different durations depending on how hard the guard is
             distractionTimer = type == Type.BAT ? BAT_DISTRACTION_DURATION
                     : type == Type.COBRA ? COBRA_DISTRACTION_DURATION : CENTIPEDE_DISTRACTION_DURATION;
         }
     }
 
     /**
-     * Validates rigorous polygon intersection tests mapping protagonist rectangular
-     * arrays against the precisely restricted sanctuary node.
-     * Iterates explicitly across varied cardinal sub-points avoiding singular
-     * theoretical overlap failures unilaterally.
+     * Checks if the player stepped onto the specific tile this guard is defending.
+     * We don't just check the center point, we check the edges of the player
+     * to make sure the guard catches them as soon as they step over the line.
      *
-     * @param playerHitbox Extracted dimensional bounds characterizing the external
-     *                     intrusive entity exactly.
-     * @return boolean True only if localized protagonist coordinates directly
-     *         overlap into the secured topological boundary.
+     * @param playerHitbox The boundary of the player character.
+     * @return True if the player is touching the protected area.
      */
     public boolean isPlayerOnGuardedRoom(Hitbox2D playerHitbox) {
         double cx = (playerHitbox.getMinX() + playerHitbox.getMaxX()) / 2;
         double cy = (playerHitbox.getMinY() + playerHitbox.getMaxY()) / 2;
 
-        // Construct supplementary dimensional validations spanning peripheral array
-        // extremeties precisely mapped
+        // Check the center and the four outer edges of the player's boundary
         double[][] points = {
                 { cx, cy },
                 { playerHitbox.getMinX() + 2, cy },
@@ -135,8 +116,7 @@ public class GuardEntity extends Entity implements Collidable {
             int c = (int) (p[0] / Maze.TILE_SIZE);
             int r = (int) ((p[1] - Maze.Y_OFFSET) / Maze.TILE_SIZE);
 
-            // Assure fatal logic exclusively when the exact matrix node intersection
-            // completes natively
+            // If any of those points touch the guarded row and column, you're caught!
             if (r == escapeRow && c == escapeCol) {
                 return true;
             }
@@ -145,26 +125,20 @@ public class GuardEntity extends Entity implements Collidable {
     }
 
     /**
-     * Verifies active temporal override limits granting localized immunity
-     * identically spanning interactions linearly.
+     * Lets the game logic know if this guard is currently safe to slowly walk past.
      *
-     * @return boolean True precisely signaling ongoing suppressed lethality
-     *         conditions externally.
+     * @return True if the guard is currently distracted.
      */
     public boolean isDistracted() {
         return distracted;
     }
 
     /**
-     * Quantifies Euclidean distances resolving explicit topological boundaries
-     * scaling natively instead of raw Cartesian metrics natively.
+     * Calculates the direct distance between the guard and the player in map tiles.
      *
-     * @param playerX Baseline localized horizontal Cartesian limit extracting
-     *                current proximity arrays securely.
-     * @param playerY Baseline localized vertical Cartesian limit extracting current
-     *                proximity arrays securely.
-     * @return double Explicit vector magnitude mathematically delineating relative
-     *         geographic divergence globally.
+     * @param playerX The player's current horizontal position.
+     * @param playerY The player's current vertical position.
+     * @return The distance in game tiles.
      */
     public double distanceToPlayerInTiles(double playerX, double playerY) {
         double dx = Math.abs(playerX - x) / Maze.TILE_SIZE;
@@ -173,26 +147,21 @@ public class GuardEntity extends Entity implements Collidable {
     }
 
     /**
-     * Checks if external interactions execute within valid geographic distances
-     * authorizing explicitly modeled tactical engagements seamlessly.
+     * Determines if the player is close enough to throw a distraction at the guard.
      *
-     * @param playerX Coordinate variable parsing proximal intersection ranges
-     *                radially.
-     * @param playerY Coordinate variable parsing proximal intersection ranges
-     *                radially.
-     * @return boolean True unconditionally evaluating distance verifications below
-     *         static threshold scales identically.
+     * @param playerX The player's X coordinate.
+     * @param playerY The player's Y coordinate.
+     * @return True if the player is within 3 tiles of the guard.
      */
     public boolean isWithinDistractionRange(double playerX, double playerY) {
         return distanceToPlayerInTiles(playerX, playerY) <= 3.0;
     }
 
     /**
-     * Renders foundational spatial allocation variables establishing external
-     * lethality boundaries symmetrically mapped unconditionally.
+     * Provides the physical boundary of the guard so the game knows if 
+     * the player directly bumped into it.
      *
-     * @return Hitbox2D Explicit rectangular encapsulation structurally governing
-     *         collision limits externally.
+     * @return The Hitbox2D encompassing the guard.
      */
     @Override
     public Hitbox2D getHitbox() {

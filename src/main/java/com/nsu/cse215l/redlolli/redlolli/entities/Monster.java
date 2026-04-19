@@ -5,19 +5,16 @@ import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.core.Hitbox2D;
 
 /**
- * Implements the predominant adversarial AI entity ("Pale Luna") conforming to
- * a rigid,
- * time-constrained procedural finite state machine.
- * System calculations decouple geographic displacement (Breath-First Search
- * routing) from core rendering tasks
- * guaranteeing deterministic physical states irrespective of graphic frame
- * variances.
+ * The main enemy of the game ("Pale Luna"). She follows a strict state machine 
+ * (sleeping -> stalking -> hunting -> waiting).
+ * She uses pathfinding to chase you through the maze, and her movement speed stays 
+ * consistent no matter how fast or slow the game is running.
  */
 public class Monster extends Entity implements Collidable {
 
     /**
-     * Enumerates the mutually exclusive operational phases governing traversal,
-     * visibility, and tracking metrics.
+     * The different moods the monster can be in. This controls how fast she moves 
+     * and whether she's currently chasing you.
      */
     public enum State {
         DORMANT, STALKING, HUNTING, WAITING_AT_DOOR
@@ -41,11 +38,11 @@ public class Monster extends Entity implements Collidable {
     private long lastUpdateTime = 0;
 
     /**
-     * Instantiates the primary antagonist establishing initial dimensional
-     * coordinates and setting initial AI state.
+     * Spawns the monster at a starting point, putting her straight to sleep 
+     * so she doesn't attack immediately.
      *
-     * @param x Arbitrary longitudinal coordinate native to the map grid.
-     * @param y Arbitrary latitudinal coordinate native to the map grid.
+     * @param x The horizontal X starting coordinate.
+     * @param y The vertical Y starting coordinate.
      */
     public Monster(double x, double y) {
         super(x, y, 25.0);
@@ -53,30 +50,22 @@ public class Monster extends Entity implements Collidable {
     }
 
     /**
-     * Inherited implementation executing null baseline modifications preserving
-     * compatibility
-     * across standardized entity iteration arrays natively.
+     * An empty update method kept simply because the base Entity class requires it.
+     * We use a custom, more complex update method below for Pale Luna.
      */
     @Override
     public void update() {
     }
 
     /**
-     * Processes independent AI logic interpreting spatial target vectors and
-     * altering localized geometry constraints.
-     * Governs all discrete temporal durations orchestrating cyclical transitions
-     * between latent and hostile states.
+     * Updates the monster's mood based on how much time has passed and where the player is.
+     * This handles smoothly transitioning her between sleeping, stalking, and full-on hunting.
      *
-     * @param playerX                Current localized horizontal intersection
-     *                               threshold of the target.
-     * @param playerY                Current localized vertical intersection
-     *                               threshold of the target.
-     * @param playerInEscapeRoom     Geometrical toggle overriding hostile
-     *                               trajectory towards proximity-based dormancy.
-     * @param lolliRecentlyCollected Override conditional expediting transition
-     *                               bounds immediately into hostility.
-     * @param maze                   Geographical bounds necessary for dynamic
-     *                               procedural node evaluations sequentially.
+     * @param playerX                The player's current X coordinate.
+     * @param playerY                The player's current Y coordinate.
+     * @param playerInEscapeRoom     If true, she will stop chasing and wait near the door.
+     * @param lolliRecentlyCollected If true, she gets mad and immediately wakes up!
+     * @param maze                   The map data she uses to figure out the shortest path to you.
      */
     public void update(double playerX, double playerY, boolean playerInEscapeRoom,
             boolean lolliRecentlyCollected, Maze maze) {
@@ -155,7 +144,7 @@ public class Monster extends Entity implements Collidable {
     }
 
     /**
-     * Executes state rollbacks wiping sequential pursuit parameters entirely.
+     * Resets the monster back to her sleeping state after a hunt.
      */
     private void returnToDormant() {
         state = State.DORMANT;
@@ -163,17 +152,12 @@ public class Monster extends Entity implements Collidable {
     }
 
     /**
-     * Reconfigures strict X/Y Cartesian variables forcefully snapping the AI onto
-     * traversable perimeter boundaries.
-     * Prevents logic locks where geometric rendering attempts intersection beyond
-     * established sanctuary domains iteratively.
+     * Teleports the monster to the nearest valid floor tile outside the escape room
+     * so she doesn't accidentally get trapped inside the walls.
      *
-     * @param playerX Reference vector extracting optimal horizontal proximity
-     *                thresholds sequentially.
-     * @param playerY Reference vector extracting optimal vertical proximity
-     *                thresholds sequentially.
-     * @param maze    The matrix evaluated assuring valid walkable node discovery
-     *                statically.
+     * @param playerX The player's X coordinate inside the sanctuary.
+     * @param playerY The player's Y coordinate inside the sanctuary.
+     * @param maze    The map to find a valid floor spot to camp.
      */
     private void positionAtDoor(double playerX, double playerY, Maze maze) {
         int playerCol = (int) (playerX / Maze.TILE_SIZE);
@@ -203,19 +187,13 @@ public class Monster extends Entity implements Collidable {
     }
 
     /**
-     * Manipulates localized translation vectors calculating shortest unobstructed
-     * paths algorithmically.
-     * Implements deterministic Euclidean translations mitigating diagonal
-     * coordinate overshoot entirely.
+     * Moves the monster smoothly towards the player by asking the map for the shortest path.
+     * Calculates movement directly to prevent awkward stuttering or overshoot.
      *
-     * @param playerX Endpoint parameter X defining algorithmic pursuit targets
-     *                fundamentally.
-     * @param playerY Endpoint parameter Y defining algorithmic pursuit targets
-     *                fundamentally.
-     * @param maze    Pre-calculated node weights yielding shortest path indices
-     *                statically.
-     * @param speed   Bounding numerical limits defining permissible lateral
-     *                translation scales.
+     * @param playerX Where the player is on the X axis.
+     * @param playerY Where the player is on the Y axis.
+     * @param maze    The map data that provides the A* pathfinding.
+     * @param speed   How fast the monster should move this single frame.
      */
     private void pursuePlayer(double playerX, double playerY, Maze maze, double speed) {
         int currentC = (int) ((this.x + size / 2) / Maze.TILE_SIZE);
@@ -253,11 +231,9 @@ public class Monster extends Entity implements Collidable {
     }
 
     /**
-     * Restitutes geometric containment metrics mirroring native dimensions
-     * precisely.
+     * Gets the physical boundary (hitbox) around the monster for collision detection.
      *
-     * @return Hitbox2D Validated rectangular coordinates executing physical
-     *         intersection routines externally.
+     * @return The 2D hitbox data.
      */
     @Override
     public Hitbox2D getHitbox() {
@@ -265,111 +241,100 @@ public class Monster extends Entity implements Collidable {
     }
 
     /**
-     * Fetches explicitly defined enum structures governing discrete rendering
-     * instructions synchronously.
+     * Gets what mood the monster is currently in (e.g., Stalking, Hunting).
      *
-     * @return State The specific current operational threshold globally extracted.
+     * @return The monster's current state.
      */
     public State getState() {
         return state;
     }
 
     /**
-     * Translates active cyclic state tracking asserting unequivocal
-     * highest-agitation verifications natively.
+     * Convenience method to quickly check if the monster is aggressively hunting.
      *
-     * @return boolean True only executing accelerated traversal mapping natively.
+     * @return True if she's out for blood.
      */
     public boolean isHunting() {
         return state == State.HUNTING;
     }
 
     /**
-     * Translates active cyclic state tracking asserting moderate-agitation
-     * verifications natively.
+     * Convenience method to quickly check if the monster is just casually stalking you.
      *
-     * @return boolean True traversing standard mapping logic.
+     * @return True if she's taking her time following you.
      */
     public boolean isStalking() {
         return state == State.STALKING;
     }
 
     /**
-     * Extracts boolean indicators corroborating stationary ambush parameters
-     * externally mapping logic dependencies entirely.
+     * Finds out if the monster is currently waiting to jump scare you at the door.
      *
-     * @return boolean True intrinsically tied to sanctuary ambush states
-     *         exclusively.
+     * @return True if she's camping outside the escape room.
      */
     public boolean isWaitingAtDoor() {
         return state == State.WAITING_AT_DOOR;
     }
 
     /**
-     * Captures remaining algorithmic integers isolating latency scales seamlessly.
+     * Gets how much time is left before she wakes up from her long nap.
      *
-     * @return int Extracted dormancy limit.
+     * @return The remaining wait time in ticks.
      */
     public int getDormantTimer() {
         return (int) dormantTimer;
     }
 
     /**
-     * Captures remaining algorithmic integers isolating moderate pursuit scales
-     * seamlessly.
+     * Gets how much time is left before she speeds up and starts hunting.
      *
-     * @return int Extracted trailing limit.
+     * @return The remaining stalk time in ticks.
      */
     public int getStalkTimer() {
         return (int) stalkTimer;
     }
 
     /**
-     * Captures remaining algorithmic integers isolating accelerated pursuit scales
-     * seamlessly.
+     * Gets how much time is left before she tires out and goes back to sleep.
      *
-     * @return int Extracted high-velocity trailing limit.
+     * @return The remaining hunt time in ticks.
      */
     public int getHuntTimer() {
         return (int) huntTimer;
     }
 
     /**
-     * Captures remaining algorithmic integers isolating sanctuary ambush scales
-     * seamlessly.
+     * Gets how much time she's going to spend camping outside the door.
      *
-     * @return int Extracted static door proximity duration.
+     * @return The remaining waiting-at-door time in ticks.
      */
     public int getWaitTimer() {
         return (int) waitTimer;
     }
 
     /**
-     * Generates persistent scalar variables formulating synchronized visual pulsing
-     * mechanics uncoupled physically from movement.
+     * Gives a smooth number that can be used to make the monster pulse or breathe visually.
      *
-     * @return double Raw aesthetic multiplier intrinsically incrementing natively.
+     * @return A slowly increasing animation counter.
      */
     public double getPulsePhase() {
         return pulsePhase;
     }
 
     /**
-     * Extracts persistent directional booleans formatting aesthetic render
-     * inversions strictly mapping spatial velocity arrays.
+     * Tells the graphics system which direction the monster is facing so its sprite 
+     * doesn't moonwalk backwards.
      *
-     * @return boolean True validating horizontal targeting matrices projecting
-     *         positively natively.
+     * @return True if she's facing the right side of the screen.
      */
     public boolean isFacingRight() {
         return facingRight;
     }
 
     /**
-     * Correlates geometric abstractions explicitly mirroring fundamental
-     * rectangular arrays identically.
+     * Returns the visual or physical size of the monster.
      *
-     * @return double Extracted coordinate parameters dictating bounds linearly.
+     * @return The size of the monster.
      */
     public double getSize() {
         return size;

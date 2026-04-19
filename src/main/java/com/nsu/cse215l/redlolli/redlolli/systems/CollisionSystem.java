@@ -5,11 +5,10 @@ import com.nsu.cse215l.redlolli.redlolli.map.Maze;
 import com.nsu.cse215l.redlolli.redlolli.ui.GameRenderer;
 
 /**
- * Operates as the centralized physics and intersection calculator.
- * Evaluates geometric overlays (AABB implementations) across distinctly
- * classified actors (i.e. Player vs Chest, Player vs Antagonist) to dictate
- * state transactions such as mortality, event discovery, or item acquisition.
- * Designed to separate physical overlap queries from the core render iteration.
+ * Does exactly what it says on the tin! It handles all the number-crunching to
+ * see if the player is bumping into a monster, picking up a chest, or triggering 
+ * an event. It separates all this math from the game loop so our rendering logic 
+ * can stay fast.
  */
 public class CollisionSystem {
     // Transient evaluation flags interrogated natively per-frame by the
@@ -27,15 +26,11 @@ public class CollisionSystem {
     public boolean playChestOpen = false;
 
     /**
-     * Iterates dynamically tracked interactable containers against the actor's
-     * footprint.
-     * Alters local extraction states mimicking acquisition when a successful
-     * geometric intersection occurs.
+     * Checks if the player is currently standing on top of an unopened treasure chest.
+     * If they are, it pops it open, adds to our stats, and sets flags to draw fun effects!
      *
-     * @param entityManager       The localized tracker yielding present resource
-     *                            nodes.
-     * @param currentHasCloneItem Persisted physical payload status evaluated across
-     *                            iterations.
+     * @param entityManager       The system listing all the chests on the map.
+     * @param currentHasCloneItem True if the player already has a clone decoy in their pocket.
      */
     public void checkChestCollisions(EntityManager entityManager, boolean currentHasCloneItem) {
         newDistractions = 0;
@@ -49,16 +44,14 @@ public class CollisionSystem {
 
         for (Item chest : entityManager.getChests()) {
 
-            // Bypass logic mapping strictly on previously acquired nodes or lack of spatial
-            // collision
+            // Skip this chest if it's already open, or if the player isn't standing on it.
             if (chest.isCollected() || !player.getHitbox().intersects(chest.getHitbox()))
                 continue;
             chest.collect();
             collectedChests++;
             playChestOpen = true;
 
-            // Trigger paramount aesthetic visualization exclusively if the core objective
-            // is seized
+            // If it's a primary objective, tell the renderer to do a huge celebratory pop!
             if (chest.getContentType() == Item.ContentType.LOLLI) {
                 lolliRecentlyCollected = true;
                 lolliRevealState = new GameRenderer.LolliRevealState(chest.getX(), chest.getY(), 120);
@@ -75,27 +68,22 @@ public class CollisionSystem {
     }
 
     /**
-     * Evaluates geometric encroachment against patrol-oriented adversaries mapping
-     * distinct lethality messages.
-     * Integrates temporary invincibility logic mimicking immunity buffers following
-     * evasive actions or respawns.
+     * Checks if the player ran into a patrolling guard. If they did, it triggers 
+     * an instant game over with a grim, thematic message!
+     * Players get a tiny window of invincibility to avoid unfair back-to-back hits.
      *
-     * @param entityManager          The localized tracker yielding active patrol
-     *                               agents.
-     * @param inEscapeRoom           Validation flag guaranteeing player sanctuary
-     *                               immunity natively.
-     * @param enteringEscapeRoom     Validation flag disabling lethality momentarily
-     *                               upon entering a threshold.
-     * @param guardHitCooldownFrames Transient immunity countdown metric disabling
-     *                               intersection penalties.
+     * @param entityManager          The system managing all the enemies currently spawned.
+     * @param inEscapeRoom           Is the player currently hiding inside a sanctuary room?
+     * @param enteringEscapeRoom     Did the player just step into the sanctuary right now?
+     * @param guardHitCooldownFrames Invincibility timer tracking frames since the last bump.
      */
     public void checkGuardThreats(EntityManager entityManager, boolean inEscapeRoom, boolean enteringEscapeRoom,
             double guardHitCooldownFrames) {
-        // Enforce the operational invincibility window bypassing intersection entirely
+        // Give the player a tiny window of mercy from instant deaths.
         if (guardHitCooldownFrames > 0)
             return;
 
-        // Ensure sanctuary bounds negate adversarial aggression completely
+        // Enemies cannot reach the player if they are hiding out inside a sanctuary!
         if (inEscapeRoom && !enteringEscapeRoom) {
             return;
         }
@@ -104,14 +92,12 @@ public class CollisionSystem {
 
         for (GuardEntity guard : entityManager.getGuards()) {
 
-            // Trigger failure scenario if geometry overlaps strictly when the adversary
-            // isn't hijacked via distraction
+            // Make sure the player touches the guard when the guard ISN'T looking away at a distraction.
             if (!guard.isDistracted() && (guard.isPlayerOnGuardedRoom(player.getHitbox())
                     || guard.getHitbox().intersects(player.getHitbox()))) {
                 playerDied = true;
 
-                // Construct thematic lethality context dependent on adversarial instantiation
-                // archetype
+                // Pick an appropriately terrifying way to describe how you died.
                 if (guard.getType() == GuardEntity.Type.BAT)
                     deathMessage = "The bat bit first. Luna answered instantly.";
                 else if (guard.getType() == GuardEntity.Type.COBRA)
@@ -124,15 +110,12 @@ public class CollisionSystem {
     }
 
     /**
-     * Synthesizes traversal and lethality operations for a complex hunter adversary
-     * algorithm.
-     * Administers target reassignment prioritizing player-produced illusions
-     * intrinsically.
+     * Determines whether the Serial Killer has spotted the player, tracks their movement, 
+     * and sets game-over flags if he finally catches them! Also checks to see if he's 
+     * currently attacking a cardboard decoy instead.
      *
-     * @param entityManager Tracker offering relative geographic positions of the
-     *                      protagonist or active decoy arrays.
-     * @param maze          The geometric terrain supplying operational bounds or
-     *                      traversal hindrances.
+     * @param entityManager The system holding all monsters, decoys, and the player.
+     * @param maze          The map layout used for figuring out straight lines of sight.
      */
     public void updateSerialKiller(EntityManager entityManager, Maze maze) {
         SerialKillerEntity serialKiller = entityManager.getSerialKiller();
@@ -142,8 +125,7 @@ public class CollisionSystem {
         if (serialKiller == null)
             return;
 
-        // Trigger hostility awakening exclusively if the player breaches spatial
-        // thresholds
+        // Wake him up if the player blindly walks near him! He starts hunting after this.
         if (!serialKiller.isActive()) {
             if (distInTiles(player.getX(), player.getY(), serialKiller.getX(), serialKiller.getY()) < 8.0)
                 serialKiller.setActive(true);
@@ -151,13 +133,12 @@ public class CollisionSystem {
         if (!serialKiller.isActive())
             return;
 
-        // Redirect algorithm tracking parameters evaluating static decoys paramount
+        // Go after the decoy if one exists. Otherwise, he zeroes in on the player.
         double targetX = cloneDecoy != null ? cloneDecoy.getX() : player.getX();
         double targetY = cloneDecoy != null ? cloneDecoy.getY() : player.getY();
         serialKiller.updateChase(targetX, targetY, maze);
 
-        // Initiate operational stall logic and eventual physical purge handling decoy
-        // degradation
+        // Tell him to stop hunting the player and start hacking into the clone decoy!
         if (cloneDecoy != null) {
             if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(cloneDecoy.getHitbox())) {
                 serialKiller.startDecoyAttack();
@@ -167,8 +148,7 @@ public class CollisionSystem {
             }
         }
 
-        // Validate final protagonist overlap invoking mortality independently of decoy
-        // manipulation
+        // Test if his knife reached the player while he WASN'T distracted by a decoy.
         if (!serialKiller.isAttackingDecoy() && serialKiller.getHitbox().intersects(player.getHitbox())) {
             playerDied = true;
             deathMessage = "Steel and panic. He never stops hunting.";
@@ -176,25 +156,15 @@ public class CollisionSystem {
     }
 
     /**
-     * Conducts sophisticated procedural logic for the primary relentless antagonist
-     * evaluating
-     * sensory elements (e.g., Line-of-sight algorithms) and sanctuary dynamics.
-     * Also signals audiovisual warnings natively when transitionary thresholds
-     * breach.
-     *
-     * @param entityManager            The domain encapsulating relative adversarial
-     *                                 references natively.
-     * @param maze                     Geographical bounds governing line-of-sight
-     *                                 obstruction implementations.
-     * @param inEscapeRoom             Sanctuary indicator averting fundamental
-     *                                 hostility.
-     * @param exitingEscapeRoom        Vulnerability indicator mapping fatal
-     *                                 transitions immediately exiting sanctuary
-     *                                 nodes.
-     * @param lolliRecentlyCollected   Boolean trigger altering pursuit intensity
-     *                                 following objective completion.
-     * @param lunaScreamCooldownFrames Cooldown limiter dictating audiovisual
-     *                                 tension broadcasts.
+     * Processes Pale Luna's logic, including her sightlines, if she's currently 
+     * screaming at the player, and whether she caught the player exiting a sanctuary.
+     * 
+     * @param entityManager            System controlling the monster and player tracking.
+     * @param maze                     The game map, used to see if walls are blocking her view.
+     * @param inEscapeRoom             True if the player is currently safe inside.
+     * @param exitingEscapeRoom        True if the player just left the sanctuary room this frame.
+     * @param lolliRecentlyCollected   True if the player just found the objective, which makes her angry.
+     * @param lunaScreamCooldownFrames Cooldown timer to prevent her audio from deafening the player repeatedly.
      */
     public void updatePaleLuna(EntityManager entityManager, Maze maze, boolean inEscapeRoom, boolean exitingEscapeRoom,
             boolean lolliRecentlyCollected, double lunaScreamCooldownFrames) {
@@ -211,16 +181,14 @@ public class CollisionSystem {
         Monster.State prevState = paleLuna.getState();
         paleLuna.update(player.getX(), player.getY(), inEscapeRoom, lolliRecentlyCollected, maze);
 
-        // Levy an unconditional mortality penalty if departing a sanctuary carelessly
-        // directly into adversary bounds
+        // Instant game over if she was camping outside the escape room and you just walked out.
         if (exitingEscapeRoom && paleLuna.isWaitingAtDoor()) {
             playerDied = true;
             deathMessage = "She waited at the door. You stepped out anyway.";
             return;
         }
 
-        // Deploy immersive aesthetic modifiers when the adversary's state evolves
-        // aggressively natively
+        // Add some spooky ambiance if she just started hunting you.
         if (prevState != Monster.State.HUNTING && paleLuna.getState() == Monster.State.HUNTING) {
             screenShake = true;
             playHeartbeat = true;
@@ -233,16 +201,15 @@ public class CollisionSystem {
             playScream = true;
         }
 
-        // Assert overlapping lethality excluding explicitly designated safe nodes
-        // logically
+        // Did she touch you while you were out in the halls? You're dead.
         if (!inEscapeRoom && paleLuna.isHunting() && player.getHitbox().intersects(paleLuna.getHitbox())) {
             playerDied = true;
             deathMessage = "She found your pulse before you heard her footsteps.";
             return;
         }
 
-        // Assert visibility-based lethality executing explicit Raycast (Line of Sight)
-        // verification operations natively
+        // She will also kill you if she can just see you after she's reached a door,
+        // using the map's line of sight checker.
         if (!inEscapeRoom && paleLuna.isWaitingAtDoor()) {
             boolean canSee = maze.hasLineOfSight(
                     paleLuna.getX() + 12, paleLuna.getY() + 12,
@@ -256,15 +223,14 @@ public class CollisionSystem {
     }
 
     /**
-     * Determines geometric euclidean distance quantified using grid indices
-     * natively instead of abstract pixels.
+     * Calculates the distance between two things, but measures it in map tiles instead of pixels 
+     * so we can easily tell how far away something is on the grid.
      *
-     * @param x1 Extracted logic coordinate X from entity 1.
-     * @param y1 Extracted logic coordinate Y from entity 1.
-     * @param x2 Extracted logic coordinate X from entity 2.
-     * @param y2 Extracted logic coordinate Y from entity 2.
-     * @return double Vector magnitude illustrating tile boundaries between
-     *         subjects.
+     * @param x1 The X pixel position of the first thing.
+     * @param y1 The Y pixel position of the first thing.
+     * @param x2 The X pixel position of the second thing.
+     * @param y2 The Y pixel position of the second thing.
+     * @return double The straight-line distance, in tiles, between the two points.
      */
     private static double distInTiles(double x1, double y1, double x2, double y2) {
         double dx = (x1 - x2) / Maze.TILE_SIZE, dy = (y1 - y2) / Maze.TILE_SIZE;
