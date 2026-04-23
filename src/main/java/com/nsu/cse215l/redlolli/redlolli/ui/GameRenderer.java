@@ -105,8 +105,6 @@ public class GameRenderer {
 
         chestClosedImg = loadSprite("sprites/chest_closed.png", 32, 32);
         chestOpenedImg = loadSprite("sprites/chest_open.png", 32, 32);
-        chestGlowLolli = loadSprite("sprites/chest_glow_lolli.png", 32, 32);
-        chestGlowClone = loadSprite("sprites/chest_glow_clone.png", 32, 32);
         cloneDecoyImg = loadSprite("sprites/clone_decoy.png", 50, 50);
 
         monsterDormant = loadSprite("sprites/monster_dormant.png", 50, 50);
