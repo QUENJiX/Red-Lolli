@@ -194,6 +194,7 @@ public class HelloApplication extends Application {
     private void startGame(int level) {
         int savedSanity = (gsm.entityManager.getPlayer() != null) ? (int) gsm.entityManager.getPlayer().getSanity()
                 : 100;
+        double savedTime = gsm.totalPlayTimeSeconds;
 
         gsm.levelManager.setCurrentLevel(level);
         gsm.resetGameState();
@@ -205,6 +206,7 @@ public class HelloApplication extends Application {
         if (level > 1 && gsm.entityManager.getPlayer() != null) {
             gsm.entityManager.getPlayer().setSanity(savedSanity);
         }
+        gsm.totalPlayTimeSeconds = savedTime;
 
         isPlaying = true;
         setupGameScene();

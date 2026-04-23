@@ -425,8 +425,8 @@ public class SceneFactory {
         bg.setFitHeight(128);
 
         ImageView icon = new ImageView(tryLoadImage(iconPath));
-        icon.setFitWidth(24);
-        icon.setFitHeight(24);
+        icon.setFitWidth(40);
+        icon.setFitHeight(40);
 
         pane.getChildren().addAll(bg, icon);
         btn.setGraphic(pane);
