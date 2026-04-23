@@ -399,7 +399,7 @@ public class SceneFactory {
                 styledText("Deaths: " + deaths, "Consolas", 18, Color.LIGHTGRAY),
                 styledText("Mind Intact: " + sanity + "%", "Consolas", 18,
                         sanity < 30 ? Color.RED : Color.LIGHTGRAY),
-                styledText("Lollies: " + lollies + "/1", "Consolas", 18,
+                styledText("Lollies: " + lollies + "/" + (lollies == 3 ? 3 : lollies + 1), "Consolas", 18,
                         lollies > 0 ? Color.GOLD : Color.LIGHTGRAY),
                 styledText("Secrets: " + boxes + "/" + totalBoxes, "Consolas", 18, Color.LIGHTGRAY));
         return stats;
@@ -421,8 +421,8 @@ public class SceneFactory {
         // Pile the image components inside a layout so we can swap them out when clicked.
         javafx.scene.layout.StackPane pane = new javafx.scene.layout.StackPane();
         ImageView bg = new ImageView(tryLoadImage(normalPath));
-        bg.setFitWidth(160);
-        bg.setFitHeight(45);
+        bg.setFitWidth(128);
+        bg.setFitHeight(128);
 
         ImageView icon = new ImageView(tryLoadImage(iconPath));
         icon.setFitWidth(24);
